@@ -45,18 +45,20 @@ class LowPrev:
     >>> print "%.6f" % lpr.getupper([1,0,0,0])
     0.750000
     """
+
     def __init__(self, numstates = 2):
         """Construct vacuous lower prevision on possibility space of given
         size.
 
         @param numstates: The number of states.
-        @type numstates: int"""
+        @type numstates: int
+        """
         self._numstates = numstates
         self._matrix = pycddlib.Matrix([[+1] + [-1] * numstates,
                                         [-1] + [+1] * numstates]
                                         +
-                                        [[ 0] + [1 if i == j else 0
-                                                 for i in xrange(numstates)]
+                                        [[0] + [1 if i == j else 0
+                                                for i in xrange(numstates)]
                                          for j in xrange(numstates)])
 
     def setlower(self, gamble, lprev):
@@ -105,7 +107,7 @@ class LowPrev:
         linprog.solve()
         #print linprog # DEBUG
         if linprog.status == pycddlib.LPSTATUS_OPTIMAL:
-            return linprog.optValue 
+            return linprog.optValue
         elif linprog.status == pycddlib.LPSTATUS_INCONSISTENT:
             raise ValueError("lower prevision incurs sure loss")
         else:
@@ -160,5 +162,6 @@ class LowPrev:
     #    raise NotImplementedError
 
     #def __ior__(self, lowprev):
-    #    """Disjunction (unanimity rule). Result is not necessarily coherent."""
+    #    """Disjunction (unanimity rule). Result is not necessarily
+    #    coherent."""
     #    raise NotImplementedError
