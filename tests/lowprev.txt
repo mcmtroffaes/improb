@@ -1,0 +1,46 @@
+Regression tests for the LowPrev class
+======================================
+
+Natural extension of a coherent lower prevision
+-----------------------------------------------
+
+>>> from improb.lowprev import LowPrev
+>>> lpr = LowPrev(3)
+>>> print "%.6f" % lpr.getlower([1,2,3])
+1.000000
+>>> print "%.6f" % lpr.getupper([1,2,3])
+3.000000
+>>> lpr.setlower([1,2,3], 1.5)
+>>> lpr.setupper([1,2,3], 2.5)
+>>> print "%.6f" % lpr.getlower([1,2,3])
+1.500000
+>>> print "%.6f" % lpr.getupper([1,2,3])
+2.500000
+
+Frechet bounds
+--------------
+
+>>> from improb.lowprev import LowPrev
+>>> lpr = LowPrev(4)
+>>> lpr.setprecise([1,1,0,0], 0.6)
+>>> lpr.setprecise([0,1,1,0], 0.7)
+>>> print "%.6f" % lpr.getlower([0,1,0,0]) # max(0.6+0.7-1,0)
+0.300000
+>>> print "%.6f" % lpr.getupper([0,1,0,0]) # min(0.6,0.7)
+0.600000
+
+Avoiding sure loss
+------------------
+
+This example incurs sure loss because the maximum of the sum of the gambles
+[1,2,3,0] and [3,2,1,0] is 4, however 2.5 + 2.5 is strictly larger than 4.
+
+>>> from improb.lowprev import LowPrev
+>>> lpr = LowPrev(4)
+>>> lpr.setlower([1,2,3,0], 2.5)
+>>> lpr.isavoidingsureloss()
+True
+>>> lpr.setlower([3,2,1,0], 2.5)
+>>> lpr.isavoidingsureloss()
+False
+

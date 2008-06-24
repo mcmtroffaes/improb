@@ -1,0 +1,4 @@
+Thanks to:
+* Komei Fukuda for writing his excellent cddlib C library, without which
+improb would never have been possible.
+

@@ -1,0 +1,12 @@
+include README.TXT
+include INSTALL.TXT
+include AUTHORS.TXT
+include LICENSE.TXT
+include TODO.TXT
+include CHANGELOG.TXT
+include AUTHORS.TXT
+include THANKS.TXT
+include docs/*.*
+include examples/*.txt
+include tests/*.txt
+

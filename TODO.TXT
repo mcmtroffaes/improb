@@ -1,0 +1,4 @@
+* credal sets
+* n-monotonicity
+* p-boxes
+* belief functions

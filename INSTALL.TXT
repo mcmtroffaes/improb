@@ -1,0 +1,12 @@
+Requirements
+============
+
+lowprev uses pycddlib, which you can get from
+http://code.google.com/p/stip/
+
+Manual installation
+===================
+
+Simply run
+
+  python setup.py install
