@@ -107,7 +107,7 @@ class LowPrev:
         linprog.solve()
         #print linprog # DEBUG
         if linprog.status == pycddlib.LPSTATUS_OPTIMAL:
-            return linprog.optValue
+            return linprog.opt_value
         elif linprog.status == pycddlib.LPSTATUS_INCONSISTENT:
             raise ValueError("lower prevision incurs sure loss")
         else:
