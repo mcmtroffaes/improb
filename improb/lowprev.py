@@ -100,8 +100,8 @@ class LowPrev:
         @return: The lower bound for this expectation, i.e. the natural
             extension of the gamble.
         """
-        self._matrix.setLPObjType(pycddlib.LPOBJ_MIN)
-        self._matrix.setLPObjFunc([0] + gamble)
+        self._matrix.set_lp_obj_type(pycddlib.LPOBJ_MIN)
+        self._matrix.set_lp_obj_func([0] + gamble)
         #print self._matrix # DEBUG
         linprog = pycddlib.LinProg(self._matrix)
         linprog.solve()
