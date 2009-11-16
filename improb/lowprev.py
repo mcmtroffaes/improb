@@ -69,7 +69,7 @@ class LowPrev:
         @param lprev: The lower bound for this expectation.
         @type lprev: float/int
         """
-        self._matrix.appendRows([[-lprev] + gamble])
+        self._matrix.append_rows([[-lprev] + gamble])
 
     def setupper(self, gamble, uprev):
         """Constrain the expectation of C{gamble} to be at most C{uprev}.
@@ -79,7 +79,7 @@ class LowPrev:
         @param uprev: The upper bound for this expectation.
         @type uprev: float/int
         """
-        self._matrix.appendRows([[uprev] + [-value for value in gamble]])
+        self._matrix.append_rows([[uprev] + [-value for value in gamble]])
 
     def setprecise(self, gamble, prev):
         """Constrain the expectation of C{gamble} to be exactly C{prev}.
