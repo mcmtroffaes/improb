@@ -44,6 +44,8 @@ class LowPrev:
     0.500000
     >>> print "%.6f" % lpr.getupper([1,0,0,0])
     0.750000
+    >>> list(lpr)
+    [([4.0, 2.0, 1.0, 0.0], -3.0), ([-4.0, -1.0, -2.0, 0.0], 3.0)]
     """
 
     def __init__(self, numstates = 2):
@@ -91,6 +93,12 @@ class LowPrev:
         """
         self.setlower(gamble, prev)
         self.setupper(gamble, prev)
+
+    def __iter__(self):
+        """Yield tuples (gamble, lprev)."""
+        for rownum in xrange(self._numstates + 2, self._matrix.rowsize):
+            row = self._matrix[rownum]
+            yield row[1:], row[0]
 
     def getlower(self, gamble):
         """Return the lower expectation for C{gamble} via natural extension.
