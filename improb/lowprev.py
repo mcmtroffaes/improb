@@ -40,12 +40,14 @@ class LowPrev:
     >>> lpr.set_upper([4,1,2,0], 3)
     >>> lpr.is_avoiding_sure_loss()
     True
+    >>> lpr.is_coherent()
+    True
     >>> print "%.6f" % lpr.get_lower([1,0,0,0])
     0.500000
     >>> print "%.6f" % lpr.get_upper([1,0,0,0])
     0.750000
     >>> list(lpr)
-    [([4.0, 2.0, 1.0, 0.0], -3.0), ([-4.0, -1.0, -2.0, 0.0], 3.0)]
+    [([4.0, 2.0, 1.0, 0.0], 3.0), ([-4.0, -1.0, -2.0, 0.0], -3.0)]
     """
 
     def __init__(self, numstates = 2):
@@ -98,7 +100,7 @@ class LowPrev:
         """Yield tuples (gamble, lprev)."""
         for rownum in xrange(self._numstates + 2, self._matrix.rowsize):
             row = self._matrix[rownum]
-            yield row[1:], row[0]
+            yield row[1:], -row[0]
 
     def get_lower(self, gamble):
         """Return the lower expectation for C{gamble} via natural extension.
@@ -147,10 +149,17 @@ class LowPrev:
             return False
         return True
 
-    #def is_coherent(self):
-    #    """Do all assessments coincide with their natural extension? Is the
-    #    lower prevision coherent?"""
-    #    raise NotImplementedError
+    def is_coherent(self, tolerance=1e-6):
+        """Do all assessments coincide with their natural extension? Is the
+        lower prevision coherent?"""
+        # first check if we are avoiding sure loss
+        if not self.is_avoiding_sure_loss():
+            return False
+        # we're avoiding sure loss, so check the natural extension
+        for gamble, lprev in self:
+            if self.get_lower(gamble) > lprev + tolerance:
+                return False
+        return True
 
     #def is_linear(self):
     #    """Is the lower prevision a linear prevision?"""
