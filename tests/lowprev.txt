@@ -44,3 +44,91 @@ True
 >>> lpr.isavoidingsureloss()
 False
 
+Another example
+---------------
+
+Finding coherent lower and upper bounds for the oil catter example in
+
+Kikuti, D., Cozman, F., de Campos, C.: Partially ordered preferences
+in decision trees: Computing strategies with imprecision in
+probabilities. In: R. Brafman, U. Junker (eds.) IJCAI-05
+Multidisciplinary Workshop on Advances in Preference Handling,
+pp. 118–123 (2005)
+
+>>> from improb.lowprev import LowPrev
+>>> lpr = LowPrev(3)
+>>> lpr.setlower([1,0,0], 0.5)
+>>> lpr.setupper([1,0,0], 0.666)
+>>> lpr.setlower([0,1,0], 0.222)
+>>> lpr.setupper([0,1,0], 0.272)
+>>> lpr.setlower([0,0,1], 0.125)
+>>> lpr.setupper([0,0,1], 0.181)
+>>> print(lpr.getlower([1,0,0])) # not coherent!
+0.547
+>>> print(lpr.getupper([1,0,0])) # not coherent!
+0.653
+>>> print(lpr.getlower([0,1,0]))
+0.222
+>>> print(lpr.getupper([0,1,0]))
+0.272
+>>> print(lpr.getlower([0,0,1]))
+0.125
+>>> print(lpr.getupper([0,0,1]))
+0.181
+>>> lpr = LowPrev(3)
+>>> lpr.setlower([1,0,0], 0.222)
+>>> lpr.setupper([1,0,0], 0.333)
+>>> lpr.setlower([0,1,0], 0.363)
+>>> lpr.setupper([0,1,0], 0.444)
+>>> lpr.setlower([0,0,1], 0.250)
+>>> lpr.setupper([0,0,1], 0.363)
+>>> print(lpr.getlower([1,0,0]))
+0.222
+>>> print(lpr.getupper([1,0,0]))
+0.333
+>>> print(lpr.getlower([0,1,0]))
+0.363
+>>> print(lpr.getupper([0,1,0]))
+0.444
+>>> print(lpr.getlower([0,0,1]))
+0.25
+>>> print(lpr.getupper([0,0,1]))
+0.363
+>>> lpr = LowPrev(3)
+>>> lpr.setlower([1,0,0], 0.111)
+>>> lpr.setupper([1,0,0], 0.166)
+>>> lpr.setlower([0,1,0], 0.333)
+>>> lpr.setupper([0,1,0], 0.363)
+>>> lpr.setlower([0,0,1], 0.454)
+>>> lpr.setupper([0,0,1], 0.625)
+>>> print(lpr.getlower([1,0,0]))
+0.111
+>>> print(lpr.getupper([1,0,0]))
+0.166
+>>> print(lpr.getlower([0,1,0]))
+0.333
+>>> print(lpr.getupper([0,1,0]))
+0.363
+>>> print(lpr.getlower([0,0,1])) # not coherent!
+0.471
+>>> print(lpr.getupper([0,0,1])) # not coherent!
+0.556
+>>> lpr = LowPrev(3)
+>>> lpr.setlower([1,0,0], 0.181)
+>>> lpr.setupper([1,0,0], 0.222)
+>>> lpr.setlower([0,1,0], 0.333)
+>>> lpr.setupper([0,1,0], 0.363)
+>>> lpr.setlower([0,0,1], 0.444)
+>>> lpr.setupper([0,0,1], 0.454)
+>>> print(lpr.getlower([1,0,0])) # not coherent!
+0.183
+>>> print(lpr.getupper([1,0,0]))
+0.222
+>>> print(lpr.getlower([0,1,0]))
+0.333
+>>> print(lpr.getupper([0,1,0]))
+0.363
+>>> print(lpr.getlower([0,0,1]))
+0.444
+>>> print(lpr.getupper([0,0,1]))
+0.454
