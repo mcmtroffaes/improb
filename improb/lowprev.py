@@ -28,21 +28,21 @@ class LowPrev:
     expectation/prevision).
 
     Add half-space constraints by calling for instance the
-    L{setlower} and L{setupper} functions. Calculate the natural extension
-    with the L{getlower} and L{getupper} functions.
+    L{set_lower} and L{set_upper} functions. Calculate the natural extension
+    with the L{get_lower} and L{get_upper} functions.
 
     Example
     =======
 
     >>> import lowprev
     >>> lpr = lowprev.LowPrev(4)
-    >>> lpr.setlower([4,2,1,0], 3)
-    >>> lpr.setupper([4,1,2,0], 3)
-    >>> lpr.isavoidingsureloss()
+    >>> lpr.set_lower([4,2,1,0], 3)
+    >>> lpr.set_upper([4,1,2,0], 3)
+    >>> lpr.is_avoiding_sure_loss()
     True
-    >>> print "%.6f" % lpr.getlower([1,0,0,0])
+    >>> print "%.6f" % lpr.get_lower([1,0,0,0])
     0.500000
-    >>> print "%.6f" % lpr.getupper([1,0,0,0])
+    >>> print "%.6f" % lpr.get_upper([1,0,0,0])
     0.750000
     >>> list(lpr)
     [([4.0, 2.0, 1.0, 0.0], -3.0), ([-4.0, -1.0, -2.0, 0.0], 3.0)]
@@ -63,7 +63,7 @@ class LowPrev:
                                                 for i in xrange(numstates)]
                                          for j in xrange(numstates)])
 
-    def setlower(self, gamble, lprev):
+    def set_lower(self, gamble, lprev):
         """Constrain the expectation of C{gamble} to be at least C{lprev}.
 
         @param gamble: The gamble whose expectation to bound.
@@ -73,7 +73,7 @@ class LowPrev:
         """
         self._matrix.append_rows([[-lprev] + gamble])
 
-    def setupper(self, gamble, uprev):
+    def set_upper(self, gamble, uprev):
         """Constrain the expectation of C{gamble} to be at most C{uprev}.
 
         @param gamble: The gamble whose expectation to bound.
@@ -83,7 +83,7 @@ class LowPrev:
         """
         self._matrix.append_rows([[uprev] + [-value for value in gamble]])
 
-    def setprecise(self, gamble, prev):
+    def set_precise(self, gamble, prev):
         """Constrain the expectation of C{gamble} to be exactly C{prev}.
 
         @param gamble: The gamble whose expectation to bound.
@@ -91,8 +91,8 @@ class LowPrev:
         @param prev: The precise bound for this expectation.
         @type prev: float/int
         """
-        self.setlower(gamble, prev)
-        self.setupper(gamble, prev)
+        self.set_lower(gamble, prev)
+        self.set_upper(gamble, prev)
 
     def __iter__(self):
         """Yield tuples (gamble, lprev)."""
@@ -100,7 +100,7 @@ class LowPrev:
             row = self._matrix[rownum]
             yield row[1:], row[0]
 
-    def getlower(self, gamble):
+    def get_lower(self, gamble):
         """Return the lower expectation for C{gamble} via natural extension.
 
         @param gamble: The gamble whose lower expectation to find.
@@ -121,7 +121,7 @@ class LowPrev:
         else:
             raise RuntimeError("BUG: unexpected status (%i)" % linprog.status)
 
-    def getupper(self, gamble):
+    def get_upper(self, gamble):
         """Return the upper expectation for C{gamble} via natural extension.
 
         @param gamble: The gamble whose upper expectation to find.
@@ -129,30 +129,30 @@ class LowPrev:
         @return: The upper bound for this expectation, i.e. the natural
             extension of the gamble.
         """
-        return -self.getlower([-value for value in gamble])
+        return -self.get_lower([-value for value in gamble])
 
     #def getcredalset(self):
     #    """Find credal set corresponding to this lower prevision."""
     #    raise NotImplementedError
 
-    def isavoidingsureloss(self):
+    def is_avoiding_sure_loss(self):
         """No Dutch book? Does the lower prevision avoid sure loss?
 
         @return: C{True} if the lower prevision avoids sure loss, C{False}
             otherwise.
         """
         try:
-            self.getlower([0] * self._numstates)
+            self.get_lower([0] * self._numstates)
         except ValueError:
             return False
         return True
 
-    #def iscoherent(self):
+    #def is_coherent(self):
     #    """Do all assessments coincide with their natural extension? Is the
     #    lower prevision coherent?"""
     #    raise NotImplementedError
 
-    #def islinear(self):
+    #def is_linear(self):
     #    """Is the lower prevision a linear prevision?"""
     #    raise NotImplementedError
 

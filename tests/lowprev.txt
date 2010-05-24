@@ -6,15 +6,15 @@ Natural extension of a coherent lower prevision
 
 >>> from improb.lowprev import LowPrev
 >>> lpr = LowPrev(3)
->>> print "%.6f" % lpr.getlower([1,2,3])
+>>> print "%.6f" % lpr.get_lower([1,2,3])
 1.000000
->>> print "%.6f" % lpr.getupper([1,2,3])
+>>> print "%.6f" % lpr.get_upper([1,2,3])
 3.000000
->>> lpr.setlower([1,2,3], 1.5)
->>> lpr.setupper([1,2,3], 2.5)
->>> print "%.6f" % lpr.getlower([1,2,3])
+>>> lpr.set_lower([1,2,3], 1.5)
+>>> lpr.set_upper([1,2,3], 2.5)
+>>> print "%.6f" % lpr.get_lower([1,2,3])
 1.500000
->>> print "%.6f" % lpr.getupper([1,2,3])
+>>> print "%.6f" % lpr.get_upper([1,2,3])
 2.500000
 
 Frechet bounds
@@ -22,11 +22,11 @@ Frechet bounds
 
 >>> from improb.lowprev import LowPrev
 >>> lpr = LowPrev(4)
->>> lpr.setprecise([1,1,0,0], 0.6)
->>> lpr.setprecise([0,1,1,0], 0.7)
->>> print "%.6f" % lpr.getlower([0,1,0,0]) # max(0.6+0.7-1,0)
+>>> lpr.set_precise([1,1,0,0], 0.6)
+>>> lpr.set_precise([0,1,1,0], 0.7)
+>>> print "%.6f" % lpr.get_lower([0,1,0,0]) # max(0.6+0.7-1,0)
 0.300000
->>> print "%.6f" % lpr.getupper([0,1,0,0]) # min(0.6,0.7)
+>>> print "%.6f" % lpr.get_upper([0,1,0,0]) # min(0.6,0.7)
 0.600000
 
 Avoiding sure loss
@@ -37,11 +37,11 @@ This example incurs sure loss because the maximum of the sum of the gambles
 
 >>> from improb.lowprev import LowPrev
 >>> lpr = LowPrev(4)
->>> lpr.setlower([1,2,3,0], 2.5)
->>> lpr.isavoidingsureloss()
+>>> lpr.set_lower([1,2,3,0], 2.5)
+>>> lpr.is_avoiding_sure_loss()
 True
->>> lpr.setlower([3,2,1,0], 2.5)
->>> lpr.isavoidingsureloss()
+>>> lpr.set_lower([3,2,1,0], 2.5)
+>>> lpr.is_avoiding_sure_loss()
 False
 
 Another example
@@ -57,78 +57,78 @@ pp. 118–123 (2005)
 
 >>> from improb.lowprev import LowPrev
 >>> lpr = LowPrev(3)
->>> lpr.setlower([1,0,0], 0.5)
->>> lpr.setupper([1,0,0], 0.666)
->>> lpr.setlower([0,1,0], 0.222)
->>> lpr.setupper([0,1,0], 0.272)
->>> lpr.setlower([0,0,1], 0.125)
->>> lpr.setupper([0,0,1], 0.181)
->>> print(lpr.getlower([1,0,0])) # not coherent!
+>>> lpr.set_lower([1,0,0], 0.5)
+>>> lpr.set_upper([1,0,0], 0.666)
+>>> lpr.set_lower([0,1,0], 0.222)
+>>> lpr.set_upper([0,1,0], 0.272)
+>>> lpr.set_lower([0,0,1], 0.125)
+>>> lpr.set_upper([0,0,1], 0.181)
+>>> print(lpr.get_lower([1,0,0])) # not coherent!
 0.547
->>> print(lpr.getupper([1,0,0])) # not coherent!
+>>> print(lpr.get_upper([1,0,0])) # not coherent!
 0.653
->>> print(lpr.getlower([0,1,0]))
+>>> print(lpr.get_lower([0,1,0]))
 0.222
->>> print(lpr.getupper([0,1,0]))
+>>> print(lpr.get_upper([0,1,0]))
 0.272
->>> print(lpr.getlower([0,0,1]))
+>>> print(lpr.get_lower([0,0,1]))
 0.125
->>> print(lpr.getupper([0,0,1]))
+>>> print(lpr.get_upper([0,0,1]))
 0.181
 >>> lpr = LowPrev(3)
->>> lpr.setlower([1,0,0], 0.222)
->>> lpr.setupper([1,0,0], 0.333)
->>> lpr.setlower([0,1,0], 0.363)
->>> lpr.setupper([0,1,0], 0.444)
->>> lpr.setlower([0,0,1], 0.250)
->>> lpr.setupper([0,0,1], 0.363)
->>> print(lpr.getlower([1,0,0]))
+>>> lpr.set_lower([1,0,0], 0.222)
+>>> lpr.set_upper([1,0,0], 0.333)
+>>> lpr.set_lower([0,1,0], 0.363)
+>>> lpr.set_upper([0,1,0], 0.444)
+>>> lpr.set_lower([0,0,1], 0.250)
+>>> lpr.set_upper([0,0,1], 0.363)
+>>> print(lpr.get_lower([1,0,0]))
 0.222
->>> print(lpr.getupper([1,0,0]))
+>>> print(lpr.get_upper([1,0,0]))
 0.333
->>> print(lpr.getlower([0,1,0]))
+>>> print(lpr.get_lower([0,1,0]))
 0.363
->>> print(lpr.getupper([0,1,0]))
+>>> print(lpr.get_upper([0,1,0]))
 0.444
->>> print(lpr.getlower([0,0,1]))
+>>> print(lpr.get_lower([0,0,1]))
 0.25
->>> print(lpr.getupper([0,0,1]))
+>>> print(lpr.get_upper([0,0,1]))
 0.363
 >>> lpr = LowPrev(3)
->>> lpr.setlower([1,0,0], 0.111)
->>> lpr.setupper([1,0,0], 0.166)
->>> lpr.setlower([0,1,0], 0.333)
->>> lpr.setupper([0,1,0], 0.363)
->>> lpr.setlower([0,0,1], 0.454)
->>> lpr.setupper([0,0,1], 0.625)
->>> print(lpr.getlower([1,0,0]))
+>>> lpr.set_lower([1,0,0], 0.111)
+>>> lpr.set_upper([1,0,0], 0.166)
+>>> lpr.set_lower([0,1,0], 0.333)
+>>> lpr.set_upper([0,1,0], 0.363)
+>>> lpr.set_lower([0,0,1], 0.454)
+>>> lpr.set_upper([0,0,1], 0.625)
+>>> print(lpr.get_lower([1,0,0]))
 0.111
->>> print(lpr.getupper([1,0,0]))
+>>> print(lpr.get_upper([1,0,0]))
 0.166
->>> print(lpr.getlower([0,1,0]))
+>>> print(lpr.get_lower([0,1,0]))
 0.333
->>> print(lpr.getupper([0,1,0]))
+>>> print(lpr.get_upper([0,1,0]))
 0.363
->>> print(lpr.getlower([0,0,1])) # not coherent!
+>>> print(lpr.get_lower([0,0,1])) # not coherent!
 0.471
->>> print(lpr.getupper([0,0,1])) # not coherent!
+>>> print(lpr.get_upper([0,0,1])) # not coherent!
 0.556
 >>> lpr = LowPrev(3)
->>> lpr.setlower([1,0,0], 0.181)
->>> lpr.setupper([1,0,0], 0.222)
->>> lpr.setlower([0,1,0], 0.333)
->>> lpr.setupper([0,1,0], 0.363)
->>> lpr.setlower([0,0,1], 0.444)
->>> lpr.setupper([0,0,1], 0.454)
->>> print(lpr.getlower([1,0,0])) # not coherent!
+>>> lpr.set_lower([1,0,0], 0.181)
+>>> lpr.set_upper([1,0,0], 0.222)
+>>> lpr.set_lower([0,1,0], 0.333)
+>>> lpr.set_upper([0,1,0], 0.363)
+>>> lpr.set_lower([0,0,1], 0.444)
+>>> lpr.set_upper([0,0,1], 0.454)
+>>> print(lpr.get_lower([1,0,0])) # not coherent!
 0.183
->>> print(lpr.getupper([1,0,0]))
+>>> print(lpr.get_upper([1,0,0]))
 0.222
->>> print(lpr.getlower([0,1,0]))
+>>> print(lpr.get_lower([0,1,0]))
 0.333
->>> print(lpr.getupper([0,1,0]))
+>>> print(lpr.get_upper([0,1,0]))
 0.363
->>> print(lpr.getlower([0,0,1]))
+>>> print(lpr.get_lower([0,0,1]))
 0.444
->>> print(lpr.getupper([0,0,1]))
+>>> print(lpr.get_upper([0,0,1]))
 0.454
