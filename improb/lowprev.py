@@ -42,6 +42,8 @@ class LowPrev:
     True
     >>> lpr.is_coherent()
     True
+    >>> lpr.is_linear()
+    False
     >>> print "%.6f" % lpr.get_lower([1,0,0,0])
     0.500000
     >>> print "%.6f" % lpr.get_upper([1,0,0,0])
@@ -161,9 +163,24 @@ class LowPrev:
                 return False
         return True
 
-    #def is_linear(self):
-    #    """Is the lower prevision a linear prevision?"""
-    #    raise NotImplementedError
+    def is_linear(self, tolerance=1e-6):
+        """Is the lower prevision a linear prevision? More precisely,
+        we check that the natural extension is linear on the linear
+        span of the domain of the lower prevision.
+        """
+        # first check if we are avoiding sure loss
+        if not self.is_avoiding_sure_loss():
+            return False
+        # we're avoiding sure loss, so check the natural extension
+        for gamble, lprev in self:
+            # implementation note: if upper - lower <= tolerance then
+            # obviously lprev is within tolerance of the lower and the
+            # upper as well, so we can keep lprev out of the picture
+            # when checking for linearity (of course, it's taken into
+            # account when calculating the natural extension)
+            if self.get_upper(gamble) - self.get_lower(gamble) > tolerance:
+                return False
+        return True
 
     #def optimize(self):
     #    """Removes redundant assessments."""

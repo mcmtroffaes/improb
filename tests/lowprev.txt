@@ -28,6 +28,8 @@ Frechet bounds
 0.300000
 >>> print "%.6f" % lpr.get_upper([0,1,0,0]) # min(0.6,0.7)
 0.600000
+>>> lpr.is_linear()
+True
 
 Avoiding sure loss
 ------------------
@@ -55,6 +57,18 @@ True
 >>> lpr.set_upper([2,4,6,0], 3) # coherence requires at least 5
 >>> lpr.is_coherent()
 False
+
+Linearity
+---------
+
+>>> from improb.lowprev import LowPrev
+>>> lpr = LowPrev(4)
+>>> lpr.set_lower([1,2,3,0], 2.5)
+>>> lpr.is_linear()
+False
+>>> lpr.set_upper([2,4,6,0], 5)
+>>> lpr.is_linear()
+True
 
 Another example
 ---------------
