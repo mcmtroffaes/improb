@@ -70,8 +70,8 @@ False
 >>> lpr.is_linear()
 True
 
-Another example
----------------
+Marginal Extension
+------------------
 
 Finding coherent lower and upper bounds for the oil catter example in
 
@@ -187,3 +187,18 @@ False
 >>> print(lpr_t.get_upper([lpr_s.get_upper(gamble_s)
 ...                        for lpr_s, gamble_s in zip(lpr_s_t, gamble_s_t)]))
 12.995135
+
+Maximality
+----------
+
+Example taken from:
+
+Matthias C. M. Troffaes. Decision making under uncertainty using
+imprecise probabilities. International Journal of Approximate
+Reasoning, 45(1):17-29, May 2007.
+
+>>> lpr = LowPrev(2)
+>>> lpr.set_lower([1, 0], 0.28)
+>>> lpr.set_upper([1, 0], 0.70)
+>>> lpr.get_maximal_gambles([[4, 0], [0, 4], [3, 2], [0.5, 3], [2.35, 2.35], [4.1, -0.3]])
+set([0, 1, 2, 4])
