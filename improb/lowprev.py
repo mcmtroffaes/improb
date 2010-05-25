@@ -35,6 +35,7 @@ class LowPrev:
     =======
 
     >>> import lowprev
+    >>> import decision
     >>> lpr = lowprev.LowPrev(4)
     >>> lpr.set_lower([4,2,1,0], 3)
     >>> lpr.set_upper([4,1,2,0], 3)
@@ -50,10 +51,10 @@ class LowPrev:
     0.750000
     >>> list(lpr)
     [([4.0, 2.0, 1.0, 0.0], 3.0), ([-4.0, -1.0, -2.0, 0.0], -3.0)]
-    >>> lpr.get_maximal_gambles([[1,0,0,0], [0,1,0,0], [0,0,1,0], [0,0,0,1]])
-    set([0, 1])
-    >>> lpr.get_maximal_gambles([[0,0,0,0], [0,1,0,0], [0,0,1,0], [0,0,0,1]])
-    set([1, 2, 3])
+    >>> list(decision.filter_maximal([[1,0,0,0], [0,1,0,0], [0,0,1,0], [0,0,0,1]], lpr.dominates))
+    [[1, 0, 0, 0], [0, 1, 0, 0]]
+    >>> list(decision.filter_maximal([[0,0,0,0], [0,1,0,0], [0,0,1,0], [0,0,0,1]], lpr.dominates))
+    [[0, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
     """
 
     def __init__(self, numstates = 2):
@@ -186,28 +187,11 @@ class LowPrev:
                 return False
         return True
 
-    def get_maximal_gambles(self, gambles, tolerance=1e-6):
-        """Return set of indices of all maximal gambles."""
-        maximal = set()
-        # convert iterator into list
-        gambles = list(gambles)
-        # TODO make this more efficient
-        for i, gamble in enumerate(gambles):
-            for other_gamble in gambles:
-                if (self.get_lower(
-                    [y - x for x, y in zip(gamble, other_gamble)])
-                    > tolerance):
-                    # gamble cannot be maximal, it is dominated by other_gamble
-                    break
-                if (all(y >= x for  x, y in zip(gamble, other_gamble))
-                    and any(y > x + tolerance
-                            for x, y in zip(gamble, other_gamble))):
-                    # pointwise dominance
-                    break
-            else:
-                # gamble not dominated by any gamble, so it is maximal
-                maximal.add(i)
-        return maximal
+    def dominates(self, gamble, other_gamble, tolerance=1e-6):
+        """Does gamble dominate other_gamble in lower prevision?"""
+        return (self.get_lower(
+                [x - y for x, y in zip(gamble, other_gamble)])
+                > tolerance)
 
     #def optimize(self):
     #    """Removes redundant assessments."""

@@ -3,11 +3,12 @@
 import doctest, unittest
 import improb
 import improb.lowprev
+import improb.decision
 
 # modules
 
 suite = unittest.TestSuite()
-for mod in [improb, improb.lowprev]:
+for mod in [improb, improb.lowprev, improb.decision]:
     try:
         suite.addTest(doctest.DocTestSuite(mod))
     except ValueError: # no tests
