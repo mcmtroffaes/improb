@@ -169,12 +169,12 @@ False
 0.471
 >>> print(lpr_s_t[2].get_upper([0,0,1])) # not coherent!
 0.556
->>> lpr_t.set_lower([0,0,1], 0.181)
->>> lpr_t.set_upper([0,0,1], 0.222)
+>>> lpr_t.set_lower([1,0,0], 0.181)
+>>> lpr_t.set_upper([1,0,0], 0.222)
 >>> lpr_t.set_lower([0,1,0], 0.333)
 >>> lpr_t.set_upper([0,1,0], 0.363)
->>> lpr_t.set_lower([1,0,0], 0.444)
->>> lpr_t.set_upper([1,0,0], 0.454)
+>>> lpr_t.set_lower([0,0,1], 0.444)
+>>> lpr_t.set_upper([0,0,1], 0.454)
 >>> lpr_t.is_coherent()
 False
 >>> print(lpr_t.get_lower([1,0,0])) # not coherent!

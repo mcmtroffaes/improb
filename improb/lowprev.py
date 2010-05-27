@@ -45,10 +45,10 @@ class LowPrev:
     True
     >>> lpr.is_linear()
     False
-    >>> print "%.6f" % lpr.get_lower([1,0,0,0])
-    0.500000
-    >>> print "%.6f" % lpr.get_upper([1,0,0,0])
-    0.750000
+    >>> print(lpr.get_lower([1,0,0,0]))
+    0.5
+    >>> print(lpr.get_upper([1,0,0,0]))
+    0.75
     >>> list(lpr)
     [([4.0, 2.0, 1.0, 0.0], 3.0), ([-4.0, -1.0, -2.0, 0.0], -3.0)]
     >>> list(decision.filter_maximal([[1,0,0,0], [0,1,0,0], [0,0,1,0], [0,0,0,1]], lpr.dominates))
