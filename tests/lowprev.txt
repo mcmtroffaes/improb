@@ -45,6 +45,27 @@ True
 >>> lpr.set_lower([3,2,1,0], 2.5)
 >>> lpr.is_avoiding_sure_loss()
 False
+>>> lpr_s_t = LowPrev(9)
+>>> lpr_s_t.set_lower([1,0,0,0,0,0,0,0,0], 0.500)
+>>> lpr_s_t.set_upper([1,0,0,0,0,0,0,0,0], 0.666)
+>>> lpr_s_t.set_lower([0,1,0,0,0,0,0,0,0], 0.222)
+>>> lpr_s_t.set_upper([0,1,0,0,0,0,0,0,0], 0.272)
+>>> lpr_s_t.set_lower([0,0,1,0,0,0,0,0,0], 0.125)
+>>> lpr_s_t.set_upper([0,0,1,0,0,0,0,0,0], 0.181)
+>>> lpr_s_t.set_lower([0,0,0,1,0,0,0,0,0], 0.222)
+>>> lpr_s_t.set_upper([0,0,0,1,0,0,0,0,0], 0.333)
+>>> lpr_s_t.set_lower([0,0,0,0,1,0,0,0,0], 0.363)
+>>> lpr_s_t.set_upper([0,0,0,0,1,0,0,0,0], 0.444)
+>>> lpr_s_t.set_lower([0,0,0,0,0,1,0,0,0], 0.250)
+>>> lpr_s_t.set_upper([0,0,0,0,0,1,0,0,0], 0.363)
+>>> lpr_s_t.set_lower([0,0,0,0,0,0,1,0,0], 0.111)
+>>> lpr_s_t.set_upper([0,0,0,0,0,0,1,0,0], 0.166)
+>>> lpr_s_t.set_lower([0,0,0,0,0,0,0,1,0], 0.333)
+>>> lpr_s_t.set_upper([0,0,0,0,0,0,0,1,0], 0.363)
+>>> lpr_s_t.set_lower([0,0,0,0,0,0,0,0,1], 0.454)
+>>> lpr_s_t.set_upper([0,0,0,0,0,0,0,0,1], 0.625)
+>>> lpr_s_t.is_avoiding_sure_loss()
+False
 
 Coherence
 ---------
@@ -148,12 +169,12 @@ False
 0.471
 >>> print(lpr_s_t[2].get_upper([0,0,1])) # not coherent!
 0.556
->>> lpr_t.set_lower([1,0,0], 0.181)
->>> lpr_t.set_upper([1,0,0], 0.222)
+>>> lpr_t.set_lower([0,0,1], 0.181)
+>>> lpr_t.set_upper([0,0,1], 0.222)
 >>> lpr_t.set_lower([0,1,0], 0.333)
 >>> lpr_t.set_upper([0,1,0], 0.363)
->>> lpr_t.set_lower([0,0,1], 0.444)
->>> lpr_t.set_upper([0,0,1], 0.454)
+>>> lpr_t.set_lower([1,0,0], 0.444)
+>>> lpr_t.set_upper([1,0,0], 0.454)
 >>> lpr_t.is_coherent()
 False
 >>> print(lpr_t.get_lower([1,0,0])) # not coherent!
