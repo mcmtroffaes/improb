@@ -17,6 +17,74 @@ Natural extension of a coherent lower prevision
 >>> print "%.6f" % lpr.get_upper([1,2,3])
 2.500000
 
+Another more complex example:
+
+>>> lpr_s = LowPrev(3)
+>>> lpr_s.set_lower([1,0,0], 0.4)
+>>> lpr_s.set_upper([1,0,0], 0.5)
+>>> lpr_s.set_lower([0,1,0], 0.3)
+>>> lpr_s.set_upper([0,1,0], 0.4)
+>>> lpr_s.set_lower([0,0,1], 0.2)
+>>> lpr_s.set_upper([0,0,1], 0.2)
+>>> lpr_s.is_coherent()
+True
+>>> print(lpr_s.get_lower([1,0,0]))
+0.4
+>>> print(lpr_s.get_upper([1,0,0]))
+0.5
+>>> print(lpr_s.get_lower([0,1,0]))
+0.3
+>>> print(lpr_s.get_upper([0,1,0]))
+0.4
+>>> print(lpr_s.get_lower([0,0,1]))
+0.2
+>>> print(lpr_s.get_upper([0,0,1]))
+0.2
+>>> print(lpr_s.get_lower([-7,5,20]))
+2.0
+>>> print(lpr_s.get_upper([-7,5,20]))
+3.2
+>>> lpr_t_s = [LowPrev(3), LowPrev(3), LowPrev(3)]
+>>> lpr_t_s[0].set_precise([1,0,0], 0.6)
+>>> lpr_t_s[0].set_precise([0,1,0], 0.3)
+>>> lpr_t_s[0].set_precise([0,0,1], 0.1)
+>>> lpr_t_s[0].is_coherent()
+True
+>>> lpr_t_s[1].set_precise([1,0,0], 0.3)
+>>> lpr_t_s[1].set_precise([0,1,0], 0.4)
+>>> lpr_t_s[1].set_precise([0,0,1], 0.3)
+>>> lpr_t_s[1].is_coherent()
+True
+>>> lpr_t_s[2].set_precise([1,0,0], 0.1)
+>>> lpr_t_s[2].set_precise([0,1,0], 0.4)
+>>> lpr_t_s[2].set_precise([0,0,1], 0.5)
+>>> lpr_t_s[2].is_coherent()
+True
+>>> # a gamble which is a function of s and t; s comes as first
+>>> # argument (in order to match lpr_t_s): gamble_t_s[s][t]
+>>> gamble_t_s = [[1,0,0], [1,0,0], [1,0,0]] # event t=0
+>>> # calculate its lower prevision by marginal extension
+>>> print(lpr_s.get_lower([lpr_t.get_lower(gamble_t)
+...                        for lpr_t, gamble_t in zip(lpr_t_s, gamble_t_s)]))
+0.38
+>>> print(lpr_s.get_upper([lpr_t.get_upper(gamble_t)
+...                        for lpr_t, gamble_t in zip(lpr_t_s, gamble_t_s)]))
+0.41
+>>> gamble_t_s = [[0,1,0], [0,1,0], [0,1,0]] # event t=1
+>>> print(lpr_s.get_lower([lpr_t.get_lower(gamble_t)
+...                        for lpr_t, gamble_t in zip(lpr_t_s, gamble_t_s)]))
+0.35
+>>> print(lpr_s.get_upper([lpr_t.get_upper(gamble_t)
+...                        for lpr_t, gamble_t in zip(lpr_t_s, gamble_t_s)]))
+0.36
+>>> gamble_t_s = [[0,0,1], [0,0,1], [0,0,1]] # event t=2
+>>> print(lpr_s.get_lower([lpr_t.get_lower(gamble_t)
+...                        for lpr_t, gamble_t in zip(lpr_t_s, gamble_t_s)]))
+0.24
+>>> print(lpr_s.get_upper([lpr_t.get_upper(gamble_t)
+...                        for lpr_t, gamble_t in zip(lpr_t_s, gamble_t_s)]))
+0.26
+
 Frechet bounds
 --------------
 
