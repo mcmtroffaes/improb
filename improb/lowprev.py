@@ -210,3 +210,70 @@ class LowPrev:
     #    """Disjunction (unanimity rule). Result is not necessarily
     #    coherent."""
     #    raise NotImplementedError
+
+class LinVac(LowPrev):
+    """Linear-vacuous mixture.
+
+    >>> lpr = LinVac([0.2, 0.4, 0.5], 0.1) # doctest: +ELLIPSIS
+    Traceback (most recent call last):
+        ...
+    ValueError: probabilities must sum to one
+
+    >>> lpr = LinVac([0.2, 0.3, 0.5], 0.1)
+    >>> print lpr.get_lower([1,0,0])
+    0.18
+    >>> print lpr.get_lower([0,1,0])
+    0.27
+    >>> print lpr.get_lower([0,0,1])
+    0.45
+    >>> print lpr.get_lower([3,2,1])
+    1.63
+    >>> print lpr.get_upper([3,2,1])
+    1.83
+
+    >>> lpr = LinVac([0.42, 0.08, 0.18, 0.32], 0.1)
+    >>> print lpr.get_lower([5,5,-5,-5])
+    -0.5
+    >>> print lpr.get_lower([5,5,-5,-5], set([0,2])) # (6 - 31 * 0.1) / (3 + 2 * 0.1)
+    0.90625
+    >>> print lpr.get_lower([-5,-5,5,5], set([1,3])) # (6 - 31 * 0.1) / (2 + 3 * 0.1) # doctest: +ELLIPSIS
+    1.260869...
+    >>> print lpr.get_lower([0,5,0,-5]) # -(6 + 19 * 0.1) / 5
+    -1.58
+    >>> print lpr.get_lower([0,-5,0,5]) # (6 - 31 * 0.1) / 5
+    0.58
+    """
+    def __init__(self, prob, epsilon):
+        tot = sum(prob)
+        if tot < 1 - 1e-6 or tot > 1 + 1e-6:
+            raise ValueError("probabilities must sum to one")
+        self._numstates = len(prob)
+        self._prob = prob
+        self._epsilon = epsilon
+        self._matrix = None
+
+    def __iter__(self):
+        raise NotImplementedError
+
+    def set_lower(self, gamble):
+        raise NotImplementedError
+
+    def set_upper(self, gamble):
+        raise NotImplementedError
+    
+    def set_precise(self, gamble):
+        raise NotImplementedError
+
+    def get_lower(self, gamble, event=None):
+        if event is None:
+            event = set(xrange(self._numstates))
+        return (
+            ((1 - self._epsilon) * sum(self._prob[i] * gamble[i] for i in event)
+             + self._epsilon * min(gamble[i] for i in event))
+            /
+            ((1 - self._epsilon) * sum(self._prob[i] for i in event)
+             + self._epsilon)
+            )
+
+    def get_upper(self, gamble, event=None):
+        return -self.get_lower([-value for value in gamble], event)
