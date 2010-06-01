@@ -311,6 +311,29 @@ False
 10.506248
 >>> print(lpr.get_upper(gamble_s_t))
 12.995135
+>>> # maximality
+>>> # XXX hackish way to check for dominance in this case
+>>> # XXX because lpr.dominates is broken due to other hacks above
+>>> def dominates(gamble, other_gamble, tolerance=1e-6):
+...     return (lpr.get_lower(
+...             [[x - y for x, y in zip(xx, yy)]
+...              for xx, yy in zip(gamble, other_gamble)])
+...             > tolerance)
+>>> from improb.decision import filter_maximal
+>>> list(filter_maximal([
+...     [[-1,-1,-1],[-1,-1,-1],[-1,-1,-1]],
+...     [[-8, 4,19],[-1,-1,-1],[-1,-1,-1]],
+...     [[-1,-1,-1],[-8, 4,19],[-1,-1,-1]],
+...     [[-8, 4,19],[-8, 4,19],[-1,-1,-1]],
+...     [[-1,-1,-1],[-1,-1,-1],[-8, 4,19]],
+...     [[-8, 4,19],[-1,-1,-1],[-8, 4,19]],
+...     [[-1,-1,-1],[-8, 4,19],[-8, 4,19]],
+...     [[-8, 4,19],[-8, 4,19],[-8, 4,19]],
+...     [[ 0, 0, 0],[ 0, 0, 0],[ 0, 0, 0]],
+...     [[-7, 5,20],[-7, 5,20],[-7, 5,20]],
+...     ],
+...     dominates))
+[[[-7, 5, 20], [-7, 5, 20], [-7, 5, 20]]]
 
 Maximality
 ----------
