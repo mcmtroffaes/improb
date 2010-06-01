@@ -272,36 +272,44 @@ False
 10.073
 >>> print(lpr_s_t[2].get_lower(minus_gamble_s))
 -12.008
+>>> # calculate its lower prevision by marginal extension
+>>> # XXX currently, using this hackish way to set up the marginal extension
+>>> # XXX will replace this with something better at some point...
+>>> lpr = LowPrev(9)
+>>> def get_lower(gamble_s_t):
+...     return lpr_t.get_lower([lpr_s.get_lower(gamble_s)
+...                             for lpr_s, gamble_s
+...                             in zip(lpr_s_t, gamble_s_t)])
+>>> def get_upper(gamble_s_t):
+...     return lpr_t.get_upper([lpr_s.get_upper(gamble_s)
+...                             for lpr_s, gamble_s
+...                             in zip(lpr_s_t, gamble_s_t)])
+>>> lpr.get_lower = get_lower
+>>> lpr.get_upper = get_upper
 >>> # a gamble which is a function of s and t; t comes as first
 >>> # argument (in order to match lpr_s_t): gamble_s_t[t][s]
 >>> gamble_s_t = [[-7,5,20], [-7,5,20], [-7,5,20]]
->>> # calculate its lower prevision by marginal extension
->>> print(lpr_t.get_lower([lpr_s.get_lower(gamble_s)
-...                        for lpr_s, gamble_s in zip(lpr_s_t, gamble_s_t)]))
+>>> # do the calculations
+>>> print(lpr.get_lower(gamble_s_t))
 5.846906
->>> print(lpr_t.get_upper([lpr_s.get_upper(gamble_s)
-...                        for lpr_s, gamble_s in zip(lpr_s_t, gamble_s_t)]))
+>>> print(lpr.get_upper(gamble_s_t))
 8.486768
 >>> # another gamble which is a function of s and t
 >>> gamble_s_t = [[-7,5,20], [0,0,0], [0,0,0]]
 >>> # calculate its lower prevision by marginal extension
->>> print(lpr_t.get_lower([lpr_s.get_lower(gamble_s)
-...                        for lpr_s, gamble_s in zip(lpr_s_t, gamble_s_t)]))
+>>> print(lpr.get_lower(gamble_s_t))
 -0.213342
 >>> # another gamble which is a function of s and t
 >>> gamble_s_t = [[7,-5,-20], [0,0,0], [0,0,0]]
 >>> # calculate its lower prevision by marginal extension
->>> print(lpr_t.get_lower([lpr_s.get_lower(gamble_s)
-...                        for lpr_s, gamble_s in zip(lpr_s_t, gamble_s_t)]))
+>>> print(lpr.get_lower(gamble_s_t))
 -0.255522
 >>> # another gamble which is a function of s and t
 >>> gamble_s_t = [[-1,-1,-1], [-1,11,26], [-1,11,26]]
 >>> # calculate its lower prevision by marginal extension
->>> print(lpr_t.get_lower([lpr_s.get_lower(gamble_s)
-...                        for lpr_s, gamble_s in zip(lpr_s_t, gamble_s_t)]))
+>>> print(lpr.get_lower(gamble_s_t))
 10.506248
->>> print(lpr_t.get_upper([lpr_s.get_upper(gamble_s)
-...                        for lpr_s, gamble_s in zip(lpr_s_t, gamble_s_t)]))
+>>> print(lpr.get_upper(gamble_s_t))
 12.995135
 
 Maximality
