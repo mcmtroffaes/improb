@@ -17,6 +17,7 @@
 
 """A module for working with lower previsions."""
 
+import itertools
 import pycddlib
 
 class LowPrev:
@@ -193,6 +194,32 @@ class LowPrev:
                 [x - y for x, y in zip(gamble, other_gamble)])
                 > tolerance)
 
+    def get_mobius_inverse(self):
+        """Return the mobius inverse of the lower probability determined by
+        this lower prevision. This usually only makes sense for completely
+        monotone lower previsions.
+
+        >>> lpr = LowPrev(2)
+        >>> lpr.set_lower([1,0], 0.3)
+        >>> lpr.set_lower([0,1], 0.2)
+        >>> mass = lpr.get_mobius_inverse()
+        >>> print(mass[frozenset()])
+        0.0
+        >>> print(mass[frozenset([0])])
+        0.3
+        >>> print(mass[frozenset([1])])
+        0.2
+        >>> print(mass[frozenset([0,1])])
+        0.5
+        """
+        set_ = set(range(self._numstates))
+        map_ = {}
+        for event in subsets(set_):
+            map_[event] = self.get_lower(
+                [1 if i in event else 0
+                for i in range(self._numstates)])
+        return mobius_inverse(map_, set_)
+
     #def optimize(self):
     #    """Removes redundant assessments."""
     #    raise NotImplementedError
@@ -277,3 +304,77 @@ class LinVac(LowPrev):
 
     def get_upper(self, gamble, event=None):
         return -self.get_lower([-value for value in gamble], event)
+
+def subsets(set_):
+    """Return iterator to all subsets of an event.
+
+    >>> [list(subset) for subset in subsets(set([2,4,5]))]
+    [[], [2], [4], [5], [2, 4], [2, 5], [4, 5], [2, 4, 5]]
+    """
+    for subset_size in range(len(set_) + 1):
+        for subset in itertools.combinations(set_, subset_size):
+            yield frozenset(subset)
+
+def mobius_inverse(map_, set_):
+    """Calculate the mobius inverse of a mapping.
+
+    >>> map_ = {}
+    >>> map_[frozenset()] = 0.0
+    >>> map_[frozenset([0])] = 0.25
+    >>> map_[frozenset([1])] = 0.25
+    >>> map_[frozenset([0,1])] = 1.0
+    >>> map_inv = mobius_inverse(map_, [0,1])
+    >>> map_inv[frozenset()]
+    0.0
+    >>> map_inv[frozenset([0])]
+    0.25
+    >>> map_inv[frozenset([1])]
+    0.25
+    >>> map_inv[frozenset([0,1])]
+    0.5
+    """
+    inv_map = {}
+    for event in subsets(set_):
+        inv_map[event] = sum(
+            ((-1) ** len(event - subevent)) * map_[subevent]
+            for subevent in subsets(event))
+    return inv_map
+
+class BeliefFunction(LowPrev):
+    def __init__(self, mass=None, lowprob=None, numstates=None):
+        set_ = set(range(numstates))
+        self._mass = {}
+        if mass:
+            for event in subsets(set_):
+                self._mass[event] = mass[event]
+        elif lowprob:
+            self._mass = mobius_inverse(lowprob, set_)
+        else:
+            raise ValueError("must specify mass or lowprob")
+        self._numstates = numstates
+        self._matrix = None
+
+    def get_lower(self, gamble, event=None):
+        """Get lower prevision.
+
+        >>> lowprob = {}
+        >>> lowprob[frozenset()] = 0.0
+        >>> lowprob[frozenset([0])] = 0.3
+        >>> lowprob[frozenset([1])] = 0.2
+        >>> lowprob[frozenset([0,1])] = 1.0
+        >>> lpr = BeliefFunction(lowprob=lowprob, numstates=2)
+        >>> print(lpr.get_lower([1,0]))
+        0.3
+        >>> print(lpr.get_lower([0,1]))
+        0.2
+        >>> print(lpr.get_lower([4,9])) # 0.8 * 4 + 0.2 * 9
+        5.0
+        >>> print(lpr.get_lower([5,1])) # 0.3 * 5 + 0.7 * 1
+        2.2
+        """
+        return sum(
+            (self._mass[event] * min(gamble[i] for i in event)
+             for event in subsets(set(range(self._numstates)))
+             if event),
+            0)
+
