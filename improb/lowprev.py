@@ -17,8 +17,11 @@
 
 """A module for working with lower previsions."""
 
+from __future__ import division
+
 import itertools
 import pycddlib
+import random
 
 class LowPrev:
     """A class for lower previsions.
@@ -237,6 +240,31 @@ class LowPrev:
     #    """Disjunction (unanimity rule). Result is not necessarily
     #    coherent."""
     #    raise NotImplementedError
+
+def random_lowprob(numstates=2, division=None):
+    """Generate a random coherent lower probability."""
+    # for now this is just a pretty dumb method
+    events = [list(event)
+              for event in itertools.product([0, 1], repeat=numstates)]
+    while True:
+        lpr = LowPrev(numstates)
+        for event in events:
+            if sum(event) == 0:
+                continue
+            if sum(event) == numstates:
+                continue
+            if division is None:
+                # a number between 0 and 1 / sum(event)
+                lpr.set_lower(event, random.random() / sum(event))
+            else:
+                # a number between 0 and 1 / sum(event), but discretized
+                lpr.set_lower(event,
+                              random.randint(0,
+                                             division * sum(event)
+                                             // numstates)
+                              / division)
+        if lpr.is_avoiding_sure_loss():
+           return lpr
 
 class LinVac(LowPrev):
     """Linear-vacuous mixture.

@@ -6,21 +6,14 @@ lower probability cannot be used to calculate its natural extension.
 
 >>> import itertools
 >>> import random
->>> from improb.lowprev import LowPrev, BeliefFunction
+>>> from improb.lowprev import LowPrev, BeliefFunction, random_lowprob
 >>> random.seed(10)
 >>> n = 4
 >>> events = [list(event) for event in itertools.product([0, 1], repeat=n)]
 >>> gambles = [[random.randint(0,2) for i in range(n)] for j in range(20)]
 >>> for i in range(100):
 ...     # construct a coherent lower probability
-...     while True:
-...         lpr = LowPrev(n)
-...         for event in events:
-...             if sum(event) == 0: continue
-...             if sum(event) == n: continue
-...             lpr.set_lower(event, random.randint(0, 10 * sum(event) // n) * 0.1)
-...         if lpr.is_avoiding_sure_loss():
-...            break
+...     lpr = random_lowprob(numstates=n, division=10)
 ...     # construct belief function from mobius inverse
 ...     bel = BeliefFunction(mass=lpr.get_mobius_inverse(), numstates=n)
 ...     # check for incoherence
@@ -30,7 +23,7 @@ lower probability cannot be used to calculate its natural extension.
 ...                 print("P_({0})={1:g}".format(event, lpr.get_lower(event)))
 ...             for event in events:
 ...                 set_ = frozenset(i for i in range(n) if event[i])
-...                 print("m({0})={1:g}".format(event, bel._mass[set_]))
+...                 print("m({0})={1:g}".format(event, bel._mass[set_] if abs(bel._mass[set_]) > 1e-10 else 0))
 ...             print("E_P({0})={1:g}".format(gamble, lpr.get_lower(gamble)))
 ...             print("E_m({0})={1:g}".format(gamble, bel.get_lower(gamble)))
 ...             break
@@ -91,14 +84,7 @@ coherent lower probabilities on such space are 2-monotone).
 >>> gambles = [[random.randint(0,5) for i in range(n)] for j in range(20)]
 >>> for i in range(1000): # increase n if one wishes...
 ...     # construct a coherent lower probability
-...     while True:
-...         lpr = LowPrev(n)
-...         for event in events:
-...             if sum(event) == 0: continue
-...             if sum(event) == n: continue
-...             lpr.set_lower(event, random.randint(0, 10 * sum(event) // n) * 0.1)
-...         if lpr.is_avoiding_sure_loss():
-...            break
+...     lpr = random_lowprob(numstates=n, division=10)
 ...     # construct belief function from mobius inverse
 ...     bel = BeliefFunction(mass=lpr.get_mobius_inverse(), numstates=n)
 ...     # check for incoherence
@@ -108,7 +94,7 @@ coherent lower probabilities on such space are 2-monotone).
 ...                 print("P_({0})={1:g}".format(event, lpr.get_lower(event)))
 ...             for event in events:
 ...                 set_ = frozenset(i for i in range(n) if event[i])
-...                 print("m({0})={1:g}".format(event, bel._mass[set_]))
+...                 print("m({0})={1:g}".format(event, bel._mass[set_] if abs(bel._mass[set_]) > 1e-10 else 0))
 ...             print("E_P({0})={1:g}".format(gamble, lpr.get_lower(gamble)))
 ...             print("E_m({0})={1:g}".format(gamble, bel.get_lower(gamble)))
 ...             break
