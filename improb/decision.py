@@ -17,7 +17,7 @@
 
 """A module with utility functions for decision making."""
 
-def filter_maximal(set_, dominates):
+def filter_maximal(set_, dominates, *args):
     """Filter elements that are maximal according to the given
     partial ordering.
 
@@ -37,13 +37,13 @@ def filter_maximal(set_, dominates):
         element = elements.pop(0)
         # compare element against other maximal elements
         for other_element in maximal_elements:
-            if dominates(other_element, element):
+            if dominates(other_element, element, *args):
                 # not maximal
                 break
         else:
             # compare element against remaining possibly maximal elements
             for other_i, other_element in enumerate(elements):
-                if dominates(other_element, element):
+                if dominates(other_element, element, *args):
                     # not maximal
                     break
             else:
@@ -51,8 +51,9 @@ def filter_maximal(set_, dominates):
                 yield element
                 maximal_elements.append(element)
 
-def dominates_pointwise(gamble, other_gamble, tolerance=1e-6):
+def dominates_pointwise(gamble, other_gamble, event=None, tolerance=1e-6):
     """Does gamble dominate other_gamble point-wise?"""
+    # XXX we're ignoring the event for now
     return (all(x >= y for  x, y in zip(gamble, other_gamble))
             and any(x > y + tolerance
                     for x, y in zip(gamble, other_gamble)))

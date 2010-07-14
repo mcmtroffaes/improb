@@ -17,6 +17,7 @@ for mod in [improb, improb.lowprev, improb.decision]:
 # examples
 
 suite.addTest(doctest.DocFileSuite('examples/frechet.txt'))
+suite.addTest(doctest.DocFileSuite('examples/subtreeperfectness.txt'))
 suite.addTest(doctest.DocFileSuite('examples/mobius.txt'))
 
 # regression tests

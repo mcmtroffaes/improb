@@ -61,7 +61,7 @@ class LowPrev:
     [[0, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
     """
 
-    def __init__(self, numstates = 2):
+    def __init__(self, numstates=2):
         """Construct vacuous lower prevision on possibility space of given
         size.
 
@@ -113,7 +113,7 @@ class LowPrev:
             row = self._matrix[rownum]
             yield row[1:], -row[0]
 
-    def get_lower(self, gamble):
+    def get_lower(self, gamble, event=None):
         """Return the lower expectation for C{gamble} via natural extension.
 
         @param gamble: The gamble whose lower expectation to find.
@@ -121,6 +121,8 @@ class LowPrev:
         @return: The lower bound for this expectation, i.e. the natural
             extension of the gamble.
         """
+        if event is not None:
+            raise NotImplementedError
         self._matrix.set_lp_obj_type(pycddlib.LPOBJ_MIN)
         self._matrix.set_lp_obj_func([0] + gamble)
         #print self._matrix # DEBUG
@@ -134,7 +136,7 @@ class LowPrev:
         else:
             raise RuntimeError("BUG: unexpected status (%i)" % linprog.status)
 
-    def get_upper(self, gamble):
+    def get_upper(self, gamble, event=None):
         """Return the upper expectation for C{gamble} via natural extension.
 
         @param gamble: The gamble whose upper expectation to find.
@@ -142,7 +144,7 @@ class LowPrev:
         @return: The upper bound for this expectation, i.e. the natural
             extension of the gamble.
         """
-        return -self.get_lower([-value for value in gamble])
+        return -self.get_lower([-value for value in gamble], event)
 
     #def getcredalset(self):
     #    """Find credal set corresponding to this lower prevision."""
@@ -191,10 +193,10 @@ class LowPrev:
                 return False
         return True
 
-    def dominates(self, gamble, other_gamble, tolerance=1e-6):
+    def dominates(self, gamble, other_gamble, event=None, tolerance=1e-6):
         """Does gamble dominate other_gamble in lower prevision?"""
         return (self.get_lower(
-                [x - y for x, y in zip(gamble, other_gamble)])
+                [x - y for x, y in zip(gamble, other_gamble)], event)
                 > tolerance)
 
     def get_mobius_inverse(self):
@@ -400,9 +402,11 @@ class BeliefFunction(LowPrev):
         >>> print(lpr.get_lower([5,1])) # 0.3 * 5 + 0.7 * 1
         2.2
         """
+        if event is not None:
+            raise NotImplementedError
         return sum(
-            (self._mass[event] * min(gamble[i] for i in event)
-             for event in subsets(set(range(self._numstates)))
-             if event),
+            (self._mass[event_] * min(gamble[i] for i in event_)
+             for event_ in subsets(set(range(self._numstates)))
+             if event_),
             0)
 

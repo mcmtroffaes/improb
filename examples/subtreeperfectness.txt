@@ -1,0 +1,91 @@
+Constructing a subtree imperfect decision tree
+==============================================
+
+>>> import itertools
+>>> import random
+>>> from improb.lowprev import LinVac
+>>> from improb.decision import filter_maximal
+>>> random.seed(10)
+>>> n1 = 4
+>>> n2 = 3
+>>> ndec = 3
+>>> pspace = [tuple(omega)
+...           for omega in itertools.product(list(range(n1)), list(range(n2)))]
+>>> for i in range(100):
+...     # construct a linear vacuous mixture
+...     prob = [random.random() for j in range(len(pspace))]
+...     tot = sum(prob)
+...     prob = [p / tot for p in prob]
+...     lpr = LinVac(prob, random.random() / 2.0)
+...     # construct gambles:
+...     # gambles[w1][d][w2] gives the gain of the w1-d-w2 path
+...     gambles = [[[random.random() for w2 in range(n2)]
+...                 for d in range(ndec)]
+...                for w1 in range(n1)]
+...     # construct strategies:
+...     # strats[i][w1] gives decision of i'th strategy, after observing w1
+...     strats = [tuple(strat)
+...               for strat in itertools.product(list(range(ndec)), repeat=n1)]
+...     # construct normal form gambles:
+...     # normgambles[strat][omega] gives the gain of the i'th strategy
+...     normgambles = dict(
+...         (strat, dict(
+...             (omega, gambles[omega[0]][strat[omega[0]]][omega[1]])
+...             for omega in pspace))
+...         for strat in strats)
+...     # construct extensive form gambles:
+...     # extgambles[w1][d][omega] gives the gain of decision d after observing w1, as a function of omega
+...     extgambles = [[dict((omega, gambles[w1][d][omega[1]] if omega[0] == w1 else 0)
+...                         for omega in pspace)
+...                    for d in range(ndec)]
+...                   for w1 in range(n1)]
+...     #print(gambles)
+...     #print(strats)
+...     #print([[normgambles[strat][omega] for omega in pspace] for strat in strats])
+...     #print([[[extgambles[w1][d][omega] for omega in pspace] for d in range(ndec)] for w1 in range(n1)])
+...     # calculate normal form solution of subtrees after observing w1
+...     local = {}
+...     for w1 in range(n1):
+...         event = set(i for i, omega in enumerate(pspace) if omega[0] == w1)
+...         local[w1] = list(filter_maximal([[extgambles[w1][d][omega] for omega in pspace] for d in range(ndec)], lpr.dominates, event))
+...         #print(w1, event)
+...         #print(local[w1])
+...     # calculate full solution by combining all local solutions
+...     normlocal = set()
+...     for localgambles in itertools.product(*[local[w1] for w1 in range(n1)]):
+...         #print localgambles
+...         normlocal.add(tuple(sum(localgamble[i] for localgamble in localgambles) for i in range(len(pspace))))
+...     #print(normlocal)
+...     # calculate full normal form solution
+...     norm = set(filter_maximal([tuple(normgambles[strat][omega] for omega in pspace) for strat in strats], lpr.dominates))
+...     #print(norm)
+...     # calculate corresponding strategies
+...     localstrats = set()
+...     normstrats = set()
+...     for strat in strats:
+...         normgamble = tuple(normgambles[strat][omega] for omega in pspace)
+...         if normgamble in norm:
+...             normstrats.add(strat)
+...         if normgamble in normlocal:
+...             localstrats.add(strat)
+...     # convert normal form to extensive form
+...     normstrats2 = set(itertools.product(*[set(strat[w1] for strat in normstrats) for w1 in range(n1)]))
+...     # check if solutions differ
+...     if localstrats != normstrats:
+...         for w1 in range(n1):
+...             for d in range(ndec):
+...                 print(
+...                     "w1={0}, d={1}: ".format(w1, d)
+...                     + " ".join("{0:.2f}".format(x) for x in gambles[w1][d]))
+...         print("p=" + " ".join("{0:.2f}".format(p) for p in lpr._prob))
+...         print("eps={0:.2f}".format(lpr._epsilon))
+...         print(sorted(normstrats))
+...         print(sorted(localstrats))
+...         print(sorted(localstrats - normstrats))
+...         print(sorted(normstrats - localstrats)) # should be empty!
+...         #print(sorted(normstrats2))
+...         break
+...     # stronger violation... never occurs??
+...     #if localstrats != normstrats2:
+... else:
+...     raise RuntimeError("no counterexample found")
