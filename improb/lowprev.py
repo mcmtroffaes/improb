@@ -106,7 +106,7 @@ class LowPrev:
         @param lprev: The lower bound for this expectation.
         @type lprev: float/int
         """
-        self._matrix.append_rows([[-lprev] + gamble])
+        self._matrix.append_rows([[-lprev] + [gamble[w] for w in self.pspace]])
 
     def set_upper(self, gamble, uprev):
         """Constrain the expectation of C{gamble} to be at most C{uprev}.
@@ -116,7 +116,7 @@ class LowPrev:
         @param uprev: The upper bound for this expectation.
         @type uprev: float/int
         """
-        self._matrix.append_rows([[uprev] + [-value for value in gamble]])
+        self._matrix.append_rows([[uprev] + [-gamble[w] for w in self.pspace]])
 
     def set_precise(self, gamble, prev):
         """Constrain the expectation of C{gamble} to be exactly C{prev}.
@@ -158,14 +158,14 @@ class LowPrev:
                 raise RuntimeError("BUG: unexpected status (%i)" % linprog.status)
         else:
             lowprev_event = self.get_lower(
-                [1 if w in event else 0 for w in self.pspace])
+                dict((w, 1 if w in event else 0) for w in self.pspace))
             if lowprev_event < tolerance:
                 raise ZeroDivisionError(
                     "cannot condition on event with zero lower probability")
             return scipy.optimize.brentq(
                 f=lambda mu: self.get_lower(
-                    [gamble[w] - mu if w in event else 0
-                     for w in self.pspace]),
+                    dict((w, gamble[w] - mu if w in event else 0)
+                         for w in self.pspace)),
                 a=min(gamble[w] for w in event),
                 b=max(gamble[w] for w in event))
 
@@ -279,27 +279,31 @@ class LowPrev:
     #    coherent."""
     #    raise NotImplementedError
 
-def random_lowprob(numstates=2, division=None):
+def random_lowprob(pspace=None, division=None, zero=True):
     """Generate a random coherent lower probability."""
     # for now this is just a pretty dumb method
+    pspace = _make_tuple(pspace)
     events = [list(event)
-              for event in itertools.product([0, 1], repeat=numstates)]
+              for event in itertools.product([0, 1], repeat=len(pspace))]
     while True:
-        lpr = LowPrev(numstates)
+        lpr = LowPrev(pspace)
         for event in events:
             if sum(event) == 0:
                 continue
-            if sum(event) == numstates:
+            if sum(event) == len(pspace):
                 continue
+            gamble = dict((w, event[i]) for i, w in enumerate(pspace))
             if division is None:
-                # a number between 0 and 1 / sum(event)
-                lpr.set_lower(event, random.random() / sum(event))
+                # a number between 0 and sum(event) / len(pspace)
+                lpr.set_lower(gamble,
+                              random.random() * sum(event) / len(pspace))
             else:
-                # a number between 0 and 1 / sum(event), but discretized
-                lpr.set_lower(event,
-                              random.randint(0,
-                                             division * sum(event)
-                                             // numstates)
+                # a number between 0 and sum(event) / len(pspace)
+                # but discretized
+                lpr.set_lower(gamble,
+                              random.randint(0 if zero else 1,
+                                             (division * sum(event))
+                                             // len(pspace))
                               / division)
         if lpr.is_avoiding_sure_loss():
            return lpr
