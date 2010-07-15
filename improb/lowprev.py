@@ -22,6 +22,7 @@ from __future__ import division
 import itertools
 import pycddlib
 import random
+import scipy.optimize
 
 class LowPrev:
     """A class for lower previsions.
@@ -113,7 +114,7 @@ class LowPrev:
             row = self._matrix[rownum]
             yield row[1:], -row[0]
 
-    def get_lower(self, gamble, event=None):
+    def get_lower(self, gamble, event=None, tolerance=1e-6):
         """Return the lower expectation for C{gamble} via natural extension.
 
         @param gamble: The gamble whose lower expectation to find.
@@ -121,20 +122,31 @@ class LowPrev:
         @return: The lower bound for this expectation, i.e. the natural
             extension of the gamble.
         """
-        if event is not None:
-            raise NotImplementedError
-        self._matrix.set_lp_obj_type(pycddlib.LPOBJ_MIN)
-        self._matrix.set_lp_obj_func([0] + gamble)
-        #print self._matrix # DEBUG
-        linprog = pycddlib.LinProg(self._matrix)
-        linprog.solve()
-        #print linprog # DEBUG
-        if linprog.status == pycddlib.LPSTATUS_OPTIMAL:
-            return linprog.opt_value
-        elif linprog.status == pycddlib.LPSTATUS_INCONSISTENT:
-            raise ValueError("lower prevision incurs sure loss")
+        if event is None:
+            self._matrix.set_lp_obj_type(pycddlib.LPOBJ_MIN)
+            self._matrix.set_lp_obj_func([0] + gamble)
+            #print self._matrix # DEBUG
+            linprog = pycddlib.LinProg(self._matrix)
+            linprog.solve()
+            #print linprog # DEBUG
+            if linprog.status == pycddlib.LPSTATUS_OPTIMAL:
+                return linprog.opt_value
+            elif linprog.status == pycddlib.LPSTATUS_INCONSISTENT:
+                raise ValueError("lower prevision incurs sure loss")
+            else:
+                raise RuntimeError("BUG: unexpected status (%i)" % linprog.status)
         else:
-            raise RuntimeError("BUG: unexpected status (%i)" % linprog.status)
+            lowprev_event = self.get_lower(
+                [1 if i in event else 0 for i in range(self._numstates)])
+            if lowprev_event < tolerance:
+                raise ZeroDivisionError(
+                    "cannot condition on event with zero lower probability")
+            return scipy.optimize.brentq(
+                f=lambda mu: self.get_lower(
+                    [gamble[i] - mu if i in event else 0
+                     for i in range(self._numstates)]),
+                a=min(gamble[i] for i in event),
+                b=max(gamble[i] for i in event))
 
     def get_upper(self, gamble, event=None):
         """Return the upper expectation for C{gamble} via natural extension.
