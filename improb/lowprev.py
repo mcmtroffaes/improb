@@ -24,6 +24,15 @@ import pycddlib
 import random
 import scipy.optimize
 
+def _make_tuple(pspace):
+    """Convert argument into a tuple, useful for possibility space."""
+    if pspace is None:
+        return (0, 1)
+    elif isinstance(pspace, int):
+        return tuple(xrange(pspace))
+    else:
+        return tuple(pspace)
+
 class LowPrev:
     """A class for lower previsions.
 
@@ -62,20 +71,32 @@ class LowPrev:
     [[0, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
     """
 
-    def __init__(self, numstates=2):
+    def __init__(self, pspace=None):
         """Construct vacuous lower prevision on possibility space of given
         size.
 
-        @param numstates: The number of states.
-        @type numstates: int
+        @param pspace: The possibility space.
+        @type pspace: int, or iterable
         """
-        self._numstates = numstates
-        self._matrix = pycddlib.Matrix([[+1] + [-1] * numstates,
-                                        [-1] + [+1] * numstates]
+        self._pspace = _make_tuple(pspace)
+        self._matrix = pycddlib.Matrix([[+1] + [-1] * self.num_states,
+                                        [-1] + [+1] * self.num_states]
                                         +
                                         [[0] + [1 if i == j else 0
-                                                for i in xrange(numstates)]
-                                         for j in xrange(numstates)])
+                                                for i in self.states]
+                                         for j in self.states])
+
+    @property
+    def pspace(self):
+        return self._pspace
+
+    @property
+    def num_states(self):
+        return len(self._pspace)
+
+    @property
+    def states(self):
+        return xrange(self.num_states)
 
     def set_lower(self, gamble, lprev):
         """Constrain the expectation of C{gamble} to be at least C{lprev}.
@@ -110,7 +131,7 @@ class LowPrev:
 
     def __iter__(self):
         """Yield tuples (gamble, lprev)."""
-        for rownum in xrange(self._numstates + 2, self._matrix.rowsize):
+        for rownum in xrange(self.num_states + 2, self._matrix.rowsize):
             row = self._matrix[rownum]
             yield row[1:], -row[0]
 
@@ -124,7 +145,7 @@ class LowPrev:
         """
         if event is None:
             self._matrix.set_lp_obj_type(pycddlib.LPOBJ_MIN)
-            self._matrix.set_lp_obj_func([0] + gamble)
+            self._matrix.set_lp_obj_func([0] + [gamble[w] for w in self.pspace])
             #print self._matrix # DEBUG
             linprog = pycddlib.LinProg(self._matrix)
             linprog.solve()
@@ -137,16 +158,16 @@ class LowPrev:
                 raise RuntimeError("BUG: unexpected status (%i)" % linprog.status)
         else:
             lowprev_event = self.get_lower(
-                [1 if i in event else 0 for i in range(self._numstates)])
+                [1 if w in event else 0 for w in self.pspace])
             if lowprev_event < tolerance:
                 raise ZeroDivisionError(
                     "cannot condition on event with zero lower probability")
             return scipy.optimize.brentq(
                 f=lambda mu: self.get_lower(
-                    [gamble[i] - mu if i in event else 0
-                     for i in range(self._numstates)]),
-                a=min(gamble[i] for i in event),
-                b=max(gamble[i] for i in event))
+                    [gamble[w] - mu if w in event else 0
+                     for w in self.pspace]),
+                a=min(gamble[w] for w in event),
+                b=max(gamble[w] for w in event))
 
     def get_upper(self, gamble, event=None):
         """Return the upper expectation for C{gamble} via natural extension.
@@ -156,7 +177,7 @@ class LowPrev:
         @return: The upper bound for this expectation, i.e. the natural
             extension of the gamble.
         """
-        return -self.get_lower([-value for value in gamble], event)
+        return -self.get_lower(dict((w, -gamble[w]) for w in self.pspace), event)
 
     #def getcredalset(self):
     #    """Find credal set corresponding to this lower prevision."""
@@ -169,7 +190,7 @@ class LowPrev:
             otherwise.
         """
         try:
-            self.get_lower([0] * self._numstates)
+            self.get_lower(dict((w, 0) for w in self.pspace))
         except ValueError:
             return False
         return True
@@ -207,8 +228,11 @@ class LowPrev:
 
     def dominates(self, gamble, other_gamble, event=None, tolerance=1e-6):
         """Does gamble dominate other_gamble in lower prevision?"""
-        return (self.get_lower(
-                [x - y for x, y in zip(gamble, other_gamble)], event)
+        return (
+            self.get_lower(
+                dict((w, gamble[w] - other_gamble[w])
+                     for w in self.pspace),
+                event)
                 > tolerance)
 
     def get_mobius_inverse(self):
@@ -229,12 +253,12 @@ class LowPrev:
         >>> print(mass[frozenset([0,1])])
         0.5
         """
-        set_ = set(range(self._numstates))
+        set_ = set(self.pspace)
         map_ = {}
         for event in subsets(set_):
             map_[event] = self.get_lower(
-                [1 if i in event else 0
-                for i in range(self._numstates)])
+                dict((w, 1 if w in event else 0)
+                     for w in self.pspace))
         return mobius_inverse(map_, set_)
 
     #def optimize(self):
@@ -316,7 +340,10 @@ class LinVac(LowPrev):
         tot = sum(prob)
         if tot < 1 - 1e-6 or tot > 1 + 1e-6:
             raise ValueError("probabilities must sum to one")
-        self._numstates = len(prob)
+        if isinstance(prob, (list, tuple)):
+            self._pspace = tuple(xrange(len(prob)))
+        elif isinstance(prob, dict):
+            self._pspace = tuple(w for w in prob)
         self._prob = prob
         self._epsilon = epsilon
         self._matrix = None
@@ -335,17 +362,14 @@ class LinVac(LowPrev):
 
     def get_lower(self, gamble, event=None):
         if event is None:
-            event = set(xrange(self._numstates))
+            event = set(self.pspace)
         return (
-            ((1 - self._epsilon) * sum(self._prob[i] * gamble[i] for i in event)
-             + self._epsilon * min(gamble[i] for i in event))
+            ((1 - self._epsilon) * sum(self._prob[w] * gamble[w] for w in event)
+             + self._epsilon * min(gamble[w] for w in event))
             /
-            ((1 - self._epsilon) * sum(self._prob[i] for i in event)
+            ((1 - self._epsilon) * sum(self._prob[w] for w in event)
              + self._epsilon)
             )
-
-    def get_upper(self, gamble, event=None):
-        return -self.get_lower([-value for value in gamble], event)
 
 def subsets(set_):
     """Return iterator to all subsets of an event.
@@ -383,9 +407,10 @@ def mobius_inverse(map_, set_):
     return inv_map
 
 class BeliefFunction(LowPrev):
-    def __init__(self, mass=None, lowprob=None, numstates=None):
-        set_ = set(range(numstates))
+    def __init__(self, mass=None, lowprob=None, pspace=None):
+        self._pspace = _make_tuple(pspace)
         self._mass = {}
+        set_ = set(self.pspace)
         if mass:
             for event in subsets(set_):
                 self._mass[event] = mass[event]
@@ -393,7 +418,6 @@ class BeliefFunction(LowPrev):
             self._mass = mobius_inverse(lowprob, set_)
         else:
             raise ValueError("must specify mass or lowprob")
-        self._numstates = numstates
         self._matrix = None
 
     def get_lower(self, gamble, event=None):
@@ -404,7 +428,7 @@ class BeliefFunction(LowPrev):
         >>> lowprob[frozenset([0])] = 0.3
         >>> lowprob[frozenset([1])] = 0.2
         >>> lowprob[frozenset([0,1])] = 1.0
-        >>> lpr = BeliefFunction(lowprob=lowprob, numstates=2)
+        >>> lpr = BeliefFunction(lowprob=lowprob, pspace=2)
         >>> print(lpr.get_lower([1,0]))
         0.3
         >>> print(lpr.get_lower([0,1]))
@@ -417,8 +441,8 @@ class BeliefFunction(LowPrev):
         if event is not None:
             raise NotImplementedError
         return sum(
-            (self._mass[event_] * min(gamble[i] for i in event_)
-             for event_ in subsets(set(range(self._numstates)))
+            (self._mass[event_] * min(gamble[w] for w in event_)
+             for event_ in subsets(set(self.pspace))
              if event_),
             0)
 

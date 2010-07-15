@@ -15,7 +15,7 @@ lower probability cannot be used to calculate its natural extension.
 ...     # construct a coherent lower probability
 ...     lpr = random_lowprob(numstates=n, division=10)
 ...     # construct belief function from mobius inverse
-...     bel = BeliefFunction(mass=lpr.get_mobius_inverse(), numstates=n)
+...     bel = BeliefFunction(mass=lpr.get_mobius_inverse(), pspace=n)
 ...     # check for incoherence
 ...     for gamble in gambles:
 ...         if abs(lpr.get_lower(gamble) - bel.get_lower(gamble)) > 1e-6:
@@ -74,7 +74,6 @@ following simulation seems to confirm this for a space of size 3 (all
 coherent lower probabilities on such space are 2-monotone).
 
 >>> from random import random
->>> from improb.lowprev import LowPrev, BeliefFunction
 >>> import itertools
 >>> import random
 >>> from improb.lowprev import LowPrev, BeliefFunction
@@ -86,7 +85,7 @@ coherent lower probabilities on such space are 2-monotone).
 ...     # construct a coherent lower probability
 ...     lpr = random_lowprob(numstates=n, division=10)
 ...     # construct belief function from mobius inverse
-...     bel = BeliefFunction(mass=lpr.get_mobius_inverse(), numstates=n)
+...     bel = BeliefFunction(mass=lpr.get_mobius_inverse(), pspace=n)
 ...     # check for incoherence
 ...     for gamble in gambles:
 ...         if abs(lpr.get_lower(gamble) - bel.get_lower(gamble)) > 1e-6:
