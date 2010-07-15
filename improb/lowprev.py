@@ -337,13 +337,14 @@ class LinVac(LowPrev):
     0.58
     """
     def __init__(self, prob, epsilon):
-        tot = sum(prob)
-        if tot < 1 - 1e-6 or tot > 1 + 1e-6:
-            raise ValueError("probabilities must sum to one")
         if isinstance(prob, (list, tuple)):
+            tot = sum(prob)
             self._pspace = tuple(xrange(len(prob)))
         elif isinstance(prob, dict):
+            tot = sum(prob.itervalues())
             self._pspace = tuple(w for w in prob)
+        if tot < 1 - 1e-6 or tot > 1 + 1e-6:
+            raise ValueError("probabilities must sum to one")
         self._prob = prob
         self._epsilon = epsilon
         self._matrix = None
