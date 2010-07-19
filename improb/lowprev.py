@@ -144,8 +144,8 @@ class LowPrev:
             extension of the gamble.
         """
         if event is None:
-            self._matrix.set_lp_obj_type(pycddlib.LPOBJ_MIN)
-            self._matrix.set_lp_obj_func([0] + [gamble[w] for w in self.pspace])
+            self._matrix.lp_obj_type = pycddlib.LPOBJ_MIN
+            self._matrix.lp_obj_func = [0] + [gamble[w] for w in self.pspace]
             #print self._matrix # DEBUG
             linprog = pycddlib.LinProg(self._matrix)
             linprog.solve()
