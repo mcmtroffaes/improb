@@ -69,11 +69,16 @@ class Tree:
     >>> t = Tree(5)
     >>> print(t.pspace)
     None
+    >>> print(t)
+    5
     >>> list(t.get_normal_form_gambles())
     [5]
     >>> t = Tree(children={frozenset([0]): Tree(5), frozenset([1]): Tree(6)})
     >>> t.pspace
     (0, 1)
+    >>> print(t)
+    O--+--(0,)--5
+       +--(1,)--6
     >>> list(t.get_normal_form_gambles())
     [{0: 5, 1: 6}]
     >>> t = Tree(children={"d1": Tree(5), "d2": Tree(6)})
@@ -86,6 +91,13 @@ class Tree:
     >>> t12 = Tree(children={"d1": t1, "d2": t2})
     >>> t3 = Tree(children={frozenset([0, 1]): Tree(8), frozenset([2, 3]): Tree(9)})
     >>> t = Tree(children={frozenset([0, 2]): t12, frozenset([1, 3]): t3})
+    >>> print(t)
+    O--+--(1, 3)--O--+--(2, 3)--9
+       |             +--(0, 1)--8
+       +--(0, 2)--#--+--d2--O--+--(2, 3)--6
+       |             |         +--(0, 1)--5
+       |             +--d1--O--+--(2, 3)--2
+       |             |         +--(0, 1)--1
     >>> t.pspace
     (0, 1, 2, 3)
     >>> sorted(tuple(gamble[w] for w in t.pspace) for gamble in t.get_normal_form_gambles())
@@ -122,6 +134,27 @@ class Tree:
                 # store it
                 self.pspace = pspace
 
+    def __str__(self):
+        """Return string representation of tree."""
+        if self.is_reward_node:
+            return str(self.children)
+        if self.is_chance_node:
+            root = 'O--'
+            children = [str(tuple(event)) for event in self.children]
+        else:
+            root = '#--'
+            children = [str(dec) for dec in self.children]
+        subtrees = [str(subtree).split('\n')
+                    for subtree in self.children.itervalues()]
+        width = max(len(child) for child in children) + 4
+        children = ['+' + child.center(width, '-') + subtree[0]
+                    for child, subtree in itertools.izip(children, subtrees)]
+        children = ["\n".join([child]
+                               + ["   |" + " " * width + line
+                                  for line in subtree[1:]])
+                    for child, subtree in itertools.izip(children, subtrees)]
+        return root + "\n   ".join(children)
+
     @property
     def is_reward_node(self):
         """Is the tree a reward?"""
@@ -141,6 +174,7 @@ class Tree:
                 and any(isinstance(child, str) for child in self.children))
 
     def get_normal_form_gambles(self):
+        """Yield all normal form gambles."""
         if self.is_reward_node:
             yield self.children
         elif self.is_chance_node:
