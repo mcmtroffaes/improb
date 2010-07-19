@@ -24,14 +24,7 @@ import pycddlib
 import random
 import scipy.optimize
 
-def _make_tuple(pspace):
-    """Convert argument into a tuple, useful for possibility space."""
-    if pspace is None:
-        return (0, 1)
-    elif isinstance(pspace, int):
-        return tuple(xrange(pspace))
-    else:
-        return tuple(pspace)
+from improb import _make_tuple
 
 class LowPrev:
     """A class for lower previsions.

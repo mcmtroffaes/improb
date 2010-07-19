@@ -17,6 +17,10 @@
 
 """A module with utility functions for decision making."""
 
+import itertools
+
+from improb import _make_tuple
+
 def filter_maximal(set_, dominates, *args):
     """Filter elements that are maximal according to the given
     partial ordering.
@@ -57,3 +61,109 @@ def dominates_pointwise(gamble, other_gamble, event=None, tolerance=1e-6):
     return (all(x >= y for  x, y in zip(gamble, other_gamble))
             and any(x > y + tolerance
                     for x, y in zip(gamble, other_gamble)))
+
+class Tree:
+    """A decision tree. Decisions are strings, events are frozensets,
+    rewards are floats or ints.
+
+    >>> t = Tree(5)
+    >>> print(t.pspace)
+    None
+    >>> list(t.get_normal_form_gambles())
+    [5]
+    >>> t = Tree(children={frozenset([0]): Tree(5), frozenset([1]): Tree(6)})
+    >>> t.pspace
+    (0, 1)
+    >>> list(t.get_normal_form_gambles())
+    [{0: 5, 1: 6}]
+    >>> t = Tree(children={"d1": Tree(5), "d2": Tree(6)})
+    >>> print(t.pspace)
+    None
+    >>> list(sorted(t.get_normal_form_gambles()))
+    [5, 6]
+    >>> t1 = Tree(children={frozenset([0, 1]): Tree(1), frozenset([2, 3]): Tree(2)})
+    >>> t2 = Tree(children={frozenset([0, 1]): Tree(5), frozenset([2, 3]): Tree(6)})
+    >>> t12 = Tree(children={"d1": t1, "d2": t2})
+    >>> t3 = Tree(children={frozenset([0, 1]): Tree(8), frozenset([2, 3]): Tree(9)})
+    >>> t = Tree(children={frozenset([0, 2]): t12, frozenset([1, 3]): t3})
+    >>> t.pspace
+    (0, 1, 2, 3)
+    >>> sorted(tuple(gamble[w] for w in t.pspace) for gamble in t.get_normal_form_gambles())
+    [(1, 8, 2, 9), (5, 8, 6, 9)]
+    """
+    def __init__(self, children=None):
+        if not isinstance(children, (int, long, float, dict)):
+            raise TypeError("children must be int, long, float, or dict")
+        self.children = children
+        if self.is_reward_node:
+            self.pspace = None
+        elif self.is_chance_node:
+            # check that children form a partition
+            pspace = set()
+            for event in self.children:
+                assert(isinstance(event, frozenset))
+                assert(not(pspace & event))
+                pspace |= event
+            self.pspace = tuple(sorted(pspace))
+            # check that children have correct possibility space
+            for subtree in self.children.itervalues():
+                if subtree.pspace is not None:
+                    assert(subtree.pspace == self.pspace)
+        elif self.is_decision_node:
+            # check that children share possibility space
+            pspace = None
+            for dec, subtree in self.children.iteritems():
+                if subtree.pspace is not None:
+                    # grap the first dec.pspace that isn't None
+                    if pspace is None:
+                        pspace = subtree.pspace
+                    else:
+                        assert(pspace == subtree.pspace)
+                # store it
+                self.pspace = pspace
+
+    @property
+    def is_reward_node(self):
+        """Is the tree a reward?"""
+        return isinstance(self.children, (int, long, float))
+
+    @property
+    def is_chance_node(self):
+        """Is the tree's root a chance node?"""
+        return (isinstance(self.children, dict)
+                and any(isinstance(child, frozenset)
+                        for child in self.children))
+
+    @property
+    def is_decision_node(self):
+        """Is the tree's root a decision node?"""
+        return (isinstance(self.children, dict)
+                and any(isinstance(child, str) for child in self.children))
+
+    def get_normal_form_gambles(self):
+        if self.is_reward_node:
+            yield self.children
+        elif self.is_chance_node:
+            # note: this implementation depends on the fact that
+            # iterating self.children.itervalues() and
+            # self.children.iterkeys() correspond to each other
+            all_gambles = itertools.product(
+                *[tuple(subtree.get_normal_form_gambles())
+                  for subtree in self.children.itervalues()])
+            for gambles in all_gambles:
+                normal_form_gamble = {}
+                for event, gamble in itertools.izip(self.children.iterkeys(),
+                                                    gambles):
+                    for omega in event:
+                        if isinstance(gamble, (int, long, float)):
+                            normal_form_gamble[omega] = gamble
+                        elif isinstance(gamble, dict):
+                            normal_form_gamble[omega] = gamble[omega]
+                        else:
+                            raise RuntimeError(
+                                "expected int, long, float, or dict")
+                yield normal_form_gamble
+        elif self.is_decision_node:
+            for subtree in self.children.itervalues():
+                for gamble in subtree.get_normal_form_gambles():
+                    yield gamble
