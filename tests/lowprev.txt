@@ -98,6 +98,10 @@ Frechet bounds
 0.600000
 >>> lpr.is_linear()
 True
+>>> for vert in lpr.get_credal_set():
+...     print(" ".join("%.2f" % x for x in vert))
+0.30 0.30 0.40 0.00
+0.00 0.60 0.10 0.30
 
 Avoiding sure loss
 ------------------

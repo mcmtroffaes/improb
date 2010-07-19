@@ -85,6 +85,7 @@ class LowPrev:
                                                 for i in self.states]
                                          for j in self.states])
         self._matrix.linset = set([0])
+        self._matrix.representation = pycddlib.REP_INEQUALITY
 
     @property
     def pspace(self):
@@ -267,6 +268,11 @@ class LowPrev:
                 dict((w, 1 if w in event else 0)
                      for w in self.pspace))
         return mobius_inverse(map_, set_)
+
+    def get_credal_set(self):
+        """Return extreme points of the credal set."""
+        poly = pycddlib.Polyhedra(self._matrix)
+        return [vert[1:] for vert in poly.get_generators()]
 
     #def optimize(self):
     #    """Removes redundant assessments."""
