@@ -64,7 +64,7 @@ class LowPrev:
     >>> print(lpr.get_upper([1,0,0,0]))
     0.75
     >>> list(lpr)
-    [((4.0, 2.0, 1.0, 0.0), 3.0), ((-4.0, -1.0, -2.0, 0.0), -3.0)]
+    [((4.0, 2.0, 1.0, 0.0), 3.0, False), ((-4.0, -1.0, -2.0, 0.0), -3.0, False)]
     >>> list(decision.filter_maximal([[1,0,0,0], [0,1,0,0], [0,0,1,0], [0,0,0,1]], lpr.dominates))
     [[1, 0, 0, 0], [0, 1, 0, 0]]
     >>> list(decision.filter_maximal([[0,0,0,0], [0,1,0,0], [0,0,1,0], [0,0,0,1]], lpr.dominates))
@@ -79,12 +79,12 @@ class LowPrev:
         @type pspace: int, or iterable
         """
         self._pspace = _make_tuple(pspace)
-        self._matrix = pycddlib.Matrix([[+1] + [-1] * self.num_states,
-                                        [-1] + [+1] * self.num_states]
+        self._matrix = pycddlib.Matrix([[+1] + [-1] * self.num_states] # linear
                                         +
                                         [[0] + [1 if i == j else 0
                                                 for i in self.states]
                                          for j in self.states])
+        self._matrix.linset = set([0])
 
     @property
     def pspace(self):
@@ -106,7 +106,7 @@ class LowPrev:
         @param lprev: The lower bound for this expectation.
         @type lprev: float/int
         """
-        self._matrix.append_rows([[-lprev] + [gamble[w] for w in self.pspace]])
+        self._matrix.extend([[-lprev] + [gamble[w] for w in self.pspace]])
 
     def set_upper(self, gamble, uprev):
         """Constrain the expectation of C{gamble} to be at most C{uprev}.
@@ -116,7 +116,7 @@ class LowPrev:
         @param uprev: The upper bound for this expectation.
         @type uprev: float/int
         """
-        self._matrix.append_rows([[uprev] + [-gamble[w] for w in self.pspace]])
+        self._matrix.extend([[uprev] + [-gamble[w] for w in self.pspace]])
 
     def set_precise(self, gamble, prev):
         """Constrain the expectation of C{gamble} to be exactly C{prev}.
@@ -126,14 +126,15 @@ class LowPrev:
         @param prev: The precise bound for this expectation.
         @type prev: float/int
         """
-        self.set_lower(gamble, prev)
-        self.set_upper(gamble, prev)
+        self._matrix.extend([[-prev] + [gamble[w] for w in self.pspace]],
+                            linear=True)
 
     def __iter__(self):
-        """Yield tuples (gamble, lprev)."""
-        for rownum in xrange(self.num_states + 2, self._matrix.rowsize):
+        """Yield tuples (gamble, lprev, linear)."""
+        linset = self._matrix.linset
+        for rownum in xrange(self.num_states + 1, self._matrix.rowsize):
             row = self._matrix[rownum]
-            yield row[1:], -row[0]
+            yield row[1:], -row[0], rownum in linset
 
     def get_lower(self, gamble, event=None, tolerance=1e-6):
         """Return the lower expectation for C{gamble} via natural extension.
@@ -202,9 +203,15 @@ class LowPrev:
         if not self.is_avoiding_sure_loss():
             return False
         # we're avoiding sure loss, so check the natural extension
-        for gamble, lprev in self:
+        for gamble, lprev, linear in self:
             if self.get_lower(gamble) > lprev + tolerance:
                 return False
+            if linear:
+                # in the linear case, also check upper (note: we
+                # probably don't have to do this... avoiding sure loss
+                # check should take care of it already)
+                if self.get_upper(gamble) < lprev - tolerance:
+                    return False
         return True
 
     def is_linear(self, tolerance=1e-6):
@@ -216,7 +223,7 @@ class LowPrev:
         if not self.is_avoiding_sure_loss():
             return False
         # we're avoiding sure loss, so check the natural extension
-        for gamble, lprev in self:
+        for gamble, lprev, linear in self:
             # implementation note: if upper - lower <= tolerance then
             # obviously lprev is within tolerance of the lower and the
             # upper as well, so we can keep lprev out of the picture
