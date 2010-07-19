@@ -16,6 +16,8 @@ Natural extension of a coherent lower prevision
 1.500000
 >>> print "%.6f" % lpr.get_upper([1,2,3])
 2.500000
+>>> print lpr.get_credal_set()
+[(0.75, 0.0, 0.25), (0.5, 0.5, 0.0), (0.0, 1.0, 0.0), (0.25, 0.0, 0.75), (0.0, 0.5, 0.5)]
 
 Another more complex example:
 
