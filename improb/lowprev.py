@@ -77,8 +77,8 @@ class LowPrev:
                                         [[0] + [1 if i == j else 0
                                                 for i in self.states]
                                          for j in self.states])
-        self._matrix.linset = set([0])
-        self._matrix.representation = pycddlib.REP_INEQUALITY
+        self._matrix.lin_set = set([0])
+        self._matrix.rep_type = pycddlib.RepType.INEQUALITY
 
     @property
     def pspace(self):
@@ -125,10 +125,10 @@ class LowPrev:
 
     def __iter__(self):
         """Yield tuples (gamble, lprev, linear)."""
-        linset = self._matrix.linset
-        for rownum in xrange(self.num_states + 1, self._matrix.rowsize):
+        lin_set = self._matrix.lin_set
+        for rownum in xrange(self.num_states + 1, self._matrix.row_size):
             row = self._matrix[rownum]
-            yield row[1:], -row[0], rownum in linset
+            yield row[1:], -row[0], rownum in lin_set
 
     def get_lower(self, gamble, event=None, tolerance=1e-6):
         """Return the lower expectation for C{gamble} via natural extension.
@@ -139,15 +139,15 @@ class LowPrev:
             extension of the gamble.
         """
         if event is None:
-            self._matrix.lp_obj_type = pycddlib.LPOBJ_MIN
+            self._matrix.lp_obj_type = pycddlib.LPObjType.MIN
             self._matrix.lp_obj_func = [0] + [gamble[w] for w in self.pspace]
             #print self._matrix # DEBUG
             linprog = pycddlib.LinProg(self._matrix)
             linprog.solve()
             #print linprog # DEBUG
-            if linprog.status == pycddlib.LPSTATUS_OPTIMAL:
-                return linprog.opt_value
-            elif linprog.status == pycddlib.LPSTATUS_INCONSISTENT:
+            if linprog.status == pycddlib.LPStatusType.OPTIMAL:
+                return linprog.obj_value
+            elif linprog.status == pycddlib.LPStatusType.INCONSISTENT:
                 raise ValueError("lower prevision incurs sure loss")
             else:
                 raise RuntimeError("BUG: unexpected status (%i)" % linprog.status)
@@ -264,7 +264,7 @@ class LowPrev:
 
     def get_credal_set(self):
         """Return extreme points of the credal set."""
-        poly = pycddlib.Polyhedra(self._matrix)
+        poly = pycddlib.Polyhedron(self._matrix)
         return [vert[1:] for vert in poly.get_generators()]
 
     #def optimize(self):
