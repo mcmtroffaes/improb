@@ -35,16 +35,16 @@ class LowPrev:
     expectation/prevision).
 
     Add half-space constraints by calling for instance the
-    L{set_lower} and L{set_upper} functions. Calculate the natural extension
-    with the L{get_lower} and L{get_upper} functions.
+    :meth:`set_lower` and :meth:`set_upper` functions. Calculate the natural extension
+    with the :meth:`get_lower` and :meth:`get_upper` functions.
     """
 
     def __init__(self, pspace=None):
         """Construct vacuous lower prevision on possibility space of given
         size.
 
-        @param pspace: The possibility space.
-        @type pspace: int, or iterable
+        :param pspace: The possibility space.
+        :type pspace: int, or iterable
         """
         self._pspace = _make_tuple(pspace)
         self._matrix = pycddlib.Matrix([[+1] + [-1] * self.num_states] # linear
@@ -68,32 +68,32 @@ class LowPrev:
         return xrange(self.num_states)
 
     def set_lower(self, gamble, lprev):
-        """Constrain the expectation of C{gamble} to be at least C{lprev}.
+        """Constrain the expectation of *gamble* to be at least *lprev*.
 
-        @param gamble: The gamble whose expectation to bound.
-        @type gamble: list of floats/ints
-        @param lprev: The lower bound for this expectation.
-        @type lprev: float/int
+        :param gamble: The gamble whose expectation to bound.
+        :type gamble: |gambletype|
+        :param lprev: The lower bound for this expectation.
+        :type lprev: |numbertype|
         """
         self._matrix.extend([[-lprev] + [gamble[w] for w in self.pspace]])
 
     def set_upper(self, gamble, uprev):
         """Constrain the expectation of C{gamble} to be at most C{uprev}.
 
-        @param gamble: The gamble whose expectation to bound.
-        @type gamble: list of floats/ints
-        @param uprev: The upper bound for this expectation.
-        @type uprev: float/int
+        :param gamble: The gamble whose expectation to bound.
+        :type gamble: |gambletype|
+        :param uprev: The upper bound for this expectation.
+        :type uprev: |numbertype|
         """
         self._matrix.extend([[uprev] + [-gamble[w] for w in self.pspace]])
 
     def set_precise(self, gamble, prev):
         """Constrain the expectation of C{gamble} to be exactly C{prev}.
 
-        @param gamble: The gamble whose expectation to bound.
-        @type gamble: list of floats/ints
-        @param prev: The precise bound for this expectation.
-        @type prev: float/int
+        :param gamble: The gamble whose expectation to bound.
+        :type gamble: |gambletype|
+        :param prev: The precise bound for this expectation.
+        :type prev: |numbertype|
         """
         self._matrix.extend([[-prev] + [gamble[w] for w in self.pspace]],
                             linear=True)
@@ -106,12 +106,14 @@ class LowPrev:
             yield row[1:], -row[0], rownum in lin_set
 
     def get_lower(self, gamble, event=None, tolerance=1e-6):
-        """Return the lower expectation for C{gamble} via natural extension.
+        """Return the lower expectation for *gamble* conditional on
+        *event* via natural extension.
 
-        @param gamble: The gamble whose lower expectation to find.
-        @type gamble: list of floats/ints
-        @return: The lower bound for this expectation, i.e. the natural
-            extension of the gamble.
+        :param gamble: The gamble whose lower expectation to find.
+        :type gamble: |gambletype|
+        :param event: The event to condition on.
+        :type event: |eventtype|
+        :return: The lower bound for this expectation, i.e. the natural extension of the gamble.
         """
         if event is None:
             self._matrix.obj_type = pycddlib.LPObjType.MIN
@@ -142,10 +144,9 @@ class LowPrev:
     def get_upper(self, gamble, event=None):
         """Return the upper expectation for C{gamble} via natural extension.
 
-        @param gamble: The gamble whose upper expectation to find.
-        @type gamble: list of floats/ints
-        @return: The upper bound for this expectation, i.e. the natural
-            extension of the gamble.
+        :param gamble: The gamble whose upper expectation to find.
+        :type gamble: list of floats/ints
+        :return: The upper bound for this expectation, i.e. the natural extension of the gamble.
         """
         return -self.get_lower(dict((w, -gamble[w]) for w in self.pspace), event)
 

@@ -192,3 +192,9 @@ latex_documents = [
 
 # If false, no module index is generated.
 #latex_use_modindex = True
+
+rst_epilog = """
+.. |gambletype| replace:: ``dict`` or ``list``
+.. |eventtype| replace:: ``set``
+.. |numbertype| replace:: ``float`` or ``int``
+"""
