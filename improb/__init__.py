@@ -1,11 +1,4 @@
-"""The improb module implements various classes for working with
-imprecise probabilities.
-
-Main classes
-============
-
-- L{LowPrev}: lower and upper previsions, natural extension
-"""
+"""improb is a Python module for working with imprecise probabilities."""
 
 __version__ = '0.0.0'
 

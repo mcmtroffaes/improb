@@ -1,12 +1,19 @@
-Requirements
-============
+Automatic Installer
+~~~~~~~~~~~~~~~~~~~
 
-lowprev uses pycddlib, which you can get from
-http://code.google.com/p/stip/
+The simplest way to install improb, is to `download <http://github.com/mcmtroffaes/improb/downloads/>`_ the installer and run it. To use the library, you also need `pycddlib <http://mcmtroffaes.github.com/pycddlib>`_.
 
-Manual installation
-===================
+Building From Source
+~~~~~~~~~~~~~~~~~~~~
 
-Simply run
+To install from the latest source code, clone it with `Git <http://git-scm.com>`_ by running::
 
-  python setup.py install
+    git clone git://github.com/mcmtroffaes/improb
+
+You can also browse the source code on GitHub: `mcmtroffaes/improb <http://github.com/mcmtroffaes/improb>`_.
+
+Then simply run the :file:`build.sh` script: this will build the library, install it, generate the documentation, and run all the doctests. Note that you need `Sphinx <http://sphinx.pocoo.org/>`_ to generate the documentation and to run the doctests.
+
+If you merely want to install the library from source, just run::
+
+    python setup.py install
