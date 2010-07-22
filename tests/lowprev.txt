@@ -149,7 +149,7 @@ True
 0.30 0.30 0.40 0.00
 0.00 0.60 0.10 0.30
 
-Avoiding sure loss
+Avoiding Sure Loss
 ~~~~~~~~~~~~~~~~~~
 
 This example incurs sure loss because the maximum of the sum of the gambles
