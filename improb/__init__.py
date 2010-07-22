@@ -1,6 +1,6 @@
 """improb is a Python module for working with imprecise probabilities."""
 
-__version__ = '0.0.0'
+__version__ = '0.1.0'
 
 def make_pspace(arg=None):
     """Convert *arg* into a possibility space.
