@@ -1,10 +1,17 @@
-Regression tests for the LowPrev class
-======================================
+.. testsetup::
 
-Natural extension of a coherent lower prevision
------------------------------------------------
+   from improb.lowprev import LowPrev, LinVac
+   from improb.decision import filter_maximal
 
->>> from improb.lowprev import LowPrev
+The following examples presume:
+
+>>> from improb.lowprev import LowPrev, LinVac
+>>> from improb.decision import filter_maximal
+
+
+Natural Extension
+~~~~~~~~~~~~~~~~~
+
 >>> lpr = LowPrev(3)
 >>> print "%.6f" % lpr.get_lower([1,2,3])
 1.000000
@@ -16,8 +23,30 @@ Natural extension of a coherent lower prevision
 1.500000
 >>> print "%.6f" % lpr.get_upper([1,2,3])
 2.500000
->>> print lpr.get_credal_set()
+>>> print list(lpr.get_credal_set())
 [(0.75, 0.0, 0.25), (0.5, 0.5, 0.0), (0.0, 1.0, 0.0), (0.25, 0.0, 0.75), (0.0, 0.5, 0.5)]
+
+Another example:
+
+>>> lpr = LowPrev(4)
+>>> lpr.set_lower([4,2,1,0], 3)
+>>> lpr.set_upper([4,1,2,0], 3)
+>>> lpr.is_avoiding_sure_loss()
+True
+>>> lpr.is_coherent()
+True
+>>> lpr.is_linear()
+False
+>>> print(lpr.get_lower([1,0,0,0]))
+0.5
+>>> print(lpr.get_upper([1,0,0,0]))
+0.75
+>>> list(lpr)
+[((4.0, 2.0, 1.0, 0.0), 3.0, False), ((-4.0, -1.0, -2.0, 0.0), -3.0, False)]
+>>> list(filter_maximal([[1,0,0,0], [0,1,0,0], [0,0,1,0], [0,0,0,1]], lpr.dominates))
+[[1, 0, 0, 0], [0, 1, 0, 0]]
+>>> list(filter_maximal([[0,0,0,0], [0,1,0,0], [0,0,1,0], [0,0,0,1]], lpr.dominates))
+[[0, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
 
 Another more complex example:
 
@@ -87,10 +116,25 @@ True
 ...                        for lpr_t, gamble_t in zip(lpr_t_s, gamble_t_s)]))
 0.26
 
-Frechet bounds
---------------
+Mobius Inverse
+~~~~~~~~~~~~~~
 
->>> from improb.lowprev import LowPrev
+>>> lpr = LowPrev(2)
+>>> lpr.set_lower([1,0], 0.3)
+>>> lpr.set_lower([0,1], 0.2)
+>>> mass = lpr.get_mobius_inverse()
+>>> print(mass[frozenset()])
+0.0
+>>> print(mass[frozenset([0])])
+0.3
+>>> print(mass[frozenset([1])])
+0.2
+>>> print(mass[frozenset([0,1])])
+0.5
+
+Frechet Bounds
+~~~~~~~~~~~~~~
+
 >>> lpr = LowPrev(4)
 >>> lpr.set_precise([1,1,0,0], 0.6)
 >>> lpr.set_precise([0,1,1,0], 0.7)
@@ -106,19 +150,19 @@ True
 0.00 0.60 0.10 0.30
 
 Avoiding sure loss
-------------------
+~~~~~~~~~~~~~~~~~~
 
 This example incurs sure loss because the maximum of the sum of the gambles
 [1,2,3,0] and [3,2,1,0] is 4, however 2.5 + 2.5 is strictly larger than 4.
 
->>> from improb.lowprev import LowPrev
 >>> lpr = LowPrev(4)
 >>> lpr.set_lower([1,2,3,0], 2.5)
->>> lpr.is_avoiding_sure_loss()
-True
 >>> lpr.set_lower([3,2,1,0], 2.5)
 >>> lpr.is_avoiding_sure_loss()
 False
+
+Another more complex example:
+
 >>> lpr_s_t = LowPrev(9)
 >>> lpr_s_t.set_lower([1,0,0,0,0,0,0,0,0], 0.500)
 >>> lpr_s_t.set_upper([1,0,0,0,0,0,0,0,0], 0.666)
@@ -142,9 +186,8 @@ False
 False
 
 Coherence
----------
+~~~~~~~~~
 
->>> from improb.lowprev import LowPrev
 >>> lpr = LowPrev(4)
 >>> lpr.set_lower([1,2,3,0], 2.5)
 >>> lpr.is_coherent()
@@ -154,9 +197,8 @@ True
 False
 
 Linearity
----------
+~~~~~~~~~
 
->>> from improb.lowprev import LowPrev
 >>> lpr = LowPrev(4)
 >>> lpr.set_lower([1,2,3,0], 2.5)
 >>> lpr.is_linear()
@@ -166,7 +208,7 @@ False
 True
 
 Marginal Extension
-------------------
+~~~~~~~~~~~~~~~~~~
 
 Finding coherent lower and upper bounds for the oil catter example in
 
@@ -176,7 +218,6 @@ probabilities. In: R. Brafman, U. Junker (eds.) IJCAI-05
 Multidisciplinary Workshop on Advances in Preference Handling,
 pp. 118–123 (2005)
 
->>> from improb.lowprev import LowPrev
 >>> # lower previsions over s, given t
 >>> lpr_s_t = [LowPrev(3), LowPrev(3), LowPrev(3)]
 >>> # lower prevision over t
@@ -325,7 +366,6 @@ False
 ...             [[x - y for x, y in zip(xx, yy)]
 ...              for xx, yy in zip(gamble, other_gamble)])
 ...             > tolerance)
->>> from improb.decision import filter_maximal
 >>> list(filter_maximal([
 ...     [[-1,-1,-1],[-1,-1,-1],[-1,-1,-1]],
 ...     [[-8, 4,19],[-1,-1,-1],[-1,-1,-1]],
@@ -342,7 +382,7 @@ False
 [[[-7, 5, 20], [-7, 5, 20], [-7, 5, 20]]]
 
 Maximality
-----------
+~~~~~~~~~~
 
 Example taken from:
 
@@ -350,8 +390,6 @@ Matthias C. M. Troffaes. Decision making under uncertainty using
 imprecise probabilities. International Journal of Approximate
 Reasoning, 45(1):17-29, May 2007.
 
->>> from improb.lowprev import LowPrev
->>> from improb.decision import filter_maximal
 >>> lpr = LowPrev(2)
 >>> lpr.set_lower([1, 0], 0.28)
 >>> lpr.set_upper([1, 0], 0.70)
@@ -360,8 +398,6 @@ True
 
 Another example:
 
->>> from improb.lowprev import LinVac
->>> from improb.decision import filter_maximal
 >>> lpr = LinVac([0.42, 0.08, 0.18, 0.32], 0.1)
 >>> for c in range(3):
 ...     list(filter_maximal([[10-c,10-c,15-c,15-c],[10-c,5-c,15-c,20-c],[5-c,10-c,20-c,15-c],[5-c,5-c,20-c,20-c],[10,10,15,15],[5,5,20,20]], lpr.dominates))
@@ -369,12 +405,11 @@ Another example:
 [[9, 4, 14, 19], [10, 10, 15, 15], [5, 5, 20, 20]]
 [[10, 10, 15, 15], [5, 5, 20, 20]]
 
-Generalized Bayes rule
-----------------------
+Generalized Bayes Rule
+~~~~~~~~~~~~~~~~~~~~~~
 
 The next example is effectively the Monty Hall problem.
 
->>> from improb.lowprev import LowPrev
 >>> lpr = LowPrev(4)
 >>> lpr.set_lower([1, 1, 0, 0], 1.0/3.0)
 >>> lpr.set_lower([0, 0, 1, 0], 1.0/3.0)

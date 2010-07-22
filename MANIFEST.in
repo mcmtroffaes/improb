@@ -6,7 +6,7 @@ include TODO.TXT
 include CHANGELOG.TXT
 include AUTHORS.TXT
 include THANKS.TXT
-include docs/*.*
-include examples/*.txt
-include tests/*.txt
-
+graft docs/_build/html
+prune docs/_build/html/.git
+exclude docs/_build/html/.nojekyll
+include docs/_build/latex/pycddlib.pdf
