@@ -8,4 +8,5 @@ Welcome to improb's documentation!
    :maxdepth: 2
 
    quickstart
+   introduction
    lowprev

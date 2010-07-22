@@ -24,48 +24,41 @@ import pycddlib
 import random
 import scipy.optimize
 
-from improb import _make_tuple
+from improb import make_pspace
 
 class LowPrev:
-    """A class for lower previsions.
-
-    This class implements a lower prevision as a sequence of half-spaces.
-    These half-spaces constrain a convex set of probability mass functions.
-    Each half-space is represented by a gamble, and a number (i.e. its lower
-    expectation/prevision).
+    """The base class for working with arbitrary lower previsions.
+    These are implemented as a sequence of half-spaces. Such
+    half-spaces constrain a convex set of probability mass functions.
+    Each half-space is represented by a gamble, and a number (i.e. its
+    lower expectation/prevision).
 
     Add half-space constraints by calling for instance the
-    :meth:`set_lower` and :meth:`set_upper` functions. Calculate the natural extension
-    with the :meth:`get_lower` and :meth:`get_upper` functions.
+    :meth:`set_lower` and :meth:`set_upper` functions. Calculate the
+    natural extension with the :meth:`get_lower` and :meth:`get_upper`
+    functions.
     """
 
     def __init__(self, pspace=None):
-        """Construct vacuous lower prevision on possibility space of given
-        size.
+        """Construct a lower prevision on *pspace*.
 
         :param pspace: The possibility space.
-        :type pspace: int, or iterable
+        :type pspace: |pspacetype|
         """
-        self._pspace = _make_tuple(pspace)
-        self._matrix = pycddlib.Matrix([[+1] + [-1] * self.num_states] # linear
+
+        self._pspace = make_pspace(pspace)
+        self._matrix = pycddlib.Matrix([[+1] + [-1] * len(self.pspace)] # linear
                                         +
                                         [[0] + [1 if i == j else 0
-                                                for i in self.states]
-                                         for j in self.states])
-        self._matrix.lin_set = set([0])
+                                                for i in self.pspace]
+                                         for j in self.pspace])
+        self._matrix.lin_set = set([0]) # first row is linear
         self._matrix.rep_type = pycddlib.RepType.INEQUALITY
 
     @property
     def pspace(self):
+        """A ``tuple`` representing the possibility space."""
         return self._pspace
-
-    @property
-    def num_states(self):
-        return len(self._pspace)
-
-    @property
-    def states(self):
-        return xrange(self.num_states)
 
     def set_lower(self, gamble, lprev):
         """Constrain the expectation of *gamble* to be at least *lprev*.
@@ -78,7 +71,7 @@ class LowPrev:
         self._matrix.extend([[-lprev] + [gamble[w] for w in self.pspace]])
 
     def set_upper(self, gamble, uprev):
-        """Constrain the expectation of C{gamble} to be at most C{uprev}.
+        """Constrain the expectation of *gamble* to be at most *uprev*.
 
         :param gamble: The gamble whose expectation to bound.
         :type gamble: |gambletype|
@@ -88,7 +81,7 @@ class LowPrev:
         self._matrix.extend([[uprev] + [-gamble[w] for w in self.pspace]])
 
     def set_precise(self, gamble, prev):
-        """Constrain the expectation of C{gamble} to be exactly C{prev}.
+        """Constrain the expectation of *gamble* to be exactly *prev*.
 
         :param gamble: The gamble whose expectation to bound.
         :type gamble: |gambletype|
@@ -101,7 +94,7 @@ class LowPrev:
     def __iter__(self):
         """Yield tuples (gamble, lprev, linear)."""
         lin_set = self._matrix.lin_set
-        for rownum in xrange(self.num_states + 1, self._matrix.row_size):
+        for rownum in xrange(len(self.pspace) + 1, self._matrix.row_size):
             row = self._matrix[rownum]
             yield row[1:], -row[0], rownum in lin_set
 
@@ -114,6 +107,7 @@ class LowPrev:
         :param event: The event to condition on.
         :type event: |eventtype|
         :return: The lower bound for this expectation, i.e. the natural extension of the gamble.
+        :rtype: ``float``
         """
         if event is None:
             self._matrix.obj_type = pycddlib.LPObjType.MIN
@@ -142,11 +136,15 @@ class LowPrev:
                 b=max(gamble[w] for w in event))
 
     def get_upper(self, gamble, event=None):
-        """Return the upper expectation for C{gamble} via natural extension.
+        """Return the upper expectation for *gamble* conditional on
+        *event* via natural extension.
 
         :param gamble: The gamble whose upper expectation to find.
-        :type gamble: list of floats/ints
+        :type gamble: |gambletype|
+        :param event: The event to condition on.
+        :type event: |eventtype|
         :return: The upper bound for this expectation, i.e. the natural extension of the gamble.
+        :rtype: ``float``
         """
         return -self.get_lower(dict((w, -gamble[w]) for w in self.pspace), event)
 
@@ -157,8 +155,8 @@ class LowPrev:
     def is_avoiding_sure_loss(self):
         """No Dutch book? Does the lower prevision avoid sure loss?
 
-        @return: C{True} if the lower prevision avoids sure loss, C{False}
-            otherwise.
+        :return: ``True`` if avoids sure loss, ``False`` otherwise.
+        :rtype: ``bool``
         """
         try:
             self.get_lower(dict((w, 0) for w in self.pspace))
@@ -168,7 +166,11 @@ class LowPrev:
 
     def is_coherent(self, tolerance=1e-6):
         """Do all assessments coincide with their natural extension? Is the
-        lower prevision coherent?"""
+        lower prevision coherent?
+
+        :return: ``True`` if coherent, ``False`` otherwise.
+        :rtype: ``bool``
+        """
         # first check if we are avoiding sure loss
         if not self.is_avoiding_sure_loss():
             return False
@@ -188,6 +190,9 @@ class LowPrev:
         """Is the lower prevision a linear prevision? More precisely,
         we check that the natural extension is linear on the linear
         span of the domain of the lower prevision.
+
+        :return: ``True`` if linear, ``False`` otherwise.
+        :rtype: ``bool``
         """
         # first check if we are avoiding sure loss
         if not self.is_avoiding_sure_loss():
@@ -204,7 +209,11 @@ class LowPrev:
         return True
 
     def dominates(self, gamble, other_gamble, event=None, tolerance=1e-6):
-        """Does gamble dominate other_gamble in lower prevision?"""
+        """Does *gamble* dominate *other_gamble* in lower prevision?
+
+        :return: ``True`` if *gamble* dominates *other_gamble*, ``False`` otherwise.
+        :rtype: ``bool``
+        """
         return (
             self.get_lower(
                 dict((w, gamble[w] - other_gamble[w])
@@ -216,19 +225,6 @@ class LowPrev:
         """Return the mobius inverse of the lower probability determined by
         this lower prevision. This usually only makes sense for completely
         monotone lower previsions.
-
-        >>> lpr = LowPrev(2)
-        >>> lpr.set_lower([1,0], 0.3)
-        >>> lpr.set_lower([0,1], 0.2)
-        >>> mass = lpr.get_mobius_inverse()
-        >>> print(mass[frozenset()])
-        0.0
-        >>> print(mass[frozenset([0])])
-        0.3
-        >>> print(mass[frozenset([1])])
-        0.2
-        >>> print(mass[frozenset([0,1])])
-        0.5
         """
         set_ = set(self.pspace)
         map_ = {}
@@ -239,9 +235,14 @@ class LowPrev:
         return mobius_inverse(map_, set_)
 
     def get_credal_set(self):
-        """Return extreme points of the credal set."""
+        """Return extreme points of the credal set.
+
+        :return: The extreme points.
+        :rtype: Yields a ``tuple`` for each extreme point.
+        """
         poly = pycddlib.Polyhedron(self._matrix)
-        return [vert[1:] for vert in poly.get_generators()]
+        for vert in poly.get_generators():
+            yield vert[1:]
 
     #def optimize(self):
     #    """Removes redundant assessments."""
@@ -264,7 +265,7 @@ class LowPrev:
 def random_lowprob(pspace=None, division=None, zero=True):
     """Generate a random coherent lower probability."""
     # for now this is just a pretty dumb method
-    pspace = _make_tuple(pspace)
+    pspace = make_pspace(pspace)
     events = [list(event)
               for event in itertools.product([0, 1], repeat=len(pspace))]
     while True:
@@ -293,11 +294,13 @@ def random_lowprob(pspace=None, division=None, zero=True):
 class LinVac(LowPrev):
     """Linear-vacuous mixture.
 
+    >>> from improb.lowprev import LinVac
     >>> lpr = LinVac([0.2, 0.4, 0.5], 0.1) # doctest: +ELLIPSIS
     Traceback (most recent call last):
         ...
     ValueError: probabilities must sum to one
 
+    >>> from improb.lowprev import LinVac
     >>> lpr = LinVac([0.2, 0.3, 0.5], 0.1)
     >>> print lpr.get_lower([1,0,0])
     0.18
@@ -310,6 +313,7 @@ class LinVac(LowPrev):
     >>> print lpr.get_upper([3,2,1])
     1.83
 
+    >>> from improb.lowprev import LinVac
     >>> lpr = LinVac([0.42, 0.08, 0.18, 0.32], 0.1)
     >>> print lpr.get_lower([5,5,-5,-5])
     -0.5
@@ -371,6 +375,7 @@ def subsets(set_):
 def mobius_inverse(map_, set_):
     """Calculate the mobius inverse of a mapping.
 
+    >>> from improb.lowprev import mobius_inverse
     >>> map_ = {}
     >>> map_[frozenset()] = 0.0
     >>> map_[frozenset([0])] = 0.25
@@ -395,7 +400,7 @@ def mobius_inverse(map_, set_):
 
 class BeliefFunction(LowPrev):
     def __init__(self, mass=None, lowprob=None, pspace=None):
-        self._pspace = _make_tuple(pspace)
+        self._pspace = make_pspace(pspace)
         self._mass = {}
         set_ = set(self.pspace)
         if mass:
@@ -410,6 +415,7 @@ class BeliefFunction(LowPrev):
     def get_lower(self, gamble, event=None):
         """Get lower prevision.
 
+        >>> from improb.lowprev import BeliefFunction
         >>> lowprob = {}
         >>> lowprob[frozenset()] = 0.0
         >>> lowprob[frozenset([0])] = 0.3

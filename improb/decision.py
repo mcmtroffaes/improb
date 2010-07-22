@@ -19,7 +19,7 @@
 
 import itertools
 
-from improb import _make_tuple
+from improb import make_pspace
 
 def filter_maximal(set_, dominates, *args):
     """Filter elements that are maximal according to the given

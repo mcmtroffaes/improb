@@ -194,7 +194,8 @@ latex_documents = [
 #latex_use_modindex = True
 
 rst_epilog = """
-.. |gambletype| replace:: ``dict`` or ``list``
-.. |eventtype| replace:: ``set``
+.. |pspacetype| replace:: ``tuple`` or similar; see :ref:`possibility-spaces`
+.. |gambletype| replace:: ``dict`` or similar; see :ref:`gambles`
+.. |eventtype| replace:: ``set`` or similar; see :ref:`events`
 .. |numbertype| replace:: ``float`` or ``int``
 """
