@@ -382,7 +382,7 @@ def mobius_inverse(map_, pspace):
             for subevent in pspace.subsets(event))
     return inv_map
 
-class BeliefFunction(LowPrev):
+class BelFunc(LowPrev):
     def __init__(self, mass=None, lowprob=None, pspace=None):
         self._pspace = PSpace(pspace)
         self._mass = {}
@@ -398,13 +398,13 @@ class BeliefFunction(LowPrev):
     def get_lower(self, gamble, event=None):
         """Get lower prevision.
 
-        >>> from improb.lowprev import BeliefFunction
+        >>> from improb.lowprev import BelFunc
         >>> lowprob = {}
         >>> lowprob[frozenset()] = 0.0
         >>> lowprob[frozenset([0])] = 0.3
         >>> lowprob[frozenset([1])] = 0.2
         >>> lowprob[frozenset([0,1])] = 1.0
-        >>> lpr = BeliefFunction(lowprob=lowprob, pspace=2)
+        >>> lpr = BelFunc(lowprob=lowprob, pspace=2)
         >>> print(lpr.get_lower([1,0]))
         0.3
         >>> print(lpr.get_lower([0,1]))
@@ -418,7 +418,7 @@ class BeliefFunction(LowPrev):
             raise NotImplementedError
         return sum(
             (self._mass[event_] * min(gamble[w] for w in event_)
-             for event_ in subsets(set(self.pspace))
+             for event_ in self.pspace.subsets()
              if event_),
             0)
 

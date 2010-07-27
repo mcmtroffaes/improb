@@ -13,7 +13,24 @@ Arbitrary Finitely Generated Lower Previsions
 
    .. automethod:: __iter__
 
-Examples
---------
-
 .. include:: ../tests/lowprev.txt
+
+Linear Vacuous Mixtures
+-----------------------
+
+.. autoclass:: LinVac
+   :members:
+
+   .. automethod:: __init__
+
+.. todo:: Add examples.
+
+Belief Functions
+----------------
+
+.. autoclass:: BelFunc
+   :members:
+
+   .. automethod:: __init__
+
+.. todo:: Add examples.

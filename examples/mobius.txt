@@ -6,7 +6,7 @@ lower probability cannot be used to calculate its natural extension.
 
 >>> import itertools
 >>> import random
->>> from improb.lowprev import LowPrev, BeliefFunction, random_lowprob
+>>> from improb.lowprev import LowPrev, BelFunc, random_lowprob
 >>> random.seed(10)
 >>> n = 4
 >>> events = [list(event) for event in itertools.product([0, 1], repeat=n)]
@@ -15,7 +15,7 @@ lower probability cannot be used to calculate its natural extension.
 ...     # construct a coherent lower probability
 ...     lpr = random_lowprob(pspace=n, division=10)
 ...     # construct belief function from mobius inverse
-...     bel = BeliefFunction(mass=lpr.get_mobius_inverse(), pspace=n)
+...     bel = BelFunc(mass=lpr.get_mobius_inverse(), pspace=n)
 ...     # check for incoherence
 ...     for gamble in gambles:
 ...         if abs(lpr.get_lower(gamble) - bel.get_lower(gamble)) > 1e-6:
@@ -76,7 +76,7 @@ coherent lower probabilities on such space are 2-monotone).
 >>> from random import random
 >>> import itertools
 >>> import random
->>> from improb.lowprev import LowPrev, BeliefFunction
+>>> from improb.lowprev import LowPrev, BelFunc
 >>> random.seed(10)
 >>> n = 3
 >>> events = [list(event) for event in itertools.product([0, 1], repeat=n)]
@@ -85,7 +85,7 @@ coherent lower probabilities on such space are 2-monotone).
 ...     # construct a coherent lower probability
 ...     lpr = random_lowprob(pspace=n, division=10)
 ...     # construct belief function from mobius inverse
-...     bel = BeliefFunction(mass=lpr.get_mobius_inverse(), pspace=n)
+...     bel = BelFunc(mass=lpr.get_mobius_inverse(), pspace=n)
 ...     # check for incoherence
 ...     for gamble in gambles:
 ...         if abs(lpr.get_lower(gamble) - bel.get_lower(gamble)) > 1e-6:
