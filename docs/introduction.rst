@@ -16,61 +16,22 @@ and ``set`` for events. In more detail:
 Possibility Spaces
 ------------------
 
+Any iterable of distinct immutable objects can be used to represent a
+possibility space. For instance, a ``tuple`` can always be used to
+represent a possibility space. [#pspacetuple]_ Any possibility space
+can be converted to its ``tuple`` representation via:
+
 .. autofunction:: make_pspace
 
-When constructing a possibility space, you can use any iterable of
-distinct immutable objects. For example:
+For more advanced usage of possibility spaces, use the following class:
 
-* A range of integers.
-
-  .. doctest::
-
-     >>> improb.make_pspace(xrange(2, 15, 3))
-     (2, 5, 8, 11, 14)
-
-* A string.
-
-  .. doctest::
-
-     >>> improb.make_pspace('abcdefg')
-     ('a', 'b', 'c', 'd', 'e', 'f', 'g')
-
-* A list of strings.
-
-  .. doctest::
-
-     >>> improb.make_pspace('rain cloudy sunny'.split(' '))
-     ('rain', 'cloudy', 'sunny')
-
-* A product of possibility spaces.
-
-  .. doctest::
-
-     >>> improb.make_pspace(itertools.product(('rain', 'cloudy', 'sunny'), ('cold', 'warm')))
-     (('rain', 'cold'), ('rain', 'warm'), ('cloudy', 'cold'), ('cloudy', 'warm'), ('sunny', 'cold'), ('sunny', 'warm'))  
-
-* As a special case, you can also specify just a single integer. This
-  will be converted to a tuple of integers of the corresponding length.
-
-  .. doctest::
-
-     >>> improb.make_pspace(3)
-     (0, 1, 2)
-
-* Finally, if no arguments are specified, then the default space is
-  just one with two elements.
-
-  .. doctest::
-
-     >>> improb.make_pspace()
-     (0, 1)
+.. autoclass:: PSpace
+   :members:
 
 .. _gambles:
 
 Gambles
 -------
-
-.. autofunction:: make_gamble
 
 For a possibility space *pspace*, any Python object *mapping* for which::
 
@@ -81,21 +42,19 @@ can always be used to represent a gamble. If your *pspace* is a simple
 range of consequetive integers starting from zero, then you can also
 use a ``list`` or ``tuple`` for gamble.
 
-Any gamble can be converted to its ``dict`` representation via
-:func:`make_gamble`.
+Any gamble can be converted to its ``dict`` representation via:
 
-.. doctest::
+.. autofunction:: make_gamble
 
-   >>> pspace = improb.make_pspace(5)
-   >>> improb.make_gamble(pspace, [1, 9, 2, 3, 6])
-   {0: 1.0, 1: 9.0, 2: 2.0, 3: 3.0, 4: 6.0}
+For more advanced usage of gambles, use the following class:
+
+.. autoclass:: Gamble
+   :members:
 
 .. _events:
 
 Events
 ------
-
-.. autofunction:: make_event
 
 For a possibility space *pspace*, any Python object *elements* for which::
 
@@ -104,11 +63,19 @@ For a possibility space *pspace*, any Python object *elements* for which::
 can be iterated over, represents an event. For instance, a ``set`` can
 always be used to represent an event.
 
-Any event can be converted to its ``set`` representation via
-:func:`make_event`.
+Any event can be converted to its ``set`` representation via:
 
-.. doctest::
+.. autofunction:: make_event
 
-   >>> pspace = improb.make_pspace(6)
-   >>> improb.make_event(pspace, xrange(1, 4))
-   set([1, 2, 3])
+For more advanced usage of events, use the following class:
+
+.. autoclass:: Event
+   :members:
+
+.. rubric:: Footnotes
+
+.. [#pspacetuple]
+
+   We use ``tuple`` rather than ``set`` because usually possibility
+   spaces have a natural ordering, and ``tuple`` is closest to an
+   ordered set.

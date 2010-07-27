@@ -24,19 +24,14 @@ import pycddlib
 import random
 import scipy.optimize
 
-from improb import make_pspace
+from improb import PSpace
 
 class LowPrev:
-    """The base class for working with arbitrary lower previsions.
-    These are implemented as a sequence of half-spaces. Such
-    half-spaces constrain a convex set of probability mass functions.
-    Each half-space is represented by a gamble, and a number (i.e. its
-    lower expectation/prevision).
-
-    Add half-space constraints by calling for instance the
-    :meth:`set_lower` and :meth:`set_upper` functions. Calculate the
-    natural extension with the :meth:`get_lower` and :meth:`get_upper`
-    functions.
+    """The base class for working with arbitrary finitely generated
+    lower previsions. These are implemented as a finite sequence of
+    half-spaces, each of which constrains the convex set of
+    probability mass functions. Each half-space is represented by a
+    gamble, and a number (i.e. its lower expectation/prevision).
     """
 
     def __init__(self, pspace=None):
@@ -46,7 +41,7 @@ class LowPrev:
         :type pspace: |pspacetype|
         """
 
-        self._pspace = make_pspace(pspace)
+        self._pspace = PSpace(pspace)
         self._matrix = pycddlib.Matrix([[+1] + [-1] * len(self.pspace)] # linear
                                         +
                                         [[0] + [1 if i == j else 0
@@ -226,13 +221,12 @@ class LowPrev:
         this lower prevision. This usually only makes sense for completely
         monotone lower previsions.
         """
-        set_ = set(self.pspace)
         map_ = {}
-        for event in subsets(set_):
+        for event in self.pspace.subsets():
             map_[event] = self.get_lower(
                 dict((w, 1 if w in event else 0)
                      for w in self.pspace))
-        return mobius_inverse(map_, set_)
+        return mobius_inverse(map_, self.pspace)
 
     def get_credal_set(self):
         """Return extreme points of the credal set.
@@ -362,17 +356,7 @@ class LinVac(LowPrev):
              + self._epsilon)
             )
 
-def subsets(set_):
-    """Return iterator to all subsets of an event.
-
-    >>> [list(subset) for subset in subsets(set([2,4,5]))]
-    [[], [2], [4], [5], [2, 4], [2, 5], [4, 5], [2, 4, 5]]
-    """
-    for subset_size in range(len(set_) + 1):
-        for subset in itertools.combinations(set_, subset_size):
-            yield frozenset(subset)
-
-def mobius_inverse(map_, set_):
+def mobius_inverse(map_, pspace):
     """Calculate the mobius inverse of a mapping.
 
     >>> from improb.lowprev import mobius_inverse
@@ -392,22 +376,21 @@ def mobius_inverse(map_, set_):
     0.5
     """
     inv_map = {}
-    for event in subsets(set_):
+    for event in pspace.subsets():
         inv_map[event] = sum(
             ((-1) ** len(event - subevent)) * map_[subevent]
-            for subevent in subsets(event))
+            for subevent in pspace.subsets(event))
     return inv_map
 
 class BeliefFunction(LowPrev):
     def __init__(self, mass=None, lowprob=None, pspace=None):
-        self._pspace = make_pspace(pspace)
+        self._pspace = PSpace(pspace)
         self._mass = {}
-        set_ = set(self.pspace)
         if mass:
-            for event in subsets(set_):
+            for event in self.pspace.subsets():
                 self._mass[event] = mass[event]
         elif lowprob:
-            self._mass = mobius_inverse(lowprob, set_)
+            self._mass = mobius_inverse(lowprob, self.pspace)
         else:
             raise ValueError("must specify mass or lowprob")
         self._matrix = None

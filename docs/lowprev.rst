@@ -3,8 +3,8 @@ Lower Previsions
 
 .. currentmodule:: improb.lowprev
 
-Methods and Attributes
-----------------------
+Arbitrary Finitely Generated Lower Previsions
+---------------------------------------------
 
 .. autoclass:: LowPrev
    :members:
