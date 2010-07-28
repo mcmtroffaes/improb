@@ -9,4 +9,6 @@ Welcome to improb's documentation!
 
    quickstart
    introduction
+   prob
    lowprev
+

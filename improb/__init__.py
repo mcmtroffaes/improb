@@ -36,13 +36,6 @@ def make_pspace(*args):
          >>> improb.make_pspace('rain cloudy sunny'.split(' '))
          ('rain', 'cloudy', 'sunny')
 
-    * A product of possibility spaces.
-
-      .. doctest::
-
-         >>> improb.make_pspace(itertools.product(('rain', 'cloudy', 'sunny'), ('cold', 'warm')))
-         (('rain', 'cold'), ('rain', 'warm'), ('cloudy', 'cold'), ('cloudy', 'warm'), ('sunny', 'cold'), ('sunny', 'warm'))
-
     * As a special case, you can also specify just a single integer. This
       will be converted to a tuple of integers of the corresponding length.
 
@@ -59,7 +52,7 @@ def make_pspace(*args):
          >>> improb.make_pspace()
          (0, 1)
 
-    If multiple components are specified, the product is calculated:
+    If multiple arguments are specified, the product is calculated:
 
     .. doctest::
 
@@ -67,6 +60,10 @@ def make_pspace(*args):
        ((0, 'a'), (0, 'b'), (0, 'c'),
         (1, 'a'), (1, 'b'), (1, 'c'),
         (2, 'a'), (2, 'b'), (2, 'c'))
+       >>> improb.make_pspace(('rain', 'cloudy', 'sunny'), ('cold', 'warm')) # doctest: +NORMALIZE_WHITESPACE
+       (('rain', 'cold'), ('rain', 'warm'),
+        ('cloudy', 'cold'), ('cloudy', 'warm'),
+        ('sunny', 'cold'), ('sunny', 'warm'))
 
     It also removes duplicates:
 
@@ -126,6 +123,18 @@ class PSpace(collections.Set, collections.Sequence, collections.Hashable):
 
     def __init__(self, *args):
         self._data = make_pspace(*args)
+
+    @staticmethod
+    def make(pspace):
+        """If *pspace* is a :class:`PSpace`, then returns *pspace*.
+        Otherwise, converts *pspace* to a :class:`PSpace`.
+
+        :param pspace: The possibility space.
+        :type pspace: |pspacetype|
+        :return: A possibility space.
+        :rtype: :class:`PSpace`
+        """
+        return pspace if isinstance(pspace, PSpace) else PSpace(pspace)
 
     def __len__(self):
         return len(self._data)
@@ -279,15 +288,45 @@ class Gamble(collections.Mapping, collections.Hashable):
     TypeError: ...
     """
     def __init__(self, pspace, mapping):
-        if not isinstance(pspace, PSpace):
-            raise TypeError(
-                "first Gamble() argument must be a PSpace, not '%s'"
-                % pspace.__class__)
-        self._data = dict((omega, float(mapping[omega])) for omega in pspace)
-        self._pspace = pspace
+        """Construct a gamble on the given possibility space.
+
+        :param pspace: The possibility space.
+        :type pspace: |pspacetype|
+        :param mapping: A mapping that defines the values of the gamble.
+        :type mapping: |gambletype|
+        """
+        self._pspace = PSpace.make(pspace)
+        self._data = dict((omega, float(mapping[omega]))
+                          for omega in self.pspace)
+
+    @staticmethod
+    def make(pspace, gamble):
+        """If *gamble* is a :class:`Gamble`, then checks possibility
+        space and returns *gamble*. Otherwise, converts *gamble* to a
+        :class:`Gamble`.
+
+        :param pspace: The possibility space.
+        :type pspace: |pspacetype|
+        :param gamble: The gamble.
+        :type gamble: |gambletype|
+        :return: A gamble.
+        :rtype: :class:`Gamble`
+        """
+        pspace = PSpace.make(pspace)
+        if isinstance(gamble, Gamble):
+            if pspace != gamble.pspace:
+                raise ValueError('possibility spaces do not match')
+            return gamble
+        elif isinstance(gamble, Event):
+            if pspace != gamble.pspace:
+                raise ValueError('possibility spaces do not match')
+            return gamble.indicator()
+        else:
+            return Gamble(pspace, gamble)
 
     @property
     def pspace(self):
+        """An :class:`improb.PSpace` representing the possibility space."""
         return self._pspace
 
     def __len__(self):
@@ -308,8 +347,7 @@ class Gamble(collections.Mapping, collections.Hashable):
 
     def __repr__(self):
         """
-        >>> pspace = improb.PSpace([2, 3, 4])
-        >>> improb.Gamble(pspace, {2: 1, 3: 4, 4: 8})
+        >>> improb.Gamble([2, 3, 4], {2: 1, 3: 4, 4: 8})
         Gamble(pspace=PSpace([2, 3, 4]), mapping={2: 1.0, 3: 4.0, 4: 8.0})
         """
         return "Gamble(pspace={0}, mapping={1})".format(
@@ -362,6 +400,10 @@ class Gamble(collections.Mapping, collections.Hashable):
     __mul__ = lambda self, other: self._pointwise(other, float.__mul__)
     __div__ = lambda self, other: self._scalar(other, float.__div__)
 
+    def __neg__(self):
+        return Gamble(self.pspace,
+                      dict((omega, -self[omega]) for omega in self.pspace))
+
 class Event(collections.Set, collections.Hashable):
     """An immutable event with syntactic sugar.
 
@@ -398,16 +440,33 @@ class Event(collections.Set, collections.Hashable):
     f : 1
     """
     def __init__(self, pspace, elements):
-        if not isinstance(pspace, PSpace):
-            raise TypeError(
-                "first Event() argument must be a PSpace, not '%s'"
-                % pspace.__class__)
+        self._pspace = PSpace.make(pspace)
         self._data = frozenset(omega for omega in pspace if omega in elements)
-        self._pspace = pspace
+
+    @staticmethod
+    def make(pspace, event):
+        """If *event* is a :class:`Event`, then checks possibility
+        space and returns *event*. Otherwise, converts *event* to a
+        :class:`Event`.
+
+        :param pspace: The possibility space.
+        :type pspace: |pspacetype|
+        :param event: The event.
+        :type event: |eventtype|
+        :return: A event.
+        :rtype: :class:`Event`
+        """
+        pspace = PSpace.make(pspace)
+        if isinstance(event, Event):
+            if pspace != event.pspace:
+                raise ValueError('possibility spaces do not match')
+            return event
+        else:
+            return Event(pspace, event)
 
     @property
     def pspace(self):
-        """The possibility space on which the event is defined."""
+        """An :class:`improb.PSpace` representing the possibility space."""
         return self._pspace
 
     # must override this because the class constructor does not accept
@@ -468,8 +527,7 @@ class SetFunction(collections.Mapping, collections.Hashable):
     """A real-valued set function defined on the power set of a
     possibility space. Derived from :class:`collections.Mapping`.
 
-    >>> pspace = improb.PSpace('abc')
-    >>> print(improb.SetFunction(pspace, {'': 1, 'ac': 2, 'abc': 5}))
+    >>> print(improb.SetFunction('abc', {'': 1, 'ac': 2, 'abc': 5}))
           : 1.000
     a     : 0.000
       b   : 0.000
@@ -481,12 +539,16 @@ class SetFunction(collections.Mapping, collections.Hashable):
     """
 
     def __init__(self, pspace, mapping):
-        if not isinstance(pspace, PSpace):
-            raise TypeError(
-                "first Event() argument must be a PSpace, not '%s'"
-                % pspace.__class__)
-        self._pspace = pspace
-        self._data = dict((event, 0.0) for event in pspace.subsets())
+        """Construct a set function on the power set of the given
+        possibility space.
+
+        :param pspace: The possibility space.
+        :type pspace: |pspacetype|
+        :param mapping: A mapping that defines the value on each event (missing values default to zero).
+        :type mapping: ``dict``
+        """
+        self._pspace = PSpace.make(pspace)
+        self._data = dict((event, 0.0) for event in self.pspace.subsets())
         self._data.update((Event(pspace, subset), float(mapping[subset]))
                           for subset in mapping)
 
@@ -516,6 +578,7 @@ class SetFunction(collections.Mapping, collections.Hashable):
 
     @property
     def pspace(self):
+        """An :class:`improb.PSpace` representing the possibility space."""
         return self._pspace
 
     def get_mobius_inverse(self):

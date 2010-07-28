@@ -9,4 +9,4 @@ include THANKS.TXT
 graft docs/_build/html
 prune docs/_build/html/.git
 exclude docs/_build/html/.nojekyll
-include docs/_build/latex/pycddlib.pdf
+include docs/_build/latex/improb.pdf

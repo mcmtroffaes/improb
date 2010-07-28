@@ -24,7 +24,7 @@ import pycddlib
 import random
 import scipy.optimize
 
-from improb import PSpace, SetFunction
+from improb import PSpace, Gamble, Event, SetFunction
 
 class LowPrev:
     """The base class for working with arbitrary finitely generated
@@ -41,10 +41,7 @@ class LowPrev:
         :type pspace: |pspacetype|
         """
 
-        if isinstance(pspace, PSpace):
-            self._pspace = pspace
-        else:
-            self._pspace = PSpace(pspace)
+        self._pspace = PSpace.make(pspace)
         self._matrix = pycddlib.Matrix([[+1] + [-1] * len(self.pspace)] # linear
                                         +
                                         [[0] + [1 if i == j else 0
@@ -66,7 +63,8 @@ class LowPrev:
         :param lprev: The lower bound for this expectation.
         :type lprev: |numbertype|
         """
-        self._matrix.extend([[-lprev] + [gamble[w] for w in self.pspace]])
+        gamble = Gamble.make(self.pspace, gamble)
+        self._matrix.extend([[-lprev] + gamble.values()])
 
     def set_upper(self, gamble, uprev):
         """Constrain the expectation of *gamble* to be at most *uprev*.
@@ -76,7 +74,8 @@ class LowPrev:
         :param uprev: The upper bound for this expectation.
         :type uprev: |numbertype|
         """
-        self._matrix.extend([[uprev] + [-gamble[w] for w in self.pspace]])
+        gamble = Gamble.make(self.pspace, gamble)
+        self._matrix.extend([[uprev] + (-gamble).values()])
 
     def set_precise(self, gamble, prev):
         """Constrain the expectation of *gamble* to be exactly *prev*.
@@ -86,8 +85,8 @@ class LowPrev:
         :param prev: The precise bound for this expectation.
         :type prev: |numbertype|
         """
-        self._matrix.extend([[-prev] + [gamble[w] for w in self.pspace]],
-                            linear=True)
+        gamble = Gamble.make(self.pspace, gamble)
+        self._matrix.extend([[-prev] + gamble.values()], linear=True)
 
     def __iter__(self):
         """Yield tuples (gamble, lprev, linear)."""
@@ -107,9 +106,10 @@ class LowPrev:
         :return: The lower bound for this expectation, i.e. the natural extension of the gamble.
         :rtype: ``float``
         """
+        gamble = Gamble.make(self.pspace, gamble)
         if event is None:
             self._matrix.obj_type = pycddlib.LPObjType.MIN
-            self._matrix.obj_func = [0] + [gamble[w] for w in self.pspace]
+            self._matrix.obj_func = [0] + gamble.values()
             #print self._matrix # DEBUG
             linprog = pycddlib.LinProg(self._matrix)
             linprog.solve()
@@ -121,17 +121,15 @@ class LowPrev:
             else:
                 raise RuntimeError("BUG: unexpected status (%i)" % linprog.status)
         else:
-            lowprev_event = self.get_lower(
-                dict((w, 1 if w in event else 0) for w in self.pspace))
+            event = Event.make(self.pspace, event)
+            lowprev_event = self.get_lower(event.indicator())
             if lowprev_event < tolerance:
                 raise ZeroDivisionError(
                     "cannot condition on event with zero lower probability")
             return scipy.optimize.brentq(
-                f=lambda mu: self.get_lower(
-                    dict((w, gamble[w] - mu if w in event else 0)
-                         for w in self.pspace)),
-                a=min(gamble[w] for w in event),
-                b=max(gamble[w] for w in event))
+                f=lambda mu: self.get_lower((gamble - mu) * event),
+                a=min(gamble.values()),
+                b=max(gamble.values()))
 
     def get_upper(self, gamble, event=None):
         """Return the upper expectation for *gamble* conditional on
@@ -144,7 +142,8 @@ class LowPrev:
         :return: The upper bound for this expectation, i.e. the natural extension of the gamble.
         :rtype: ``float``
         """
-        return -self.get_lower(dict((w, -gamble[w]) for w in self.pspace), event)
+        gamble = Gamble.make(self.pspace, gamble)
+        return -self.get_lower(-gamble, event)
 
     #def getcredalset(self):
     #    """Find credal set corresponding to this lower prevision."""
@@ -212,12 +211,9 @@ class LowPrev:
         :return: ``True`` if *gamble* dominates *other_gamble*, ``False`` otherwise.
         :rtype: ``bool``
         """
-        return (
-            self.get_lower(
-                dict((w, gamble[w] - other_gamble[w])
-                     for w in self.pspace),
-                event)
-                > tolerance)
+        gamble = Gamble.make(self.pspace, gamble)
+        other_gamble = Gamble.make(self.pspace, other_gamble)
+        return self.get_lower(gamble - other_gamble, event) > tolerance
 
     def get_lowprob(self):
         """Return lower probability (i.e. restriction of natural
@@ -359,6 +355,16 @@ class LinVac(LowPrev):
         raise NotImplementedError
 
     def get_lower(self, gamble, event=None):
+        """Get the lower expectation of a gamble conditional on an event.
+
+        :param gamble: The gamble.
+        :type gamble: |gambletype|
+        :param event: The event to condition on.
+        :type event: |eventtype|
+        :return: The lower expectation of the gamble.
+        :rtype: ``float``
+        """
+        gamble = Gamble.make(self.pspace, gamble)
         if event is None:
             event = set(self.pspace)
         return (
@@ -371,6 +377,14 @@ class LinVac(LowPrev):
 
 class BelFunc(LowPrev):
     def __init__(self, mass=None, lowprob=None):
+        """Construct a belief function from a mass assignment or from
+        the mobius inverse of a given lower probability.
+
+        :param mass: The mass assignment.
+        :type mass: `improb.SetFunction`
+        :param lowprob: The lower probability.
+        :type lowprob: `improb.SetFunction`
+        """
         self._mass = {}
         if mass:
             self._mass = mass
@@ -387,6 +401,13 @@ class BelFunc(LowPrev):
 
     def get_lower(self, gamble, event=None):
         """Get lower prevision.
+
+        :param gamble: The gamble.
+        :type gamble: |gambletype|
+        :param event: The event to condition on.
+        :type event: |eventtype|
+        :return: The lower expectation of the gamble.
+        :rtype: ``float``
 
         >>> from improb.lowprev import BelFunc
         >>> from improb import PSpace, SetFunction
@@ -407,6 +428,7 @@ class BelFunc(LowPrev):
         >>> print(lpr.get_lower([5,1])) # 0.3 * 5 + 0.7 * 1
         2.2
         """
+        gamble = Gamble.make(self.pspace, gamble)
         if event is not None:
             raise NotImplementedError
         return sum(
