@@ -4,11 +4,15 @@ __version__ = '0.1.0'
 
 import itertools
 
-def make_pspace(arg=None):
-    """Convert *arg* into a possibility space.
+def make_pspace(*args):
+    """Convert *args* into a possibility space.
 
+    :param args: The components of the space.
+    :type args: :class:`Iterable` or ``int``
     :returns: A possibility space.
     :rtype: ``tuple``
+
+    Some examples of how components can be specified:
 
     * A range of integers.
 
@@ -53,13 +57,26 @@ def make_pspace(arg=None):
 
          >>> improb.make_pspace()
          (0, 1)
+
+    If multiple components are specified, the product is calculated:
+
+    .. doctest::
+
+       >>> improb.make_pspace(3, 'abc') # doctest: +NORMALIZE_WHITESPACE
+       ((0, 'a'), (0, 'b'), (0, 'c'),
+        (1, 'a'), (1, 'b'), (1, 'c'),
+        (2, 'a'), (2, 'b'), (2, 'c'))
     """
-    if arg is None:
+    if not args:
         return (0, 1)
-    elif isinstance(arg, int):
-        return tuple(xrange(arg))
+    elif len(args) == 1:
+        arg = args[0]
+        if isinstance(arg, int):
+            return tuple(xrange(arg))
+        else:
+            return tuple(arg)
     else:
-        return tuple(arg)
+        return tuple(itertools.product(*[make_pspace(arg) for arg in args]))
 
 def make_gamble(pspace, mapping):
     """Convert *mapping* into a gamble on *pspace*.
@@ -87,8 +104,8 @@ def make_event(pspace, elements):
 
 class PSpace(tuple):
     """A possibility space with syntactic sugar."""
-    def __new__(cls, arg=None):
-        return tuple.__new__(cls, make_pspace(arg))
+    def __new__(cls, *args):
+        return tuple.__new__(cls, make_pspace(*args))
 
     def __repr__(self):
         return "PSpace(%s)" % tuple.__repr__(self)
