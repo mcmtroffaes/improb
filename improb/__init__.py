@@ -517,3 +517,21 @@ class SetFunction(collections.Mapping, collections.Hashable):
     @property
     def pspace(self):
         return self._pspace
+
+    def get_mobius_inverse(self):
+        """Calculate the mobius inverse.
+
+        >>> from improb import PSpace, SetFunction
+        >>> setfunc = SetFunction(PSpace('ab'), {'a': 0.25, 'b': 0.25, 'ab': 1})
+        >>> print(setfunc.get_mobius_inverse())
+            : 0.000
+        a   : 0.250
+          b : 0.250
+        a b : 0.500
+        """
+        return SetFunction(
+            self.pspace,
+            dict((event,
+                  sum(((-1) ** len(event - subevent)) * self[subevent]
+                      for subevent in self.pspace.subsets(event)))
+                 for event in self.pspace.subsets()))

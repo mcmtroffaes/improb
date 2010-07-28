@@ -221,11 +221,11 @@ class LowPrev:
         this lower prevision. This usually only makes sense for completely
         monotone lower previsions.
         """
-        return mobius_inverse(
-            SetFunction(
-                self.pspace,
-                dict((event, self.get_lower(event.indicator()))
-                     for event in self.pspace.subsets())))
+        set_function = SetFunction(
+            self.pspace,
+            dict((event, self.get_lower(event.indicator()))
+                 for event in self.pspace.subsets()))
+        return set_function.get_mobius_inverse()
 
     def get_credal_set(self):
         """Return extreme points of the credal set.
@@ -355,32 +355,13 @@ class LinVac(LowPrev):
              + self._epsilon)
             )
 
-def mobius_inverse(set_function):
-    """Calculate the mobius inverse of a mapping.
-
-    >>> from improb import PSpace, SetFunction
-    >>> from improb.lowprev import mobius_inverse
-    >>> setfunc = SetFunction(PSpace('ab'), {'a': 0.25, 'b': 0.25, 'ab': 1})
-    >>> print(mobius_inverse(setfunc))
-        : 0.000
-    a   : 0.250
-      b : 0.250
-    a b : 0.500
-    """
-    return SetFunction(
-        set_function.pspace,
-        dict((event,
-              sum(((-1) ** len(event - subevent)) * set_function[subevent]
-                  for subevent in set_function.pspace.subsets(event)))
-             for event in set_function.pspace.subsets()))
-
 class BelFunc(LowPrev):
     def __init__(self, mass=None, lowprob=None):
         self._mass = {}
         if mass:
             self._mass = mass
         elif lowprob:
-            self._mass = mobius_inverse(lowprob)
+            self._mass = lowprob.get_mobius_inverse()
         else:
             raise ValueError("must specify mass or lowprob")
         self._pspace = self._mass._pspace
@@ -397,7 +378,7 @@ class BelFunc(LowPrev):
         >>> from improb import PSpace, SetFunction
         >>> pspace = PSpace(2)
         >>> lowprob = SetFunction(pspace, {(0,): 0.3, (1,): 0.2, (0,1): 1})
-        >>> lpr = BelFunc(lowprob=lowprob, pspace=pspace)
+        >>> lpr = BelFunc(lowprob=lowprob)
         >>> print(lpr.mass)
             : 0.000
         0   : 0.300
