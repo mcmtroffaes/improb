@@ -84,6 +84,12 @@ For more advanced usage of events, use the following class:
 
    .. automethod:: __str__
 
+Set Functions
+-------------
+
+.. autoclass:: SetFunction
+   :members:
+
 .. rubric:: Footnotes
 
 .. [#pspacetuple]

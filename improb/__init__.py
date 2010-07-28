@@ -72,8 +72,8 @@ def make_pspace(*args):
 
     .. doctest::
 
-       >>> improb.make_pspace([2, 2, 5])
-       (2, 5)
+       >>> improb.make_pspace([2, 2, 5, 3, 9, 5, 1, 2])
+       (2, 5, 3, 9, 1)
     """
     if not args:
         return (0, 1)
@@ -165,7 +165,7 @@ class PSpace(collections.Set, collections.Sequence, collections.Hashable):
         :rtype: Iterator of :class:`Event`.
 
         >>> pspace = improb.PSpace([2, 4, 5])
-        >>> print("\n---\n".join(str(subset) for subset in in pspace.subsets()))
+        >>> print("\n---\n".join(str(subset) for subset in pspace.subsets()))
         2 : 0
         4 : 0
         5 : 0
@@ -197,7 +197,7 @@ class PSpace(collections.Set, collections.Sequence, collections.Hashable):
         2 : 1
         4 : 1
         5 : 1
-        >>> print("\n---\n".join(str(subset) for subset in in pspace.subsets([2, 4])))
+        >>> print("\n---\n".join(str(subset) for subset in pspace.subsets([2, 4])))
         2 : 0
         4 : 0
         5 : 0
@@ -463,3 +463,53 @@ class Event(collections.Set, collections.Hashable):
         """
         return Gamble(self.pspace, dict((omega, 1 if omega in self else 0)
                                         for omega in self.pspace))
+
+class SetFunction(collections.Mapping, collections.Hashable):
+    """A real-valued set function defined on the power set of a
+    possibility space. Derived from :class:`collections.Mapping`.
+
+    >>> pspace = improb.PSpace('abc')
+    >>> print(improb.SetFunction(pspace, {'': 1, 'ac': 2, 'abc': 5}))
+          : 1.000
+    a     : 0.000
+      b   : 0.000
+        c : 0.000
+    a b   : 0.000
+    a   c : 2.000
+      b c : 0.000
+    a b c : 5.000
+    """
+
+    def __init__(self, pspace, mapping):
+        if not isinstance(pspace, PSpace):
+            raise TypeError(
+                "first Event() argument must be a PSpace, not '%s'"
+                % pspace.__class__)
+        self._pspace = pspace
+        self._data = dict((event, 0.0) for event in pspace.subsets())
+        self._data.update((Event(pspace, subset), float(mapping[subset]))
+                          for subset in mapping)
+
+    def __len__(self):
+        return len(self._data)
+
+    def __iter__(self):
+        return iter(self._data)
+
+    def __contains__(self, event):
+        return event in self._data
+
+    def __getitem__(self, event):
+        return self._data[event]
+
+    def __str__(self):
+        maxlen_pspace = max(len(str(omega)) for omega in self._pspace)
+        maxlen_value = max(len("{0:.3f}".format(self[event]))
+                           for event in self)
+        return "\n".join(
+            " ".join("{0: <{1}}".format(omega if omega in event else '',
+                                        maxlen_pspace)
+                      for omega in self._pspace) +
+            " : " +
+            "{0:{1}.3f}".format(self[event], maxlen_value)
+            for event in self._pspace.subsets())
