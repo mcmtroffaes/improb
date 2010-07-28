@@ -147,6 +147,19 @@ class Gamble(dict):
     Gamble(pspace=PSpace((0, 1, 2)), mapping={0: 2.0, 1: 8.0, 2: 16.0})
     >>> f1 / 2
     Gamble(pspace=PSpace((0, 1, 2)), mapping={0: 0.5, 1: 2.0, 2: 4.0})
+    >>> f2 = improb.Gamble(pspace, {0: 5, 1: 8, 2: 7})
+    >>> f1 + f2
+    Gamble(pspace=PSpace((0, 1, 2)), mapping={0: 6.0, 1: 12.0, 2: 15.0})
+    >>> f1 - f2
+    Gamble(pspace=PSpace((0, 1, 2)), mapping={0: -4.0, 1: -4.0, 2: 1.0})
+    >>> f1 * f2 # doctest: +ELLIPSIS
+    Traceback (most recent call last):
+        ...
+    TypeError: ...
+    >>> f1 / f2 # doctest: +ELLIPSIS
+    Traceback (most recent call last):
+        ...
+    TypeError: ...
     """
     def __init__(self, pspace, mapping):
         if not isinstance(pspace, PSpace):
@@ -160,20 +173,27 @@ class Gamble(dict):
     def __repr__(self):
         return "Gamble(pspace=%s, mapping=%s)" % (repr(self.pspace), dict.__repr__(self))
 
-    def _oper(self, other, oper):
+    def _scalar(self, other, oper):
         if isinstance(other, (int, long, float)):
             return Gamble(self.pspace,
                           dict((omega, oper(self[omega], other))
                                for omega in self.pspace))
         else:
+            raise TypeError("argument must be a scalar, not '%s'"
+                            % other.__class__)
+
+    def _pointwise(self, other, oper):
+        if isinstance(other, (int, long, float)):
+            return self._scalar(other, oper)
+        else:
             return Gamble(self.pspace,
                           dict((omega, oper(self[omega], other[omega]))
                                for omega in self.pspace))       
 
-    __add__ = lambda self, other: self._oper(other, float.__add__)
-    __sub__ = lambda self, other: self._oper(other, float.__sub__)
-    __mul__ = lambda self, other: self._oper(other, float.__mul__)
-    __div__ = lambda self, other: self._oper(other, float.__div__)
+    __add__ = lambda self, other: self._pointwise(other, float.__add__)
+    __sub__ = lambda self, other: self._pointwise(other, float.__sub__)
+    __mul__ = lambda self, other: self._scalar(other, float.__mul__)
+    __div__ = lambda self, other: self._scalar(other, float.__div__)
 
 class Event(set):
     """An event with syntactic sugar."""
