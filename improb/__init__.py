@@ -153,10 +153,19 @@ class Gamble(dict):
     >>> f1 - f2
     Gamble(pspace=PSpace((0, 1, 2)), mapping={0: -4.0, 1: -4.0, 2: 1.0})
     >>> f1 * f2 # doctest: +ELLIPSIS
+    Gamble(pspace=PSpace((0, 1, 2)), mapping={0: 5.0, 1: 32.0, 2: 56.0})
+    >>> f1 / f2 # doctest: +ELLIPSIS
     Traceback (most recent call last):
         ...
     TypeError: ...
-    >>> f1 / f2 # doctest: +ELLIPSIS
+    >>> event = improb.Event(pspace, [0, 2])
+    >>> f1 + event
+    Gamble(pspace=PSpace((0, 1, 2)), mapping={0: 2.0, 1: 4.0, 2: 9.0})
+    >>> f1 - event
+    Gamble(pspace=PSpace((0, 1, 2)), mapping={0: 0.0, 1: 4.0, 2: 7.0})
+    >>> f1 * event
+    Gamble(pspace=PSpace((0, 1, 2)), mapping={0: 1.0, 1: 0.0, 2: 8.0})
+    >>> f1 / event
     Traceback (most recent call last):
         ...
     TypeError: ...
@@ -185,14 +194,23 @@ class Gamble(dict):
     def _pointwise(self, other, oper):
         if isinstance(other, (int, long, float)):
             return self._scalar(other, oper)
-        else:
+        elif isinstance(other, Event):
+            if self.pspace != other.pspace:
+                raise ValueError("possibility spaces do not match")
             return Gamble(self.pspace,
-                          dict((omega, oper(self[omega], other[omega]))
-                               for omega in self.pspace))       
+                          dict((omega, oper(self[omega],
+                                            1.0 if omega in other else 0.0))
+                               for omega in self.pspace))
+        elif isinstance(other, Gamble):
+            if self.pspace != other.pspace:
+                raise ValueError("possibility spaces do not match")
+            return Gamble(self.pspace,
+                          dict((omega, oper(self[omega], float(other[omega])))
+                               for omega in self.pspace))
 
     __add__ = lambda self, other: self._pointwise(other, float.__add__)
     __sub__ = lambda self, other: self._pointwise(other, float.__sub__)
-    __mul__ = lambda self, other: self._scalar(other, float.__mul__)
+    __mul__ = lambda self, other: self._pointwise(other, float.__mul__)
     __div__ = lambda self, other: self._scalar(other, float.__div__)
 
 class Event(set):
