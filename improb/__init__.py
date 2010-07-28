@@ -2,6 +2,7 @@
 
 __version__ = '0.1.0'
 
+import collections
 import itertools
 
 def make_pspace(*args):
@@ -66,6 +67,13 @@ def make_pspace(*args):
        ((0, 'a'), (0, 'b'), (0, 'c'),
         (1, 'a'), (1, 'b'), (1, 'c'),
         (2, 'a'), (2, 'b'), (2, 'c'))
+
+    It also removes duplicates:
+
+    .. doctest::
+
+       >>> improb.make_pspace([2, 2, 5])
+       (2, 5)
     """
     if not args:
         return (0, 1)
@@ -74,7 +82,15 @@ def make_pspace(*args):
         if isinstance(arg, int):
             return tuple(xrange(arg))
         else:
-            return tuple(arg)
+            # rationale for removing duplicates: if elem is not in
+            # added, then added.add(elem) is executed and the
+            # expression returns True (since set.add() is always
+            # False); however, if elem is in added, then the
+            # expression returns False (and added.add(elem) is not
+            # executed)
+            added = set()
+            return tuple(elem for elem in arg
+                         if elem not in added and not added.add(elem))
     else:
         return tuple(itertools.product(*[make_pspace(arg) for arg in args]))
 
@@ -102,10 +118,25 @@ def make_event(pspace, elements):
     """
     return set(omega for omega in pspace if omega in elements)
 
-class PSpace(tuple):
-    """A possibility space with syntactic sugar."""
-    def __new__(cls, *args):
-        return tuple.__new__(cls, make_pspace(*args))
+class PSpace(collections.Set, collections.Hashable):
+    """An immutable possibility space with syntactic sugar, derived
+    from :class:`collections.Set` and :class:`collections.Hashable`.
+    """
+
+    def __init__(self, *args):
+        self.data = make_pspace(*args)
+
+    def __len__(self):
+        return len(self.data)
+
+    def __contains__(self, omega):
+        return omega in self.data
+
+    def __iter__(self):
+        return iter(self.data)
+
+    def __hash__(self):
+        return hash(self.data)
 
     def __repr__(self):
         """
