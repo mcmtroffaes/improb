@@ -108,7 +108,18 @@ class PSpace(tuple):
         return tuple.__new__(cls, make_pspace(*args))
 
     def __repr__(self):
-        return "PSpace(%s)" % tuple.__repr__(self)
+        """
+        >>> improb.PSpace([2, 4, 5])
+        PSpace([2, 4, 5])
+        """
+        return "PSpace(%s)" % repr(list(self))
+
+    def __str__(self):
+        """
+        >>> print(improb.PSpace([2, 4, 5]))
+        2 4 5
+        """
+        return " ".join(str(omega) for omega in self)
 
     def subsets(self, event=None):
         """Iterates over all subsets of the possibility space.
@@ -140,31 +151,31 @@ class Gamble(dict):
     >>> pspace = improb.PSpace(3)
     >>> f1 = improb.Gamble(pspace, {0: 1, 1: 4, 2: 8})
     >>> f1 + 2
-    Gamble(pspace=PSpace((0, 1, 2)), mapping={0: 3.0, 1: 6.0, 2: 10.0})
+    Gamble(pspace=PSpace([0, 1, 2]), mapping={0: 3.0, 1: 6.0, 2: 10.0})
     >>> f1 - 2
-    Gamble(pspace=PSpace((0, 1, 2)), mapping={0: -1.0, 1: 2.0, 2: 6.0})
+    Gamble(pspace=PSpace([0, 1, 2]), mapping={0: -1.0, 1: 2.0, 2: 6.0})
     >>> f1 * 2
-    Gamble(pspace=PSpace((0, 1, 2)), mapping={0: 2.0, 1: 8.0, 2: 16.0})
+    Gamble(pspace=PSpace([0, 1, 2]), mapping={0: 2.0, 1: 8.0, 2: 16.0})
     >>> f1 / 2
-    Gamble(pspace=PSpace((0, 1, 2)), mapping={0: 0.5, 1: 2.0, 2: 4.0})
+    Gamble(pspace=PSpace([0, 1, 2]), mapping={0: 0.5, 1: 2.0, 2: 4.0})
     >>> f2 = improb.Gamble(pspace, {0: 5, 1: 8, 2: 7})
     >>> f1 + f2
-    Gamble(pspace=PSpace((0, 1, 2)), mapping={0: 6.0, 1: 12.0, 2: 15.0})
+    Gamble(pspace=PSpace([0, 1, 2]), mapping={0: 6.0, 1: 12.0, 2: 15.0})
     >>> f1 - f2
-    Gamble(pspace=PSpace((0, 1, 2)), mapping={0: -4.0, 1: -4.0, 2: 1.0})
+    Gamble(pspace=PSpace([0, 1, 2]), mapping={0: -4.0, 1: -4.0, 2: 1.0})
     >>> f1 * f2 # doctest: +ELLIPSIS
-    Gamble(pspace=PSpace((0, 1, 2)), mapping={0: 5.0, 1: 32.0, 2: 56.0})
+    Gamble(pspace=PSpace([0, 1, 2]), mapping={0: 5.0, 1: 32.0, 2: 56.0})
     >>> f1 / f2 # doctest: +ELLIPSIS
     Traceback (most recent call last):
         ...
     TypeError: ...
     >>> event = improb.Event(pspace, [0, 2])
     >>> f1 + event
-    Gamble(pspace=PSpace((0, 1, 2)), mapping={0: 2.0, 1: 4.0, 2: 9.0})
+    Gamble(pspace=PSpace([0, 1, 2]), mapping={0: 2.0, 1: 4.0, 2: 9.0})
     >>> f1 - event
-    Gamble(pspace=PSpace((0, 1, 2)), mapping={0: 0.0, 1: 4.0, 2: 7.0})
+    Gamble(pspace=PSpace([0, 1, 2]), mapping={0: 0.0, 1: 4.0, 2: 7.0})
     >>> f1 * event
-    Gamble(pspace=PSpace((0, 1, 2)), mapping={0: 1.0, 1: 0.0, 2: 8.0})
+    Gamble(pspace=PSpace([0, 1, 2]), mapping={0: 1.0, 1: 0.0, 2: 8.0})
     >>> f1 / event
     Traceback (most recent call last):
         ...
@@ -180,7 +191,28 @@ class Gamble(dict):
         self.pspace = pspace
 
     def __repr__(self):
+        """
+        >>> pspace = improb.PSpace([2, 3, 4])
+        >>> improb.Gamble(pspace, {2: 1, 3: 4, 4: 8})
+        Gamble(pspace=PSpace([2, 3, 4]), mapping={2: 1.0, 3: 4.0, 4: 8.0})
+        """
         return "Gamble(pspace=%s, mapping=%s)" % (repr(self.pspace), dict.__repr__(self))
+
+    def __str__(self):
+        """
+        >>> pspace = improb.PSpace('rain sun clouds'.split())
+        >>> print(improb.Gamble(pspace, {'rain': -14, 'sun': 4, 'clouds': 20}))
+        rain   : -14.000
+        sun    :   4.000
+        clouds :  20.000
+        """
+        maxlen_pspace = max(len(str(omega)) for omega in self.pspace)
+        maxlen_value = max(len("{0:.3f}".format(self[omega]))
+                           for omega in self.pspace)
+        return "\n".join(
+            "{0: <{1}} : {2:{3}.3f}".format(
+                omega, maxlen_pspace, self[omega], maxlen_value)
+            for omega in self.pspace)
 
     def _scalar(self, other, oper):
         if isinstance(other, (int, long, float)):
@@ -224,7 +256,26 @@ class Event(set):
         self.pspace = pspace
 
     def __repr__(self):
-        return "Event(pspace=%s, elements=%s)" % (repr(self.pspace), set.__repr__(self))
+        """
+        >>> pspace = improb.PSpace([2, 3, 4])
+        >>> improb.Event(pspace, [3, 4])
+        Event(pspace=PSpace([2, 3, 4]), elements=set([3, 4]))
+        """
+        return "Event(pspace=%s, elements=%s)" % (repr(self.pspace), repr(set(self)))
+
+    def __str__(self):
+        """
+        >>> pspace = improb.PSpace('rain sun clouds'.split())
+        >>> print(improb.Event(pspace, 'rain clouds'.split()))
+        rain   : 1
+        sun    : 0
+        clouds : 1
+        """
+        maxlen_pspace = max(len(str(omega)) for omega in self.pspace)
+        return "\n".join(
+            "{0: <{1}} : {2}".format(
+                omega, maxlen_pspace, 1 if omega in self else 0)
+            for omega in self.pspace)
 
     def indicator(self):
         """Return indicator gamble for the event.
@@ -232,7 +283,7 @@ class Event(set):
         >>> pspace = improb.PSpace(5)
         >>> event = improb.Event(pspace, [2, 4])
         >>> event.indicator() # doctest: +NORMALIZE_WHITESPACE
-        Gamble(pspace=PSpace((0, 1, 2, 3, 4)),
+        Gamble(pspace=PSpace([0, 1, 2, 3, 4]),
                mapping={0: 0.0, 1: 0.0, 2: 1.0, 3: 0.0, 4: 1.0})
         """
         return Gamble(self.pspace, dict((omega, 1 if omega in self else 0)

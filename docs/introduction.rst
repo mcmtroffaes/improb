@@ -28,6 +28,10 @@ For more advanced usage of possibility spaces, use the following class:
 .. autoclass:: PSpace
    :members:
 
+   .. automethod:: __repr__
+
+   .. automethod:: __str__
+
 .. _gambles:
 
 Gambles
@@ -51,6 +55,10 @@ For more advanced usage of gambles, use the following class:
 .. autoclass:: Gamble
    :members:
 
+   .. automethod:: __repr__
+
+   .. automethod:: __str__
+
 .. _events:
 
 Events
@@ -71,6 +79,10 @@ For more advanced usage of events, use the following class:
 
 .. autoclass:: Event
    :members:
+
+   .. automethod:: __repr__
+
+   .. automethod:: __str__
 
 .. rubric:: Footnotes
 
