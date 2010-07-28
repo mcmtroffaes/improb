@@ -118,25 +118,29 @@ def make_event(pspace, elements):
     """
     return set(omega for omega in pspace if omega in elements)
 
-class PSpace(collections.Set, collections.Hashable):
+class PSpace(collections.Set, collections.Sequence, collections.Hashable):
     """An immutable possibility space with syntactic sugar, derived
-    from :class:`collections.Set` and :class:`collections.Hashable`.
+    from :class:`collections.Set`, :class:`collections.Sequence`, and
+    :class:`collections.Hashable`.
     """
 
     def __init__(self, *args):
-        self.data = make_pspace(*args)
+        self._data = make_pspace(*args)
 
     def __len__(self):
-        return len(self.data)
+        return len(self._data)
 
     def __contains__(self, omega):
-        return omega in self.data
+        return omega in self._data
+
+    def __getitem__(self, index):
+        return self._data[index]
 
     def __iter__(self):
-        return iter(self.data)
+        return iter(self._data)
 
     def __hash__(self):
-        return hash(self.data)
+        return hash(self._data)
 
     def __repr__(self):
         """
@@ -153,20 +157,62 @@ class PSpace(collections.Set, collections.Hashable):
         return " ".join(str(omega) for omega in self)
 
     def subsets(self, event=None):
-        """Iterates over all subsets of the possibility space.
+        r"""Iterates over all subsets of the possibility space.
 
         :param event: An event (optional).
         :type event: |eventtype|
         :returns: Yields all subsets.
-        :rtype: Iterator of ``frozenset`` s.
+        :rtype: Iterator of :class:`Event`.
 
         >>> pspace = improb.PSpace([2, 4, 5])
-        >>> [subset for subset in pspace.subsets()] # doctest: +NORMALIZE_WHITESPACE
-        [frozenset([]), frozenset([2]), frozenset([4]), frozenset([5]), 
-         frozenset([2, 4]), frozenset([2, 5]), frozenset([4, 5]), 
-         frozenset([2, 4, 5])]
-        >>> [subset for subset in pspace.subsets([2, 4])]
-        [frozenset([]), frozenset([2]), frozenset([4]), frozenset([2, 4])]
+        >>> print("\n---\n".join(str(subset) for subset in in pspace.subsets()))
+        2 : 0
+        4 : 0
+        5 : 0
+        ---
+        2 : 1
+        4 : 0
+        5 : 0
+        ---
+        2 : 0
+        4 : 1
+        5 : 0
+        ---
+        2 : 0
+        4 : 0
+        5 : 1
+        ---
+        2 : 1
+        4 : 1
+        5 : 0
+        ---
+        2 : 1
+        4 : 0
+        5 : 1
+        ---
+        2 : 0
+        4 : 1
+        5 : 1
+        ---
+        2 : 1
+        4 : 1
+        5 : 1
+        >>> print("\n---\n".join(str(subset) for subset in in pspace.subsets([2, 4])))
+        2 : 0
+        4 : 0
+        5 : 0
+        ---
+        2 : 1
+        4 : 0
+        5 : 0
+        ---
+        2 : 0
+        4 : 1
+        5 : 0
+        ---
+        2 : 1
+        4 : 1
+        5 : 0
         """
         if event is None:
             event = self
@@ -174,40 +220,60 @@ class PSpace(collections.Set, collections.Hashable):
             event = make_event(self, event)
         for subset_size in xrange(len(event) + 1):
             for subset in itertools.combinations(event, subset_size):
-                yield frozenset(subset)
+                yield Event(self, subset)
 
-class Gamble(dict):
-    """A gamble with syntactic sugar.
+class Gamble(collections.Mapping, collections.Hashable):
+    """An immutable gamble with syntactic sugar.
 
-    >>> pspace = improb.PSpace(3)
-    >>> f1 = improb.Gamble(pspace, {0: 1, 1: 4, 2: 8})
-    >>> f1 + 2
-    Gamble(pspace=PSpace([0, 1, 2]), mapping={0: 3.0, 1: 6.0, 2: 10.0})
-    >>> f1 - 2
-    Gamble(pspace=PSpace([0, 1, 2]), mapping={0: -1.0, 1: 2.0, 2: 6.0})
-    >>> f1 * 2
-    Gamble(pspace=PSpace([0, 1, 2]), mapping={0: 2.0, 1: 8.0, 2: 16.0})
-    >>> f1 / 2
-    Gamble(pspace=PSpace([0, 1, 2]), mapping={0: 0.5, 1: 2.0, 2: 4.0})
-    >>> f2 = improb.Gamble(pspace, {0: 5, 1: 8, 2: 7})
-    >>> f1 + f2
-    Gamble(pspace=PSpace([0, 1, 2]), mapping={0: 6.0, 1: 12.0, 2: 15.0})
-    >>> f1 - f2
-    Gamble(pspace=PSpace([0, 1, 2]), mapping={0: -4.0, 1: -4.0, 2: 1.0})
-    >>> f1 * f2 # doctest: +ELLIPSIS
-    Gamble(pspace=PSpace([0, 1, 2]), mapping={0: 5.0, 1: 32.0, 2: 56.0})
-    >>> f1 / f2 # doctest: +ELLIPSIS
+    >>> pspace = improb.PSpace('abc')
+    >>> f1 = improb.Gamble(pspace, {'a': 1, 'b': 4, 'c': 8})
+    >>> print(f1 + 2)
+    a :  3.000
+    b :  6.000
+    c : 10.000
+    >>> print(f1 - 2)
+    a : -1.000
+    b :  2.000
+    c :  6.000
+    >>> print(f1 * 2)
+    a :  2.000
+    b :  8.000
+    c : 16.000
+    >>> print(f1 / 2)
+    a : 0.500
+    b : 2.000
+    c : 4.000
+    >>> f2 = improb.Gamble(pspace, {'a': 5, 'b': 8, 'c': 7})
+    >>> print(f1 + f2)
+    a :  6.000
+    b : 12.000
+    c : 15.000
+    >>> print(f1 - f2)
+    a : -4.000
+    b : -4.000
+    c :  1.000
+    >>> print(f1 * f2) # doctest: +ELLIPSIS
+    a :  5.000
+    b : 32.000
+    c : 56.000
+    >>> print(f1 / f2) # doctest: +ELLIPSIS
     Traceback (most recent call last):
         ...
     TypeError: ...
-    >>> event = improb.Event(pspace, [0, 2])
-    >>> f1 + event
-    Gamble(pspace=PSpace([0, 1, 2]), mapping={0: 2.0, 1: 4.0, 2: 9.0})
-    >>> f1 - event
-    Gamble(pspace=PSpace([0, 1, 2]), mapping={0: 0.0, 1: 4.0, 2: 7.0})
-    >>> f1 * event
-    Gamble(pspace=PSpace([0, 1, 2]), mapping={0: 1.0, 1: 0.0, 2: 8.0})
-    >>> f1 / event
+    >>> event = improb.Event(pspace, 'ac')
+    >>> print(f1 + event)
+    a : 2.000
+    b : 4.000
+    c : 9.000
+    >>> print(f1 - event)
+    a : 0.000
+    b : 4.000
+    c : 7.000
+    >>> print(f1 * event)
+    a : 1.000
+    b : 0.000
+    c : 8.000
+    >>> print(f1 / event)
     Traceback (most recent call last):
         ...
     TypeError: ...
@@ -217,9 +283,28 @@ class Gamble(dict):
             raise TypeError(
                 "first Gamble() argument must be a PSpace, not '%s'"
                 % pspace.__class__)
-        dict.__init__(self,
-                      ((omega, float(mapping[omega])) for omega in pspace))
-        self.pspace = pspace
+        self._data = dict((omega, float(mapping[omega])) for omega in pspace)
+        self._pspace = pspace
+
+    @property
+    def pspace(self):
+        return self._pspace
+
+    def __len__(self):
+        return len(self._data)
+
+    def __iter__(self):
+        return iter(self._data)
+
+    def __contains__(self, omega):
+        return omega in self._data
+
+    def __getitem__(self, omega):
+        return self._data[omega]
+
+    def __hash__(self):
+        return hash((self._pspace,
+                     tuple(self._data[omega] for omega in self._pspace)))
 
     def __repr__(self):
         """
@@ -227,7 +312,8 @@ class Gamble(dict):
         >>> improb.Gamble(pspace, {2: 1, 3: 4, 4: 8})
         Gamble(pspace=PSpace([2, 3, 4]), mapping={2: 1.0, 3: 4.0, 4: 8.0})
         """
-        return "Gamble(pspace=%s, mapping=%s)" % (repr(self.pspace), dict.__repr__(self))
+        return "Gamble(pspace={0}, mapping={1})".format(
+            repr(self._pspace), repr(self._data))
 
     def __str__(self):
         """
@@ -276,15 +362,70 @@ class Gamble(dict):
     __mul__ = lambda self, other: self._pointwise(other, float.__mul__)
     __div__ = lambda self, other: self._scalar(other, float.__div__)
 
-class Event(set):
-    """An event with syntactic sugar."""
+class Event(collections.Set, collections.Hashable):
+    """An immutable event with syntactic sugar.
+
+    >>> pspace = improb.PSpace('abcdef')
+    >>> event1 = improb.Event(pspace, 'acd')
+    >>> print(event1)
+    a : 1
+    b : 0
+    c : 1
+    d : 1
+    e : 0
+    f : 0
+    >>> event2 = improb.Event(pspace, 'cdef')
+    >>> print(event2)
+    a : 0
+    b : 0
+    c : 1
+    d : 1
+    e : 1
+    f : 1
+    >>> print(event1 & event2)
+    a : 0
+    b : 0
+    c : 1
+    d : 1
+    e : 0
+    f : 0
+    >>> print(event1 | event2)
+    a : 1
+    b : 0
+    c : 1
+    d : 1
+    e : 1
+    f : 1
+    """
     def __init__(self, pspace, elements):
         if not isinstance(pspace, PSpace):
             raise TypeError(
                 "first Event() argument must be a PSpace, not '%s'"
                 % pspace.__class__)
-        set.__init__(self, (omega for omega in pspace if omega in elements))
-        self.pspace = pspace
+        self._data = frozenset(omega for omega in pspace if omega in elements)
+        self._pspace = pspace
+
+    @property
+    def pspace(self):
+        """The possibility space on which the event is defined."""
+        return self._pspace
+
+    # must override this because the class constructor does not accept
+    # an iterable for an input
+    def _from_iterable(self, it):
+        return Event(self._pspace, set(it))
+
+    def __len__(self):
+        return len(self._data)
+
+    def __iter__(self):
+        return (omega for omega in self._pspace if omega in self._data)
+
+    def __contains__(self, omega):
+        return omega in self._data
+
+    def __hash__(self):
+        return hash((self._pspace, self._data))
 
     def __repr__(self):
         """
@@ -310,6 +451,9 @@ class Event(set):
 
     def indicator(self):
         """Return indicator gamble for the event.
+
+        :return: Indicator gamble.
+        :rtype: :class:`Gamble`
 
         >>> pspace = improb.PSpace(5)
         >>> event = improb.Event(pspace, [2, 4])
