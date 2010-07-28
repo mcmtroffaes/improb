@@ -123,13 +123,20 @@ Mobius Inverse
 >>> lpr.set_lower([1,0], 0.3)
 >>> lpr.set_lower([0,1], 0.2)
 >>> mass = lpr.get_mobius_inverse()
->>> print(mass[frozenset()])
+>>> for subset in lpr.pspace.subsets():
+...     print(subset)
+...     print(mass[subset])
+0 : 0
+1 : 0
 0.0
->>> print(mass[frozenset([0])])
+0 : 1
+1 : 0
 0.3
->>> print(mass[frozenset([1])])
+0 : 0
+1 : 1
 0.2
->>> print(mass[frozenset([0,1])])
+0 : 1
+1 : 1
 0.5
 
 Frechet Bounds

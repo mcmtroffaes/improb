@@ -513,3 +513,7 @@ class SetFunction(collections.Mapping, collections.Hashable):
             " : " +
             "{0:{1}.3f}".format(self[event], maxlen_value)
             for event in self._pspace.subsets())
+
+    @property
+    def pspace(self):
+        return self._pspace

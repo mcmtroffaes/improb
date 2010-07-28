@@ -24,7 +24,7 @@ import pycddlib
 import random
 import scipy.optimize
 
-from improb import PSpace
+from improb import PSpace, SetFunction
 
 class LowPrev:
     """The base class for working with arbitrary finitely generated
@@ -221,12 +221,11 @@ class LowPrev:
         this lower prevision. This usually only makes sense for completely
         monotone lower previsions.
         """
-        map_ = {}
-        for event in self.pspace.subsets():
-            map_[event] = self.get_lower(
-                dict((w, 1 if w in event else 0)
-                     for w in self.pspace))
-        return mobius_inverse(map_, self.pspace)
+        return mobius_inverse(
+            SetFunction(
+                self.pspace,
+                dict((event, self.get_lower(event.indicator()))
+                     for event in self.pspace.subsets())))
 
     def get_credal_set(self):
         """Return extreme points of the credal set.
@@ -356,55 +355,54 @@ class LinVac(LowPrev):
              + self._epsilon)
             )
 
-def mobius_inverse(map_, pspace):
+def mobius_inverse(set_function):
     """Calculate the mobius inverse of a mapping.
 
+    >>> from improb import PSpace, SetFunction
     >>> from improb.lowprev import mobius_inverse
-    >>> map_ = {}
-    >>> map_[frozenset()] = 0.0
-    >>> map_[frozenset([0])] = 0.25
-    >>> map_[frozenset([1])] = 0.25
-    >>> map_[frozenset([0,1])] = 1.0
-    >>> map_inv = mobius_inverse(map_, [0,1])
-    >>> map_inv[frozenset()]
-    0.0
-    >>> map_inv[frozenset([0])]
-    0.25
-    >>> map_inv[frozenset([1])]
-    0.25
-    >>> map_inv[frozenset([0,1])]
-    0.5
+    >>> setfunc = SetFunction(PSpace('ab'), {'a': 0.25, 'b': 0.25, 'ab': 1})
+    >>> print(mobius_inverse(setfunc))
+        : 0.000
+    a   : 0.250
+      b : 0.250
+    a b : 0.500
     """
-    inv_map = {}
-    for event in pspace.subsets():
-        inv_map[event] = sum(
-            ((-1) ** len(event - subevent)) * map_[subevent]
-            for subevent in pspace.subsets(event))
-    return inv_map
+    return SetFunction(
+        set_function.pspace,
+        dict((event,
+              sum(((-1) ** len(event - subevent)) * set_function[subevent]
+                  for subevent in set_function.pspace.subsets(event)))
+             for event in set_function.pspace.subsets()))
 
 class BelFunc(LowPrev):
-    def __init__(self, mass=None, lowprob=None, pspace=None):
-        self._pspace = PSpace(pspace)
+    def __init__(self, mass=None, lowprob=None):
         self._mass = {}
         if mass:
-            for event in self.pspace.subsets():
-                self._mass[event] = mass[event]
+            self._mass = mass
         elif lowprob:
-            self._mass = mobius_inverse(lowprob, self.pspace)
+            self._mass = mobius_inverse(lowprob)
         else:
             raise ValueError("must specify mass or lowprob")
+        self._pspace = self._mass._pspace
         self._matrix = None
+
+    @property
+    def mass(self):
+        return self._mass
 
     def get_lower(self, gamble, event=None):
         """Get lower prevision.
 
         >>> from improb.lowprev import BelFunc
-        >>> lowprob = {}
-        >>> lowprob[frozenset()] = 0.0
-        >>> lowprob[frozenset([0])] = 0.3
-        >>> lowprob[frozenset([1])] = 0.2
-        >>> lowprob[frozenset([0,1])] = 1.0
-        >>> lpr = BelFunc(lowprob=lowprob, pspace=2)
+        >>> from improb import PSpace, SetFunction
+        >>> pspace = PSpace(2)
+        >>> lowprob = SetFunction(pspace, {(0,): 0.3, (1,): 0.2, (0,1): 1})
+        >>> lpr = BelFunc(lowprob=lowprob, pspace=pspace)
+        >>> print(lpr.mass)
+            : 0.000
+        0   : 0.300
+          1 : 0.200
+        0 1 : 0.500
         >>> print(lpr.get_lower([1,0]))
         0.3
         >>> print(lpr.get_lower([0,1]))
