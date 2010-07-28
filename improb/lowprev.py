@@ -41,7 +41,10 @@ class LowPrev:
         :type pspace: |pspacetype|
         """
 
-        self._pspace = PSpace(pspace)
+        if isinstance(pspace, PSpace):
+            self._pspace = pspace
+        else:
+            self._pspace = PSpace(pspace)
         self._matrix = pycddlib.Matrix([[+1] + [-1] * len(self.pspace)] # linear
                                         +
                                         [[0] + [1 if i == j else 0
@@ -52,7 +55,7 @@ class LowPrev:
 
     @property
     def pspace(self):
-        """A ``tuple`` representing the possibility space."""
+        """An :class:`improb.PSpace` representing the possibility space."""
         return self._pspace
 
     def set_lower(self, gamble, lprev):
@@ -216,16 +219,27 @@ class LowPrev:
                 event)
                 > tolerance)
 
+    def get_lowprob(self):
+        """Return lower probability (i.e. restriction of natural
+        extension to indicators).
+
+        :return: The lower probability.
+        :rtype: :class:`improb.SetFunction`
+        """
+        return SetFunction(
+            self.pspace,
+            dict((event, self.get_lower(event.indicator()))
+                 for event in self.pspace.subsets()))
+
     def get_mobius_inverse(self):
         """Return the mobius inverse of the lower probability determined by
         this lower prevision. This usually only makes sense for completely
         monotone lower previsions.
+
+        :return: The mobius inverse.
+        :rtype: :class:`improb.SetFunction`
         """
-        set_function = SetFunction(
-            self.pspace,
-            dict((event, self.get_lower(event.indicator()))
-                 for event in self.pspace.subsets()))
-        return set_function.get_mobius_inverse()
+        return self.get_lowprob().get_mobius_inverse()
 
     def get_credal_set(self):
         """Return extreme points of the credal set.
