@@ -9,7 +9,7 @@ def make_pspace(*args):
     """Convert *args* into a possibility space.
 
     :param args: The components of the space.
-    :type args: :class:`Iterable` or ``int``
+    :type args: :class:`collections.Iterable` or ``int``
     :returns: A possibility space.
     :rtype: ``tuple``
 
@@ -155,8 +155,13 @@ class PSpace(collections.Set, collections.Sequence, collections.Hashable):
         """
         >>> improb.PSpace([2, 4, 5])
         PSpace([2, 4, 5])
+        >>> improb.PSpace([0, 1, 2])
+        PSpace(3)
         """
-        return "PSpace(%s)" % repr(list(self))
+        if list(self) == list(xrange(len(self))):
+            return "PSpace(%i)" % len(self)
+        else:
+            return "PSpace(%s)" % repr(list(self))
 
     def __str__(self):
         """
@@ -441,7 +446,8 @@ class Event(collections.Set, collections.Hashable):
     """
     def __init__(self, pspace, elements):
         self._pspace = PSpace.make(pspace)
-        self._data = frozenset(omega for omega in pspace if omega in elements)
+        self._data = frozenset(omega for omega in self.pspace
+                               if omega in elements)
 
     @staticmethod
     def make(pspace, event):
@@ -517,7 +523,7 @@ class Event(collections.Set, collections.Hashable):
         >>> pspace = improb.PSpace(5)
         >>> event = improb.Event(pspace, [2, 4])
         >>> event.indicator() # doctest: +NORMALIZE_WHITESPACE
-        Gamble(pspace=PSpace([0, 1, 2, 3, 4]),
+        Gamble(pspace=PSpace(5),
                mapping={0: 0.0, 1: 0.0, 2: 1.0, 3: 0.0, 4: 1.0})
         """
         return Gamble(self.pspace, dict((omega, 1 if omega in self else 0)
@@ -526,16 +532,6 @@ class Event(collections.Set, collections.Hashable):
 class SetFunction(collections.Mapping, collections.Hashable):
     """A real-valued set function defined on the power set of a
     possibility space. Derived from :class:`collections.Mapping`.
-
-    >>> print(improb.SetFunction('abc', {'': 1, 'ac': 2, 'abc': 5}))
-          : 1.000
-    a     : 0.000
-      b   : 0.000
-        c : 0.000
-    a b   : 0.000
-    a   c : 2.000
-      b c : 0.000
-    a b c : 5.000
     """
 
     def __init__(self, pspace, mapping):
@@ -545,7 +541,7 @@ class SetFunction(collections.Mapping, collections.Hashable):
         :param pspace: The possibility space.
         :type pspace: |pspacetype|
         :param mapping: A mapping that defines the value on each event (missing values default to zero).
-        :type mapping: ``dict``
+        :type mapping: :class:`dict`
         """
         self._pspace = PSpace.make(pspace)
         self._data = dict((event, 0.0) for event in self.pspace.subsets())
@@ -564,7 +560,33 @@ class SetFunction(collections.Mapping, collections.Hashable):
     def __getitem__(self, event):
         return self._data[event]
 
+    def __repr__(self):
+        """
+        >>> improb.SetFunction(3, {(): 1, (0, 2): 2, (0, 1, 2): 5}) # doctest: +NORMALIZE_WHITESPACE
+        SetFunction(pspace=PSpace(3),
+                    mapping={(): 1.0, (0, 2): 2.0, (0, 1, 2): 5.0})
+        """
+        dict_ = [(tuple(omega for omega in self.pspace
+                        if omega in event),
+                  self[event])
+                 for event in self.pspace.subsets()
+                 if self[event] != 0.0]
+        return "SetFunction(pspace={0}, mapping={{{1}}})".format(
+            repr(self._pspace), ", ".join("{0}: {1}".format(*element)
+                                          for element in dict_))
+
     def __str__(self):
+        """
+        >>> print(improb.SetFunction('abc', {'': 1, 'ac': 2, 'abc': 5}))
+              : 1.000
+        a     : 0.000
+          b   : 0.000
+            c : 0.000
+        a b   : 0.000
+        a   c : 2.000
+          b c : 0.000
+        a b c : 5.000
+        """
         maxlen_pspace = max(len(str(omega)) for omega in self._pspace)
         maxlen_value = max(len("{0:.3f}".format(self[event]))
                            for event in self)
