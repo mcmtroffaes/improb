@@ -1,7 +1,7 @@
-Solving some questions posed by Erik Quaeghebeur
-================================================
+Mobius Inverse and Natural Extension
+------------------------------------
 
-This example proves that, in general, the Mobius inverse of a coherent
+This example shows that, in general, the Mobius inverse of a coherent
 lower probability cannot be used to calculate its natural extension.
 
 >>> import itertools

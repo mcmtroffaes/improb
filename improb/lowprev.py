@@ -104,7 +104,7 @@ class LowPrev:
         :param event: The event to condition on.
         :type event: |eventtype|
         :return: The lower bound for this expectation, i.e. the natural extension of the gamble.
-        :rtype: ``float``
+        :rtype: :class:`float`
         """
         gamble = Gamble.make(self.pspace, gamble)
         if event is None:
@@ -140,7 +140,7 @@ class LowPrev:
         :param event: The event to condition on.
         :type event: |eventtype|
         :return: The upper bound for this expectation, i.e. the natural extension of the gamble.
-        :rtype: ``float``
+        :rtype: :class:`float`
         """
         gamble = Gamble.make(self.pspace, gamble)
         return -self.get_lower(-gamble, event)
@@ -152,8 +152,8 @@ class LowPrev:
     def is_avoiding_sure_loss(self):
         """No Dutch book? Does the lower prevision avoid sure loss?
 
-        :return: ``True`` if avoids sure loss, ``False`` otherwise.
-        :rtype: ``bool``
+        :return: :const:`True` if avoids sure loss, :const:`False` otherwise.
+        :rtype: :class:`bool`
         """
         try:
             self.get_lower(dict((w, 0) for w in self.pspace))
@@ -165,8 +165,8 @@ class LowPrev:
         """Do all assessments coincide with their natural extension? Is the
         lower prevision coherent?
 
-        :return: ``True`` if coherent, ``False`` otherwise.
-        :rtype: ``bool``
+        :return: :const:`True` if coherent, :const:`False` otherwise.
+        :rtype: :class:`bool`
         """
         # first check if we are avoiding sure loss
         if not self.is_avoiding_sure_loss():
@@ -188,8 +188,8 @@ class LowPrev:
         we check that the natural extension is linear on the linear
         span of the domain of the lower prevision.
 
-        :return: ``True`` if linear, ``False`` otherwise.
-        :rtype: ``bool``
+        :return: :const:`True` if linear, :const:`False` otherwise.
+        :rtype: :class:`bool`
         """
         # first check if we are avoiding sure loss
         if not self.is_avoiding_sure_loss():
@@ -208,8 +208,8 @@ class LowPrev:
     def dominates(self, gamble, other_gamble, event=None, tolerance=1e-6):
         """Does *gamble* dominate *other_gamble* in lower prevision?
 
-        :return: ``True`` if *gamble* dominates *other_gamble*, ``False`` otherwise.
-        :rtype: ``bool``
+        :return: :const:`True` if *gamble* dominates *other_gamble*, :const:`False` otherwise.
+        :rtype: :class:`bool`
         """
         gamble = Gamble.make(self.pspace, gamble)
         other_gamble = Gamble.make(self.pspace, other_gamble)
@@ -241,7 +241,7 @@ class LowPrev:
         """Return extreme points of the credal set.
 
         :return: The extreme points.
-        :rtype: Yields a ``tuple`` for each extreme point.
+        :rtype: Yields a :class:`tuple` for each extreme point.
         """
         poly = pycddlib.Polyhedron(self._matrix)
         for vert in poly.get_generators():
@@ -362,7 +362,7 @@ class LinVac(LowPrev):
         :param event: The event to condition on.
         :type event: |eventtype|
         :return: The lower expectation of the gamble.
-        :rtype: ``float``
+        :rtype: :class:`float`
         """
         gamble = Gamble.make(self.pspace, gamble)
         if event is None:
@@ -407,7 +407,7 @@ class BelFunc(LowPrev):
         :param event: The event to condition on.
         :type event: |eventtype|
         :return: The lower expectation of the gamble.
-        :rtype: ``float``
+        :rtype: :class:`float`
 
         >>> from improb.lowprev import BelFunc
         >>> from improb import PSpace, SetFunction

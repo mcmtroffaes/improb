@@ -1,5 +1,5 @@
-Constructing a subtree imperfect decision tree
-==============================================
+A Simple Subtree Imperfect Decision Tree
+----------------------------------------
 
 >>> import itertools
 >>> import random
@@ -101,8 +101,11 @@ eps=0.20
 [(0, 0), (0, 2), (1, 2)]
 [(0, 0), (0, 2), (1, 0), (1, 2)]
 
-Try to construct a stronger violation
-=====================================
+Stronger Violation of Subtree Perfectness
+-----------------------------------------
+
+Does subtree imperfectness persists after converting the normal form
+into an extensive form?
 
 >>> import itertools
 >>> import random

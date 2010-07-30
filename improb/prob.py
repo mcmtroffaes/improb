@@ -44,7 +44,7 @@ class Prob(collections.Mapping, collections.Hashable):
         :param pspace: The possibility space.
         :type pspace: |pspacetype|
         :param mapping: A mapping that defines the probability of each atom.
-        :type mapping: ``dict``
+        :type mapping: :class:`dict`
         """
 
         self._pspace = PSpace.make(pspace)

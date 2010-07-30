@@ -196,10 +196,10 @@ latex_documents = [
 #latex_use_modindex = True
 
 rst_epilog = """
-.. |pspacetype| replace:: ``tuple`` or similar; see :ref:`possibility-spaces`
-.. |gambletype| replace:: ``dict`` or similar; see :ref:`gambles`
-.. |eventtype| replace:: ``set`` or similar; see :ref:`events`
-.. |numbertype| replace:: ``float`` or ``int``
+.. |pspacetype| replace:: :class:`tuple` or similar; see :ref:`possibility-spaces`
+.. |gambletype| replace:: :class:`dict` or similar; see :ref:`gambles`
+.. |eventtype| replace:: :class:`set` or similar; see :ref:`events`
+.. |numbertype| replace:: :class:`float` or :class:`int`
 """
 
 todo_include_todos = True

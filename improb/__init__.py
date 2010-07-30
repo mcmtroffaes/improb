@@ -9,9 +9,9 @@ def make_pspace(*args):
     """Convert *args* into a possibility space.
 
     :param args: The components of the space.
-    :type args: :class:`collections.Iterable` or ``int``
+    :type args: :class:`collections.Iterable` or :class:`int`
     :returns: A possibility space.
-    :rtype: ``tuple``
+    :rtype: :class:`tuple`
 
     Some examples of how components can be specified:
 
@@ -95,7 +95,7 @@ def make_gamble(pspace, mapping):
     """Convert *mapping* into a gamble on *pspace*.
 
     :returns: A gamble.
-    :rtype: ``dict``
+    :rtype: :class:`dict`
 
     >>> pspace = improb.make_pspace(5)
     >>> improb.make_gamble(pspace, [1, 9, 2, 3, 6])
@@ -107,7 +107,7 @@ def make_event(pspace, elements):
     """Convert *elements* into an event on *pspace*.
 
     :returns: An event.
-    :rtype: ``set``
+    :rtype: :class:`set`
 
     >>> pspace = improb.make_pspace(6)
     >>> improb.make_event(pspace, xrange(1, 4))

@@ -11,4 +11,4 @@ Welcome to improb's documentation!
    introduction
    prob
    lowprev
-
+   examples

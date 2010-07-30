@@ -8,8 +8,8 @@ Introduction
    import improb
    import itertools
 
-In brief, use ``tuple`` for possibility spaces, ``dict`` for gambles,
-and ``set`` for events. In more detail:
+In brief, use :class:`tuple` for possibility spaces, :class:`dict` for gambles,
+and :class:`set` for events. In more detail:
 
 .. _possibility-spaces:
 
@@ -17,9 +17,9 @@ Possibility Spaces
 ------------------
 
 Any iterable of distinct immutable objects can be used to represent a
-possibility space. For instance, a ``tuple`` can always be used to
+possibility space. For instance, a :class:`tuple` can always be used to
 represent a possibility space. [#pspacetuple]_ Any possibility space
-can be converted to its ``tuple`` representation via:
+can be converted to its :class:`tuple` representation via:
 
 .. autofunction:: make_pspace
 
@@ -41,12 +41,12 @@ For a possibility space *pspace*, any Python object *mapping* for which::
 
     (float(mapping[omega]) for omega in pspace)
 
-can be iterated over, represents a gamble. For instance, a ``dict``
+can be iterated over, represents a gamble. For instance, a :class:`dict`
 can always be used to represent a gamble. If your *pspace* is a simple
 range of consequetive integers starting from zero, then you can also
-use a ``list`` or ``tuple`` for gamble.
+use a ``list`` or :class:`tuple` for gamble.
 
-Any gamble can be converted to its ``dict`` representation via:
+Any gamble can be converted to its :class:`dict` representation via:
 
 .. autofunction:: make_gamble
 
@@ -68,10 +68,10 @@ For a possibility space *pspace*, any Python object *elements* for which::
 
     (omega in elements for omega in pspace)
 
-can be iterated over, represents an event. For instance, a ``set`` can
+can be iterated over, represents an event. For instance, a :class:`set` can
 always be used to represent an event.
 
-Any event can be converted to its ``set`` representation via:
+Any event can be converted to its :class:`set` representation via:
 
 .. autofunction:: make_event
 
@@ -98,6 +98,6 @@ Set Functions
 
 .. [#pspacetuple]
 
-   We use ``tuple`` rather than ``set`` because usually possibility
-   spaces have a natural ordering, and ``tuple`` is closest to an
+   We use :class:`tuple` rather than :class:`set` because usually possibility
+   spaces have a natural ordering, and :class:`tuple` is closest to an
    ordered set.
