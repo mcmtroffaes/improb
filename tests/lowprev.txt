@@ -19,12 +19,24 @@ Natural Extension
 3.000000
 >>> lpr.set_lower([1,2,3], 1.5)
 >>> lpr.set_upper([1,2,3], 2.5)
+>>> print(lpr.matrix)
+H-representation
+linearity 1  1
+begin
+ 6 4 rational
+ 1 -1 -1 -1
+ 0 1 0 0
+ 0 0 1 0
+ 0 0 0 1
+ 0 -1/2 1/2 3/2
+ 0 3/2 1/2 -1/2
+end
 >>> print "%.6f" % lpr.get_lower([1,2,3])
 1.500000
 >>> print "%.6f" % lpr.get_upper([1,2,3])
 2.500000
->>> print list(lpr.get_credal_set())
-[(0.75, 0.0, 0.25), (0.5, 0.5, 0.0), (0.0, 1.0, 0.0), (0.25, 0.0, 0.75), (0.0, 0.5, 0.5)]
+>>> print([[float(x) for x in prob] for prob in sorted(lpr.get_credal_set())])
+[[0.0, 0.5, 0.5], [0.0, 1.0, 0.0], [0.25, 0.0, 0.75], [0.5, 0.5, 0.0], [0.75, 0.0, 0.25]]
 
 Another example:
 
@@ -38,11 +50,13 @@ True
 >>> lpr.is_linear()
 False
 >>> print(lpr.get_lower([1,0,0,0]))
-0.5
+1/2
 >>> print(lpr.get_upper([1,0,0,0]))
-0.75
->>> list(lpr)
-[((4.0, 2.0, 1.0, 0.0), 3.0, False), ((-4.0, -1.0, -2.0, -0.0), -3.0, False)]
+3/4
+>>> print(lpr) # doctest: +NORMALIZE_WHITESPACE
+  0     1     2     3
+4.000 1.000 2.000 0.000 | 0 1 2 3 : [     , 3.000]
+4.000 2.000 1.000 0.000 | 0 1 2 3 : [3.000,      ]
 >>> list(filter_maximal([[1,0,0,0], [0,1,0,0], [0,0,1,0], [0,0,0,1]], lpr.dominates))
 [[1, 0, 0, 0], [0, 1, 0, 0]]
 >>> list(filter_maximal([[0,0,0,0], [0,1,0,0], [0,0,1,0], [0,0,0,1]], lpr.dominates))
@@ -51,44 +65,44 @@ False
 Another more complex example:
 
 >>> lpr_s = LowPrev(3)
->>> lpr_s.set_lower([1,0,0], 0.4)
->>> lpr_s.set_upper([1,0,0], 0.5)
->>> lpr_s.set_lower([0,1,0], 0.3)
->>> lpr_s.set_upper([0,1,0], 0.4)
->>> lpr_s.set_lower([0,0,1], 0.2)
->>> lpr_s.set_upper([0,0,1], 0.2)
+>>> lpr_s.set_lower([1,0,0], '0.4')
+>>> lpr_s.set_upper([1,0,0], '0.5')
+>>> lpr_s.set_lower([0,1,0], '0.3')
+>>> lpr_s.set_upper([0,1,0], '0.4')
+>>> lpr_s.set_lower([0,0,1], '0.2')
+>>> lpr_s.set_upper([0,0,1], '0.2')
 >>> lpr_s.is_coherent()
 True
 >>> print(lpr_s.get_lower([1,0,0]))
-0.4
+2/5
 >>> print(lpr_s.get_upper([1,0,0]))
-0.5
+1/2
 >>> print(lpr_s.get_lower([0,1,0]))
-0.3
+3/10
 >>> print(lpr_s.get_upper([0,1,0]))
-0.4
+2/5
 >>> print(lpr_s.get_lower([0,0,1]))
-0.2
+1/5
 >>> print(lpr_s.get_upper([0,0,1]))
-0.2
+1/5
 >>> print(lpr_s.get_lower([-7,5,20]))
-2.0
+2
 >>> print(lpr_s.get_upper([-7,5,20]))
-3.2
+16/5
 >>> lpr_t_s = [LowPrev(3), LowPrev(3), LowPrev(3)]
->>> lpr_t_s[0].set_precise([1,0,0], 0.6)
->>> lpr_t_s[0].set_precise([0,1,0], 0.3)
->>> lpr_t_s[0].set_precise([0,0,1], 0.1)
+>>> lpr_t_s[0].set_precise([1,0,0], '0.6')
+>>> lpr_t_s[0].set_precise([0,1,0], '0.3')
+>>> lpr_t_s[0].set_precise([0,0,1], '0.1')
 >>> lpr_t_s[0].is_coherent()
 True
->>> lpr_t_s[1].set_precise([1,0,0], 0.3)
->>> lpr_t_s[1].set_precise([0,1,0], 0.4)
->>> lpr_t_s[1].set_precise([0,0,1], 0.3)
+>>> lpr_t_s[1].set_precise([1,0,0], '0.3')
+>>> lpr_t_s[1].set_precise([0,1,0], '0.4')
+>>> lpr_t_s[1].set_precise([0,0,1], '0.3')
 >>> lpr_t_s[1].is_coherent()
 True
->>> lpr_t_s[2].set_precise([1,0,0], 0.1)
->>> lpr_t_s[2].set_precise([0,1,0], 0.4)
->>> lpr_t_s[2].set_precise([0,0,1], 0.5)
+>>> lpr_t_s[2].set_precise([1,0,0], '0.1')
+>>> lpr_t_s[2].set_precise([0,1,0], '0.4')
+>>> lpr_t_s[2].set_precise([0,0,1], '0.5')
 >>> lpr_t_s[2].is_coherent()
 True
 >>> # a gamble which is a function of s and t; s comes as first
@@ -97,31 +111,31 @@ True
 >>> # calculate its lower prevision by marginal extension
 >>> print(lpr_s.get_lower([lpr_t.get_lower(gamble_t)
 ...                        for lpr_t, gamble_t in zip(lpr_t_s, gamble_t_s)]))
-0.38
+19/50
 >>> print(lpr_s.get_upper([lpr_t.get_upper(gamble_t)
 ...                        for lpr_t, gamble_t in zip(lpr_t_s, gamble_t_s)]))
-0.41
+41/100
 >>> gamble_t_s = [[0,1,0], [0,1,0], [0,1,0]] # event t=1
 >>> print(lpr_s.get_lower([lpr_t.get_lower(gamble_t)
 ...                        for lpr_t, gamble_t in zip(lpr_t_s, gamble_t_s)]))
-0.35
+7/20
 >>> print(lpr_s.get_upper([lpr_t.get_upper(gamble_t)
 ...                        for lpr_t, gamble_t in zip(lpr_t_s, gamble_t_s)]))
-0.36
+9/25
 >>> gamble_t_s = [[0,0,1], [0,0,1], [0,0,1]] # event t=2
 >>> print(lpr_s.get_lower([lpr_t.get_lower(gamble_t)
 ...                        for lpr_t, gamble_t in zip(lpr_t_s, gamble_t_s)]))
-0.24
+6/25
 >>> print(lpr_s.get_upper([lpr_t.get_upper(gamble_t)
 ...                        for lpr_t, gamble_t in zip(lpr_t_s, gamble_t_s)]))
-0.26
+13/50
 
 Mobius Inverse
 ~~~~~~~~~~~~~~
 
 >>> lpr = LowPrev(2)
->>> lpr.set_lower([1,0], 0.3)
->>> lpr.set_lower([0,1], 0.2)
+>>> lpr.set_lower([1,0], '0.3')
+>>> lpr.set_lower([0,1], '0.2')
 >>> print(lpr.get_mobius_inverse())
     : 0.000
 0   : 0.300
@@ -132,16 +146,16 @@ Frechet Bounds
 ~~~~~~~~~~~~~~
 
 >>> lpr = LowPrev(4)
->>> lpr.set_precise([1,1,0,0], 0.6)
->>> lpr.set_precise([0,1,1,0], 0.7)
->>> print "%.6f" % lpr.get_lower([0,1,0,0]) # max(0.6+0.7-1,0)
-0.300000
->>> print "%.6f" % lpr.get_upper([0,1,0,0]) # min(0.6,0.7)
-0.600000
+>>> lpr.set_precise([1,1,0,0], '0.6')
+>>> lpr.set_precise([0,1,1,0], '0.7')
+>>> print(lpr.get_lower([0,1,0,0])) # max(0.6+0.7-1,0)
+3/10
+>>> print(lpr.get_upper([0,1,0,0])) # min(0.6,0.7)
+3/5
 >>> lpr.is_linear()
 True
 >>> for vert in lpr.get_credal_set():
-...     print(" ".join("%.2f" % x for x in vert))
+...     print(" ".join("%.2f" % float(x) for x in vert))
 0.30 0.30 0.40 0.00
 0.00 0.60 0.10 0.30
 
@@ -152,32 +166,32 @@ This example incurs sure loss because the maximum of the sum of the gambles
 [1,2,3,0] and [3,2,1,0] is 4, however 2.5 + 2.5 is strictly larger than 4.
 
 >>> lpr = LowPrev(4)
->>> lpr.set_lower([1,2,3,0], 2.5)
->>> lpr.set_lower([3,2,1,0], 2.5)
+>>> lpr.set_lower([1,2,3,0], '2.5')
+>>> lpr.set_lower([3,2,1,0], '2.5')
 >>> lpr.is_avoiding_sure_loss()
 False
 
 Another more complex example:
 
 >>> lpr_s_t = LowPrev(9)
->>> lpr_s_t.set_lower([1,0,0,0,0,0,0,0,0], 0.500)
->>> lpr_s_t.set_upper([1,0,0,0,0,0,0,0,0], 0.666)
->>> lpr_s_t.set_lower([0,1,0,0,0,0,0,0,0], 0.222)
->>> lpr_s_t.set_upper([0,1,0,0,0,0,0,0,0], 0.272)
->>> lpr_s_t.set_lower([0,0,1,0,0,0,0,0,0], 0.125)
->>> lpr_s_t.set_upper([0,0,1,0,0,0,0,0,0], 0.181)
->>> lpr_s_t.set_lower([0,0,0,1,0,0,0,0,0], 0.222)
->>> lpr_s_t.set_upper([0,0,0,1,0,0,0,0,0], 0.333)
->>> lpr_s_t.set_lower([0,0,0,0,1,0,0,0,0], 0.363)
->>> lpr_s_t.set_upper([0,0,0,0,1,0,0,0,0], 0.444)
->>> lpr_s_t.set_lower([0,0,0,0,0,1,0,0,0], 0.250)
->>> lpr_s_t.set_upper([0,0,0,0,0,1,0,0,0], 0.363)
->>> lpr_s_t.set_lower([0,0,0,0,0,0,1,0,0], 0.111)
->>> lpr_s_t.set_upper([0,0,0,0,0,0,1,0,0], 0.166)
->>> lpr_s_t.set_lower([0,0,0,0,0,0,0,1,0], 0.333)
->>> lpr_s_t.set_upper([0,0,0,0,0,0,0,1,0], 0.363)
->>> lpr_s_t.set_lower([0,0,0,0,0,0,0,0,1], 0.454)
->>> lpr_s_t.set_upper([0,0,0,0,0,0,0,0,1], 0.625)
+>>> lpr_s_t.set_lower([1,0,0,0,0,0,0,0,0], '0.500')
+>>> lpr_s_t.set_upper([1,0,0,0,0,0,0,0,0], '0.666')
+>>> lpr_s_t.set_lower([0,1,0,0,0,0,0,0,0], '0.222')
+>>> lpr_s_t.set_upper([0,1,0,0,0,0,0,0,0], '0.272')
+>>> lpr_s_t.set_lower([0,0,1,0,0,0,0,0,0], '0.125')
+>>> lpr_s_t.set_upper([0,0,1,0,0,0,0,0,0], '0.181')
+>>> lpr_s_t.set_lower([0,0,0,1,0,0,0,0,0], '0.222')
+>>> lpr_s_t.set_upper([0,0,0,1,0,0,0,0,0], '0.333')
+>>> lpr_s_t.set_lower([0,0,0,0,1,0,0,0,0], '0.363')
+>>> lpr_s_t.set_upper([0,0,0,0,1,0,0,0,0], '0.444')
+>>> lpr_s_t.set_lower([0,0,0,0,0,1,0,0,0], '0.250')
+>>> lpr_s_t.set_upper([0,0,0,0,0,1,0,0,0], '0.363')
+>>> lpr_s_t.set_lower([0,0,0,0,0,0,1,0,0], '0.111')
+>>> lpr_s_t.set_upper([0,0,0,0,0,0,1,0,0], '0.166')
+>>> lpr_s_t.set_lower([0,0,0,0,0,0,0,1,0], '0.333')
+>>> lpr_s_t.set_upper([0,0,0,0,0,0,0,1,0], '0.363')
+>>> lpr_s_t.set_lower([0,0,0,0,0,0,0,0,1], '0.454')
+>>> lpr_s_t.set_upper([0,0,0,0,0,0,0,0,1], '0.625')
 >>> lpr_s_t.is_avoiding_sure_loss()
 False
 
@@ -185,10 +199,10 @@ Coherence
 ~~~~~~~~~
 
 >>> lpr = LowPrev(4)
->>> lpr.set_lower([1,2,3,0], 2.5)
+>>> lpr.set_lower([1,2,3,0], '2.5')
 >>> lpr.is_coherent()
 True
->>> lpr.set_upper([2,4,6,0], 3) # coherence requires at least 5
+>>> lpr.set_upper([2,4,6,0], '3') # coherence requires at least 5
 >>> lpr.is_coherent()
 False
 
@@ -196,10 +210,10 @@ Linearity
 ~~~~~~~~~
 
 >>> lpr = LowPrev(4)
->>> lpr.set_lower([1,2,3,0], 2.5)
+>>> lpr.set_lower([1,2,3,0], '2.5')
 >>> lpr.is_linear()
 False
->>> lpr.set_upper([2,4,6,0], 5)
+>>> lpr.set_upper([2,4,6,0], '5')
 >>> lpr.is_linear()
 True
 
@@ -218,102 +232,102 @@ pp. 118–123 (2005)
 >>> lpr_s_t = [LowPrev(3), LowPrev(3), LowPrev(3)]
 >>> # lower prevision over t
 >>> lpr_t = LowPrev(3)
->>> lpr_s_t[0].set_lower([1,0,0], 0.5)
->>> lpr_s_t[0].set_upper([1,0,0], 0.666)
->>> lpr_s_t[0].set_lower([0,1,0], 0.222)
->>> lpr_s_t[0].set_upper([0,1,0], 0.272)
->>> lpr_s_t[0].set_lower([0,0,1], 0.125)
->>> lpr_s_t[0].set_upper([0,0,1], 0.181)
+>>> lpr_s_t[0].set_lower([1,0,0], '0.5')
+>>> lpr_s_t[0].set_upper([1,0,0], '0.666')
+>>> lpr_s_t[0].set_lower([0,1,0], '0.222')
+>>> lpr_s_t[0].set_upper([0,1,0], '0.272')
+>>> lpr_s_t[0].set_lower([0,0,1], '0.125')
+>>> lpr_s_t[0].set_upper([0,0,1], '0.181')
 >>> lpr_s_t[0].is_coherent()
 False
->>> print(lpr_s_t[0].get_lower([1,0,0])) # not coherent!
+>>> print(float(lpr_s_t[0].get_lower([1,0,0]))) # not coherent!
 0.547
->>> print(lpr_s_t[0].get_upper([1,0,0])) # not coherent!
+>>> print(float(lpr_s_t[0].get_upper([1,0,0]))) # not coherent!
 0.653
->>> print(lpr_s_t[0].get_lower([0,1,0]))
+>>> print(float(lpr_s_t[0].get_lower([0,1,0])))
 0.222
->>> print(lpr_s_t[0].get_upper([0,1,0]))
+>>> print(float(lpr_s_t[0].get_upper([0,1,0])))
 0.272
->>> print(lpr_s_t[0].get_lower([0,0,1]))
+>>> print(float(lpr_s_t[0].get_lower([0,0,1])))
 0.125
->>> print(lpr_s_t[0].get_upper([0,0,1]))
+>>> print(float(lpr_s_t[0].get_upper([0,0,1])))
 0.181
 >>> lpr_s_t[1] = LowPrev(3)
->>> lpr_s_t[1].set_lower([1,0,0], 0.222)
->>> lpr_s_t[1].set_upper([1,0,0], 0.333)
->>> lpr_s_t[1].set_lower([0,1,0], 0.363)
->>> lpr_s_t[1].set_upper([0,1,0], 0.444)
->>> lpr_s_t[1].set_lower([0,0,1], 0.250)
->>> lpr_s_t[1].set_upper([0,0,1], 0.363)
+>>> lpr_s_t[1].set_lower([1,0,0], '0.222')
+>>> lpr_s_t[1].set_upper([1,0,0], '0.333')
+>>> lpr_s_t[1].set_lower([0,1,0], '0.363')
+>>> lpr_s_t[1].set_upper([0,1,0], '0.444')
+>>> lpr_s_t[1].set_lower([0,0,1], '0.250')
+>>> lpr_s_t[1].set_upper([0,0,1], '0.363')
 >>> lpr_s_t[1].is_coherent()
 True
->>> print(lpr_s_t[1].get_lower([1,0,0]))
+>>> print(float(lpr_s_t[1].get_lower([1,0,0])))
 0.222
->>> print(lpr_s_t[1].get_upper([1,0,0]))
+>>> print(float(lpr_s_t[1].get_upper([1,0,0])))
 0.333
->>> print(lpr_s_t[1].get_lower([0,1,0]))
+>>> print(float(lpr_s_t[1].get_lower([0,1,0])))
 0.363
->>> print(lpr_s_t[1].get_upper([0,1,0]))
+>>> print(float(lpr_s_t[1].get_upper([0,1,0])))
 0.444
->>> print(lpr_s_t[1].get_lower([0,0,1]))
+>>> print(float(lpr_s_t[1].get_lower([0,0,1])))
 0.25
->>> print(lpr_s_t[1].get_upper([0,0,1]))
+>>> print(float(lpr_s_t[1].get_upper([0,0,1])))
 0.363
 >>> lpr_s_t[2] = LowPrev(3)
->>> lpr_s_t[2].set_lower([1,0,0], 0.111)
->>> lpr_s_t[2].set_upper([1,0,0], 0.166)
->>> lpr_s_t[2].set_lower([0,1,0], 0.333)
->>> lpr_s_t[2].set_upper([0,1,0], 0.363)
->>> lpr_s_t[2].set_lower([0,0,1], 0.454)
->>> lpr_s_t[2].set_upper([0,0,1], 0.625)
+>>> lpr_s_t[2].set_lower([1,0,0], '0.111')
+>>> lpr_s_t[2].set_upper([1,0,0], '0.166')
+>>> lpr_s_t[2].set_lower([0,1,0], '0.333')
+>>> lpr_s_t[2].set_upper([0,1,0], '0.363')
+>>> lpr_s_t[2].set_lower([0,0,1], '0.454')
+>>> lpr_s_t[2].set_upper([0,0,1], '0.625')
 >>> lpr_s_t[2].is_coherent()
 False
->>> print(lpr_s_t[2].get_lower([1,0,0]))
+>>> print(float(lpr_s_t[2].get_lower([1,0,0])))
 0.111
->>> print(lpr_s_t[2].get_upper([1,0,0]))
+>>> print(float(lpr_s_t[2].get_upper([1,0,0])))
 0.166
->>> print(lpr_s_t[2].get_lower([0,1,0]))
+>>> print(float(lpr_s_t[2].get_lower([0,1,0])))
 0.333
->>> print(lpr_s_t[2].get_upper([0,1,0]))
+>>> print(float(lpr_s_t[2].get_upper([0,1,0])))
 0.363
->>> print(lpr_s_t[2].get_lower([0,0,1])) # not coherent!
+>>> print(float(lpr_s_t[2].get_lower([0,0,1]))) # not coherent!
 0.471
->>> print(lpr_s_t[2].get_upper([0,0,1])) # not coherent!
+>>> print(float(lpr_s_t[2].get_upper([0,0,1]))) # not coherent!
 0.556
->>> lpr_t.set_lower([1,0,0], 0.181)
->>> lpr_t.set_upper([1,0,0], 0.222)
->>> lpr_t.set_lower([0,1,0], 0.333)
->>> lpr_t.set_upper([0,1,0], 0.363)
->>> lpr_t.set_lower([0,0,1], 0.444)
->>> lpr_t.set_upper([0,0,1], 0.454)
+>>> lpr_t.set_lower([1,0,0], '0.181')
+>>> lpr_t.set_upper([1,0,0], '0.222')
+>>> lpr_t.set_lower([0,1,0], '0.333')
+>>> lpr_t.set_upper([0,1,0], '0.363')
+>>> lpr_t.set_lower([0,0,1], '0.444')
+>>> lpr_t.set_upper([0,0,1], '0.454')
 >>> lpr_t.is_coherent()
 False
->>> print(lpr_t.get_lower([1,0,0])) # not coherent!
+>>> print(float(lpr_t.get_lower([1,0,0]))) # not coherent!
 0.183
->>> print(lpr_t.get_upper([1,0,0]))
+>>> print(float(lpr_t.get_upper([1,0,0])))
 0.222
->>> print(lpr_t.get_lower([0,1,0]))
+>>> print(float(lpr_t.get_lower([0,1,0])))
 0.333
->>> print(lpr_t.get_upper([0,1,0]))
+>>> print(float(lpr_t.get_upper([0,1,0])))
 0.363
->>> print(lpr_t.get_lower([0,0,1]))
+>>> print(float(lpr_t.get_lower([0,0,1])))
 0.444
->>> print(lpr_t.get_upper([0,0,1]))
+>>> print(float(lpr_t.get_upper([0,0,1])))
 0.454
 >>> # now some calculations
 >>> gamble_s = [-7, 5, 20]
 >>> minus_gamble_s = [7, -5, -20]
->>> print(lpr_s_t[0].get_lower(gamble_s))
+>>> print(float(lpr_s_t[0].get_lower(gamble_s)))
 -0.961
->>> print(lpr_s_t[0].get_lower(minus_gamble_s))
+>>> print(float(lpr_s_t[0].get_lower(minus_gamble_s)))
 -1.151
->>> print(lpr_s_t[1].get_lower(gamble_s))
+>>> print(float(lpr_s_t[1].get_lower(gamble_s)))
 4.754
->>> print(lpr_s_t[1].get_lower(minus_gamble_s))
+>>> print(float(lpr_s_t[1].get_lower(minus_gamble_s)))
 -7.781
->>> print(lpr_s_t[2].get_lower(gamble_s))
+>>> print(float(lpr_s_t[2].get_lower(gamble_s)))
 10.073
->>> print(lpr_s_t[2].get_lower(minus_gamble_s))
+>>> print(float(lpr_s_t[2].get_lower(minus_gamble_s)))
 -12.008
 >>> # calculate its lower prevision by marginal extension
 >>> # XXX currently, using this hackish way to set up the marginal extension
@@ -333,26 +347,26 @@ False
 >>> # argument (in order to match lpr_s_t): gamble_s_t[t][s]
 >>> gamble_s_t = [[-7,5,20], [-7,5,20], [-7,5,20]]
 >>> # do the calculations
->>> print(lpr.get_lower(gamble_s_t))
+>>> print(float(lpr.get_lower(gamble_s_t)))
 5.846906
->>> print(lpr.get_upper(gamble_s_t))
+>>> print(float(lpr.get_upper(gamble_s_t)))
 8.486768
 >>> # another gamble which is a function of s and t
 >>> gamble_s_t = [[-7,5,20], [0,0,0], [0,0,0]]
 >>> # calculate its lower prevision by marginal extension
->>> print(lpr.get_lower(gamble_s_t))
+>>> print(float(lpr.get_lower(gamble_s_t)))
 -0.213342
 >>> # another gamble which is a function of s and t
 >>> gamble_s_t = [[7,-5,-20], [0,0,0], [0,0,0]]
 >>> # calculate its lower prevision by marginal extension
->>> print(lpr.get_lower(gamble_s_t))
+>>> print(float(lpr.get_lower(gamble_s_t)))
 -0.255522
 >>> # another gamble which is a function of s and t
 >>> gamble_s_t = [[-1,-1,-1], [-1,11,26], [-1,11,26]]
 >>> # calculate its lower prevision by marginal extension
->>> print(lpr.get_lower(gamble_s_t))
+>>> print(float(lpr.get_lower(gamble_s_t)))
 10.506248
->>> print(lpr.get_upper(gamble_s_t))
+>>> print(float(lpr.get_upper(gamble_s_t)))
 12.995135
 >>> # maximality
 >>> # XXX hackish way to check for dominance in this case
@@ -387,8 +401,8 @@ imprecise probabilities. International Journal of Approximate
 Reasoning, 45(1):17-29, May 2007.
 
 >>> lpr = LowPrev(2)
->>> lpr.set_lower([1, 0], 0.28)
->>> lpr.set_upper([1, 0], 0.70)
+>>> lpr.set_lower([1, 0], '0.28')
+>>> lpr.set_upper([1, 0], '0.70')
 >>> list(filter_maximal([[4, 0], [0, 4], [3, 2], [0.5, 3], [2.35, 2.35], [4.1, -0.3]], lpr.dominates)) == [[4, 0], [0, 4], [3, 2], [2.35, 2.35]]
 True
 
@@ -407,10 +421,10 @@ Generalized Bayes Rule
 The next example is effectively the Monty Hall problem.
 
 >>> lpr = LowPrev(4)
->>> lpr.set_lower([1, 1, 0, 0], 1.0/3.0)
->>> lpr.set_lower([0, 0, 1, 0], 1.0/3.0)
->>> lpr.set_lower([0, 0, 0, 1], 1.0/3.0)
->>> print("{0:.5f}".format(lpr.get_lower([1, 1, 0, 0], set([0, 3]))))
-0.00000
->>> print("{0:.5f}".format(lpr.get_lower([0, 0, 1, 1], set([0, 3]))))
-0.50000
+>>> lpr.set_lower([1, 1, 0, 0], '1/3')
+>>> lpr.set_lower([0, 0, 1, 0], '1/3')
+>>> lpr.set_lower([0, 0, 0, 1], '1/3')
+>>> print(lpr.get_lower([1, 1, 0, 0], set([0, 3])))
+0
+>>> print(lpr.get_lower([0, 0, 1, 1], set([0, 3])))
+1/2

@@ -1,9 +1,28 @@
 """improb is a Python module for working with imprecise probabilities."""
 
+from __future__ import division, absolute_import, print_function
+
 __version__ = '0.1.0'
 
+from abc import ABCMeta, abstractmethod, abstractproperty
 import collections
+from fractions import Fraction
 import itertools
+
+def _fraction(value):
+    """Convert value to a :class:`fractions.Fraction`."""
+    # python 2.6 doesn't define Fraction(float)
+    # this is a quick hack around that
+    if isinstance(value, float):
+        return Fraction.from_float(value)
+    else:
+        return Fraction(value)
+
+def _fraction_repr(value):
+    if value.denominator == 1:
+        return repr(value.numerator)
+    else:
+        return repr(value)
 
 def make_pspace(*args):
     """Convert *args* into a possibility space.
@@ -98,10 +117,14 @@ def make_gamble(pspace, mapping):
     :rtype: :class:`dict`
 
     >>> pspace = improb.make_pspace(5)
-    >>> improb.make_gamble(pspace, [1, 9, 2, 3, 6])
-    {0: 1.0, 1: 9.0, 2: 2.0, 3: 3.0, 4: 6.0}
+    >>> improb.make_gamble(pspace, [1, 9, 2, 3, 6]) # doctest: +NORMALIZE_WHITESPACE
+    {0: Fraction(1, 1),
+     1: Fraction(9, 1),
+     2: Fraction(2, 1),
+     3: Fraction(3, 1),
+     4: Fraction(6, 1)}
     """
-    return dict((omega, float(mapping[omega])) for omega in pspace)
+    return dict((omega, _fraction(mapping[omega])) for omega in pspace)
 
 def make_event(pspace, elements):
     """Convert *elements* into an event on *pspace*.
@@ -237,7 +260,7 @@ class PSpace(collections.Set, collections.Sequence, collections.Hashable):
                 yield Event(self, subset)
 
 class Gamble(collections.Mapping, collections.Hashable):
-    """An immutable gamble with syntactic sugar.
+    """An immutable gamble.
 
     >>> pspace = improb.PSpace('abc')
     >>> f1 = improb.Gamble(pspace, {'a': 1, 'b': 4, 'c': 8})
@@ -301,8 +324,7 @@ class Gamble(collections.Mapping, collections.Hashable):
         :type mapping: |gambletype|
         """
         self._pspace = PSpace.make(pspace)
-        self._data = dict((omega, float(mapping[omega]))
-                          for omega in self.pspace)
+        self._data = make_gamble(pspace, mapping)
 
     @staticmethod
     def make(pspace, gamble):
@@ -316,6 +338,7 @@ class Gamble(collections.Mapping, collections.Hashable):
         :type gamble: |gambletype|
         :return: A gamble.
         :rtype: :class:`Gamble`
+        :raises: :exc:`~exceptions.ValueError` if possibility spaces do not match
         """
         pspace = PSpace.make(pspace)
         if isinstance(gamble, Gamble):
@@ -352,8 +375,11 @@ class Gamble(collections.Mapping, collections.Hashable):
 
     def __repr__(self):
         """
-        >>> improb.Gamble([2, 3, 4], {2: 1, 3: 4, 4: 8})
-        Gamble(pspace=PSpace([2, 3, 4]), mapping={2: 1.0, 3: 4.0, 4: 8.0})
+        >>> improb.Gamble([2, 3, 4], {2: 1, 3: 4, 4: 8}) # doctest: +NORMALIZE_WHITESPACE
+        Gamble(pspace=PSpace([2, 3, 4]),
+               mapping={2: Fraction(1, 1),
+                        3: Fraction(4, 1),
+                        4: Fraction(8, 1)})
         """
         return "Gamble(pspace={0}, mapping={1})".format(
             repr(self._pspace), repr(self._data))
@@ -367,50 +393,58 @@ class Gamble(collections.Mapping, collections.Hashable):
         clouds :  20.000
         """
         maxlen_pspace = max(len(str(omega)) for omega in self.pspace)
-        maxlen_value = max(len("{0:.3f}".format(self[omega]))
+        maxlen_value = max(len("{0:.3f}".format(float(self[omega])))
                            for omega in self.pspace)
         return "\n".join(
             "{0: <{1}} : {2:{3}.3f}".format(
-                omega, maxlen_pspace, self[omega], maxlen_value)
+                omega, maxlen_pspace, float(self[omega]), maxlen_value)
             for omega in self.pspace)
 
     def _scalar(self, other, oper):
-        if isinstance(other, (int, long, float)):
+        """
+        :raises: :exc:`~exceptions.TypeError` if other is not a scalar
+        """
+        if isinstance(other, (int, long, float, Fraction)):
             return Gamble(self.pspace,
-                          dict((omega, oper(self[omega], other))
+                          dict((omega, oper(self[omega], _fraction(other)))
                                for omega in self.pspace))
         else:
             raise TypeError("argument must be a scalar, not '%s'"
                             % other.__class__)
 
     def _pointwise(self, other, oper):
-        if isinstance(other, (int, long, float)):
+        """
+        :raises: :exc:`~exceptions.ValueError` if possibility spaces do not match
+        """
+        if isinstance(other, (int, long, float, Fraction)):
             return self._scalar(other, oper)
         elif isinstance(other, Event):
             if self.pspace != other.pspace:
                 raise ValueError("possibility spaces do not match")
             return Gamble(self.pspace,
                           dict((omega, oper(self[omega],
-                                            1.0 if omega in other else 0.0))
+                                            Fraction(1) if omega in other
+                                            else Fraction(0)))
                                for omega in self.pspace))
         elif isinstance(other, Gamble):
             if self.pspace != other.pspace:
                 raise ValueError("possibility spaces do not match")
             return Gamble(self.pspace,
-                          dict((omega, oper(self[omega], float(other[omega])))
+                          dict((omega, oper(self[omega],
+                                            _fraction(other[omega])))
                                for omega in self.pspace))
 
-    __add__ = lambda self, other: self._pointwise(other, float.__add__)
-    __sub__ = lambda self, other: self._pointwise(other, float.__sub__)
-    __mul__ = lambda self, other: self._pointwise(other, float.__mul__)
-    __div__ = lambda self, other: self._scalar(other, float.__div__)
+    __add__ = lambda self, other: self._pointwise(other, Fraction.__add__)
+    __sub__ = lambda self, other: self._pointwise(other, Fraction.__sub__)
+    __mul__ = lambda self, other: self._pointwise(other, Fraction.__mul__)
+    __div__ = lambda self, other: self._scalar(other, Fraction.__div__)
 
     def __neg__(self):
         return Gamble(self.pspace,
                       dict((omega, -self[omega]) for omega in self.pspace))
 
 class Event(collections.Set, collections.Hashable):
-    """An immutable event with syntactic sugar.
+    """An immutable event.
 
     >>> pspace = improb.PSpace('abcdef')
     >>> event1 = improb.Event(pspace, 'acd')
@@ -461,18 +495,21 @@ class Event(collections.Set, collections.Hashable):
         :type event: |eventtype|
         :return: A event.
         :rtype: :class:`Event`
+        :raises: :exc:`~exceptions.ValueError` if possibility spaces do not match
         """
         pspace = PSpace.make(pspace)
         if isinstance(event, Event):
             if pspace != event.pspace:
                 raise ValueError('possibility spaces do not match')
             return event
+        elif event is None:
+            return Event(pspace, pspace)
         else:
             return Event(pspace, event)
 
     @property
     def pspace(self):
-        """An :class:`improb.PSpace` representing the possibility space."""
+        """An :py:class:`~improb.PSpace` representing the possibility space."""
         return self._pspace
 
     # must override this because the class constructor does not accept
@@ -524,7 +561,11 @@ class Event(collections.Set, collections.Hashable):
         >>> event = improb.Event(pspace, [2, 4])
         >>> event.indicator() # doctest: +NORMALIZE_WHITESPACE
         Gamble(pspace=PSpace(5),
-               mapping={0: 0.0, 1: 0.0, 2: 1.0, 3: 0.0, 4: 1.0})
+               mapping={0: Fraction(0, 1),
+                        1: Fraction(0, 1),
+                        2: Fraction(1, 1),
+                        3: Fraction(0, 1),
+                        4: Fraction(1, 1)})
         """
         return Gamble(self.pspace, dict((omega, 1 if omega in self else 0)
                                         for omega in self.pspace))
@@ -544,8 +585,9 @@ class SetFunction(collections.Mapping, collections.Hashable):
         :type mapping: :class:`dict`
         """
         self._pspace = PSpace.make(pspace)
-        self._data = dict((event, 0.0) for event in self.pspace.subsets())
-        self._data.update((Event(pspace, subset), float(mapping[subset]))
+        self._data = dict((event, Fraction(0))
+                          for event in self.pspace.subsets())
+        self._data.update((Event(pspace, subset), _fraction(mapping[subset]))
                           for subset in mapping)
 
     def __len__(self):
@@ -558,19 +600,19 @@ class SetFunction(collections.Mapping, collections.Hashable):
         return event in self._data
 
     def __getitem__(self, event):
-        return self._data[event]
+        return self._data[Event.make(self.pspace, event)]
 
     def __repr__(self):
         """
-        >>> improb.SetFunction(3, {(): 1, (0, 2): 2, (0, 1, 2): 5}) # doctest: +NORMALIZE_WHITESPACE
+        >>> improb.SetFunction(3, {(): 1, (0, 2): '2.1', (0, 1, 2): 5}) # doctest: +NORMALIZE_WHITESPACE
         SetFunction(pspace=PSpace(3),
-                    mapping={(): 1.0, (0, 2): 2.0, (0, 1, 2): 5.0})
+                    mapping={(): 1, (0, 2): Fraction(21, 10), (0, 1, 2): 5})
         """
         dict_ = [(tuple(omega for omega in self.pspace
                         if omega in event),
-                  self[event])
+                  _fraction_repr(self[event]))
                  for event in self.pspace.subsets()
-                 if self[event] != 0.0]
+                 if self[event] != 0]
         return "SetFunction(pspace={0}, mapping={{{1}}})".format(
             repr(self._pspace), ", ".join("{0}: {1}".format(*element)
                                           for element in dict_))
@@ -588,14 +630,14 @@ class SetFunction(collections.Mapping, collections.Hashable):
         a b c : 5.000
         """
         maxlen_pspace = max(len(str(omega)) for omega in self._pspace)
-        maxlen_value = max(len("{0:.3f}".format(self[event]))
+        maxlen_value = max(len("{0:.3f}".format(float(self[event])))
                            for event in self)
         return "\n".join(
             " ".join("{0: <{1}}".format(omega if omega in event else '',
                                         maxlen_pspace)
                       for omega in self._pspace) +
             " : " +
-            "{0:{1}.3f}".format(self[event], maxlen_value)
+            "{0:{1}.3f}".format(float(self[event]), maxlen_value)
             for event in self._pspace.subsets())
 
     @property
@@ -620,3 +662,140 @@ class SetFunction(collections.Mapping, collections.Hashable):
                   sum(((-1) ** len(event - subevent)) * self[subevent]
                       for subevent in self.pspace.subsets(event)))
                  for event in self.pspace.subsets()))
+
+class LowPrev(collections.Mapping):
+    """Abstract base class for working with arbitrary lower previsions."""
+    __metaclass__ = ABCMeta
+
+    def _make_key(self, key):
+        """Helper function to construct a key, that is, a gamble/event pair."""
+        gamble, event = key
+        return Gamble.make(self.pspace, gamble), Event.make(self.pspace, event)
+
+    def _make_value(self, value):
+        """Helper function to construct a value, that is, a
+        lower/upper prevision pair.
+        """
+        lprev, uprev = value
+        return (
+            _fraction(lprev) if lprev is not None else None,
+            _fraction(uprev) if uprev is not None else None)
+
+    @abstractproperty
+    def pspace(self):
+        """An :class:`improb.PSpace` representing the possibility space."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_lower(self, gamble, event=None):
+        """Return the lower expectation for *gamble* conditional on
+        *event* via natural extension.
+
+        :param gamble: The gamble whose upper expectation to find.
+        :type gamble: |gambletype|
+        :param event: The event to condition on.
+        :type event: |eventtype|
+        :return: The upper bound for this expectation, i.e. the natural extension of the gamble.
+        :rtype: :class:`fractions.Fraction`
+        :raises: :exc:`~exceptions.ValueError` if it incurs sure loss
+        """
+        raise NotImplementedError
+
+    def get_upper(self, gamble, event=None):
+        """Return the upper expectation for *gamble* conditional on
+        *event* via natural extension.
+
+        :param gamble: The gamble whose upper expectation to find.
+        :type gamble: |gambletype|
+        :param event: The event to condition on.
+        :type event: |eventtype|
+        :return: The upper bound for this expectation, i.e. the natural extension of the gamble.
+        :rtype: :class:`fractions.Fraction`
+        :raises: :exc:`~exceptions.ValueError` if it incurs sure loss
+        """
+        gamble, event = self._make_key((gamble, event))
+        return -self.get_lower(gamble=-gamble, event=event)
+
+    #def getcredalset(self):
+    #    """Find credal set corresponding to this lower prevision."""
+    #    raise NotImplementedError
+
+    def is_avoiding_sure_loss(self):
+        """No Dutch book? Does the lower prevision avoid sure loss?
+
+        :return: :const:`True` if avoids sure loss, :const:`False` otherwise.
+        :rtype: :class:`bool`
+        """
+        try:
+            self.get_lower(dict((w, 0) for w in self.pspace))
+        except ValueError:
+            return False
+        return True
+
+    def is_coherent(self):
+        """Do all assessments coincide with their natural extension? Is the
+        lower prevision coherent?
+
+        :return: :const:`True` if coherent, :const:`False` otherwise.
+        :rtype: :class:`bool`
+        """
+        # first check if we are avoiding sure loss
+        if not self.is_avoiding_sure_loss():
+            return False
+        # we're avoiding sure loss, so check the natural extension
+        for gamble, event in self:
+            lprev, uprev = self[gamble, event]
+            if lprev is not None and self.get_lower(gamble, event) > lprev:
+                return False
+            if uprev is not None and self.get_upper(gamble, event) < uprev:
+                return False
+        return True
+
+    def is_linear(self):
+        """Is the lower prevision a linear prevision? More precisely,
+        we check that the natural extension is linear on the linear
+        span of the domain of the lower prevision.
+
+        :return: :const:`True` if linear, :const:`False` otherwise.
+        :rtype: :class:`bool`
+        """
+        # first check if we are avoiding sure loss
+        if not self.is_avoiding_sure_loss():
+            return False
+        # we're avoiding sure loss, so check the natural extension
+        for gamble, event in self:
+            if self.get_lower(gamble, event) != self.get_upper(gamble, event):
+                return False
+        return True
+
+    def dominates(self, gamble, other_gamble, event=None):
+        """Does *gamble* dominate *other_gamble* in lower prevision?
+
+        :return: :const:`True` if *gamble* dominates *other_gamble*, :const:`False` otherwise.
+        :rtype: :class:`bool`
+        """
+        gamble = Gamble.make(self.pspace, gamble)
+        other_gamble = Gamble.make(self.pspace, other_gamble)
+        return self.get_lower(gamble - other_gamble, event) > 0
+
+    def get_lowprob(self):
+        """Return lower probability (i.e. restriction of natural
+        extension to indicators).
+
+        :return: The lower probability.
+        :rtype: :class:`improb.SetFunction`
+        """
+        return SetFunction(
+            self.pspace,
+            dict((event, self.get_lower(event))
+                 for event in self.pspace.subsets()))
+
+    def get_mobius_inverse(self):
+        """Return the mobius inverse of the lower probability determined by
+        this lower prevision. This usually only makes sense for completely
+        monotone lower previsions.
+
+        :return: The mobius inverse.
+        :rtype: :class:`improb.SetFunction`
+        """
+        return self.get_lowprob().get_mobius_inverse()

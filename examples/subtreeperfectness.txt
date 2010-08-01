@@ -5,13 +5,13 @@ A Simple Subtree Imperfect Decision Tree
 >>> import random
 >>> from improb.lowprev import LinVac
 >>> from improb.decision import filter_maximal
->>> random.seed(10)
+>>> random.seed(40)
 >>> n1 = 2
 >>> n2 = 2
 >>> ndec = 3
 >>> pspace = [tuple(omega)
 ...           for omega in itertools.product(list(range(n1)), list(range(n2)))]
->>> for i in range(1000):
+>>> for i in range(20):
 ...     # construct a linear vacuous mixture
 ...     prob = dict((w, 1.0) for w in pspace) # no need for randomness
 ...     tot = sum(prob[w] for w in pspace)
@@ -19,7 +19,8 @@ A Simple Subtree Imperfect Decision Tree
 ...     lpr = LinVac(prob, 0.2) # no need for randomness
 ...     # construct gambles:
 ...     # gambles[w1][d][w2] gives the gain of the w1-d-w2 path
-...     gambles = [[[random.randint(0, 2) + 0.01 * d for w2 in range(n2)]
+...     gambles = [[[random.randint(0, 2) + 0.01 * d + w1 * 0.005
+...                  for w2 in range(n2)]
 ...                 for d in range(ndec)]
 ...                for w1 in range(n1)]
 ...     # construct strategies:
@@ -77,9 +78,9 @@ A Simple Subtree Imperfect Decision Tree
 ...             for d in range(ndec):
 ...                 print(
 ...                     "w1={0}, d={1}: ".format(w1, d)
-...                     + " ".join("{0:.2f}".format(x) for x in gambles[w1][d]))
-...         print("p=" + " ".join("{0:.2f}".format(prob[w]) for w in pspace))
-...         print("eps={0:.2f}".format(lpr._epsilon))
+...                     + " ".join("{0:.3f}".format(x) for x in gambles[w1][d]))
+...         print("p=" + " ".join("{0:.3f}".format(prob[w]) for w in pspace))
+...         print("eps={0:.3f}".format(lpr._epsilon))
 ...         print(sorted(normstrats))
 ...         print(sorted(localstrats))
 ...         #print(sorted(localstrats - normstrats))
@@ -90,16 +91,16 @@ A Simple Subtree Imperfect Decision Tree
 ...     #if localstrats != normstrats2:
 ... else:
 ...     raise RuntimeError("no counterexample found")
-w1=0, d=0: 1.00 2.00
-w1=0, d=1: 2.01 0.01
-w1=0, d=2: 0.02 1.02
-w1=1, d=0: 1.00 1.00
-w1=1, d=1: 0.01 0.01
-w1=1, d=2: 2.02 0.02
-p=0.25 0.25 0.25 0.25
-eps=0.20
-[(0, 0), (0, 2), (1, 2)]
-[(0, 0), (0, 2), (1, 0), (1, 2)]
+w1=0, d=0: 1.000 2.000
+w1=0, d=1: 0.010 0.010
+w1=0, d=2: 2.020 1.020
+w1=1, d=0: 0.005 1.005
+w1=1, d=1: 2.015 1.015
+w1=1, d=2: 0.025 2.025
+p=0.250 0.250 0.250 0.250
+eps=0.200
+[(0, 1), (2, 1), (2, 2)]
+[(0, 1), (0, 2), (2, 1), (2, 2)]
 
 Stronger Violation of Subtree Perfectness
 -----------------------------------------
@@ -109,7 +110,7 @@ into an extensive form?
 
 >>> import itertools
 >>> import random
->>> from improb.lowprev import LowPrev, random_lowprob
+>>> from improb.lowprev import LowPrev
 >>> from improb.decision import filter_maximal
 >>> random.seed(10)
 >>> n1 = 2
@@ -117,12 +118,12 @@ into an extensive form?
 >>> ndec = 3
 >>> pspace = [tuple(omega)
 ...           for omega in itertools.product(list(range(n1)), list(range(n2)))]
->>> for i in range(100):
+>>> for i in range(20):
 ...     # construct a lower prevision
-...     lpr = random_lowprob(pspace=pspace, zero=False)
+...     lpr = LowPrev.make_random(pspace=pspace, zero=False, division=20)
 ...     # construct gambles:
 ...     # gambles[w1][d][w2] gives the gain of the w1-d-w2 path
-...     gambles = [[[random.random() for w2 in range(n2)]
+...     gambles = [[[random.randint(0, 5) for w2 in range(n2)]
 ...                 for d in range(ndec)]
 ...                for w1 in range(n1)]
 ...     # construct strategies:

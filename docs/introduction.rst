@@ -1,15 +1,20 @@
 Introduction
 ============
 
-.. currentmodule:: improb
+.. module:: improb
 
 .. testsetup::
 
    import improb
    import itertools
 
-In brief, use :class:`tuple` for possibility spaces, :class:`dict` for gambles,
-and :class:`set` for events. In more detail:
+In brief, you can use
+
+* :class:`PSpace` for :ref:`possibility spaces <possibility-spaces>`,
+* :class:`tuple`, :class:`list`, :class:`dict`, or :class:`Gamble` for :ref:`gambles <gambles>`, and
+* :class:`tuple`, :class:`list`, :class:`set` or :class:`Event` for :ref:`events <events>`.
+
+In more detail:
 
 .. _possibility-spaces:
 
@@ -101,3 +106,9 @@ Set Functions
    We use :class:`tuple` rather than :class:`set` because usually possibility
    spaces have a natural ordering, and :class:`tuple` is closest to an
    ordered set.
+
+Abstract Base Classes
+---------------------
+
+.. autoclass:: improb.LowPrev
+   :members:

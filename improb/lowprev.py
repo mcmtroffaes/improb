@@ -17,16 +17,19 @@
 
 """A module for working with lower previsions."""
 
-from __future__ import division
+from __future__ import division, absolute_import, print_function
 
+import collections
+from fractions import Fraction
 import itertools
 import pycddlib
 import random
 import scipy.optimize
 
 from improb import PSpace, Gamble, Event, SetFunction
+import improb
 
-class LowPrev:
+class LowPrev(improb.LowPrev):
     """The base class for working with arbitrary finitely generated
     lower previsions. These are implemented as a finite sequence of
     half-spaces, each of which constrains the convex set of
@@ -34,28 +37,124 @@ class LowPrev:
     gamble, and a number (i.e. its lower expectation/prevision).
     """
 
-    def __init__(self, pspace=None):
+    def __init__(self, pspace=None, mapping=None):
         """Construct a lower prevision on *pspace*.
 
         :param pspace: The possibility space.
         :type pspace: |pspacetype|
         """
-
         self._pspace = PSpace.make(pspace)
-        self._matrix = pycddlib.Matrix([[+1] + [-1] * len(self.pspace)] # linear
-                                        +
-                                        [[0] + [1 if i == j else 0
-                                                for i in self.pspace]
-                                         for j in self.pspace])
-        self._matrix.lin_set = set([0]) # first row is linear
-        self._matrix.rep_type = pycddlib.RepType.INEQUALITY
+        self._matrix = None
+        self._mapping = {}
+        if mapping is not None:
+            for key, value in mapping.iteritems():
+                self._mapping[self._make_key(key)] = self._make_value(value)
+        self._matrix = self._make_matrix()
+
+    def __len__(self):
+        return len(self._mapping)
+
+    def __iter__(self):
+        return iter(self._mapping)
+
+    def __contains__(self, key):
+        return self._make_key(key) in self._mapping
+
+    def __getitem__(self, key):
+        return self._mapping[self._make_key(key)]
+
+    def __setitem__(self, key, value):
+        self._mapping[self._make_key(key)] = self._make_value(value)
+        # clear matrix cache
+        self._matrix = None
+
+    def __str__(self):
+        maxlen_pspace = max(len(str(omega)) for omega in self.pspace)
+        maxlen_value = max(max(len("{0:.3f}".format(float(gamble[omega])))
+                               for omega in self.pspace)
+                           for gamble, event in self)
+        maxlen = max(maxlen_pspace, maxlen_value)
+        maxlen_prev = max(max(len("{0:.3f}".format(float(prev)))
+                              for prev in prevs if prev is not None)
+                           for prevs in self.itervalues())
+        result = " ".join("{0: ^{1}}".format(omega, maxlen)
+                          for omega in self.pspace) + "\n"
+        result += "\n".join(
+            " ".join("{0:{1}.3f}".format(float(value), maxlen)
+                     for value in gamble.values())
+            + " | "
+            + " ".join("{0:{1}}".format(omega if omega in event else '',
+                                        maxlen_pspace)
+                       for omega in self.pspace)
+            + " : ["
+            + ("{0:{1}.3f}".format(float(lprev), maxlen_prev)
+               if lprev is not None else ' ' * maxlen_prev)
+            + ", "
+            + ("{0:{1}.3f}".format(float(uprev), maxlen_prev)
+               if uprev is not None else ' ' * maxlen_prev)
+            + "]"
+            for (gamble, event), (lprev, uprev)
+            in sorted(self.iteritems(),
+                      key=lambda val: tuple(x for x in val[0][0].values())))
+        return result
+
+    @property
+    def matrix(self):
+        """Matrix representing all the constraints of this lower prevision."""
+        # implementation detail: this is cached; set _matrix to None whenever
+        # cache needs to be cleared
+        if self._matrix is None:
+            self._matrix = self._make_matrix()
+        return self._matrix
+
+    def _make_matrix(self):
+        """Construct pycddlib matrix representation."""
+        constraints = []
+        lin_set = set()
+
+        def add_constraint(constraint, linear=False):
+            if linear:
+                lin_set.add(len(constraints))
+            constraints.append(constraint)
+
+        # probabilities sum to one
+        add_constraint([+1] + [-1] * len(self.pspace), linear=True)
+        # probabilities are positive
+        for j in self.pspace:
+            add_constraint([0] + [1 if i == j else 0 for i in self.pspace])
+        # add constraints on conditional expectation
+        for gamble, event in self:
+            lprev, uprev = self[gamble, event]
+            if lprev is None and uprev is None:
+                # nothing assigned
+                continue
+            elif lprev == uprev:
+                # precise assignment
+                add_constraint(
+                    [0] + [value - lprev if omega in event else 0
+                           for omega, value in gamble.iteritems()],
+                    linear=True)
+            else:
+                # interval assignment
+                if lprev is not None:
+                    add_constraint(
+                        [0] + [value - lprev if omega in event else 0
+                               for omega, value in gamble.iteritems()])
+                if uprev is not None:
+                    add_constraint(
+                        [0] + [uprev - value if omega in event else 0
+                               for omega, value in gamble.iteritems()])
+        # create matrix
+        matrix = pycddlib.Matrix(constraints)
+        matrix.lin_set = lin_set
+        matrix.rep_type = pycddlib.RepType.INEQUALITY
+        return matrix
 
     @property
     def pspace(self):
-        """An :class:`improb.PSpace` representing the possibility space."""
         return self._pspace
 
-    def set_lower(self, gamble, lprev):
+    def set_lower(self, gamble, lprev, event=None):
         """Constrain the expectation of *gamble* to be at least *lprev*.
 
         :param gamble: The gamble whose expectation to bound.
@@ -63,10 +162,23 @@ class LowPrev:
         :param lprev: The lower bound for this expectation.
         :type lprev: |numbertype|
         """
-        gamble = Gamble.make(self.pspace, gamble)
-        self._matrix.extend([[-lprev] + gamble.values()])
+        # check that something is specified
+        if lprev is None:
+            return
+        # update the key value
+        key = self._make_key((gamble, event))
+        try:
+            old_lprev, uprev = self[key]
+        except KeyError:
+            # not yet defined, leave uprev unspecified
+            uprev = None
+        else:
+            # already defined: constrain interval further
+            lprev = (max(lprev, old_lprev)
+                     if old_lprev is not None else lprev)
+        self[key] = lprev, uprev
 
-    def set_upper(self, gamble, uprev):
+    def set_upper(self, gamble, uprev, event=None):
         """Constrain the expectation of *gamble* to be at most *uprev*.
 
         :param gamble: The gamble whose expectation to bound.
@@ -74,10 +186,23 @@ class LowPrev:
         :param uprev: The upper bound for this expectation.
         :type uprev: |numbertype|
         """
-        gamble = Gamble.make(self.pspace, gamble)
-        self._matrix.extend([[uprev] + (-gamble).values()])
+        # check that something is specified
+        if uprev is None:
+            return
+        # update the key value
+        key = self._make_key((gamble, event))
+        try:
+            lprev, old_uprev = self[key]
+        except KeyError:
+            # not yet defined, leave lprev unspecified
+            lprev = None
+        else:
+            # already defined: constrain interval further
+            uprev = (min(uprev, old_uprev)
+                     if old_uprev is not None else uprev)
+        self[key] = lprev, uprev
 
-    def set_precise(self, gamble, prev):
+    def set_precise(self, gamble, prev, event=None):
         """Constrain the expectation of *gamble* to be exactly *prev*.
 
         :param gamble: The gamble whose expectation to bound.
@@ -85,17 +210,26 @@ class LowPrev:
         :param prev: The precise bound for this expectation.
         :type prev: |numbertype|
         """
-        gamble = Gamble.make(self.pspace, gamble)
-        self._matrix.extend([[-prev] + gamble.values()], linear=True)
+        # check that something is specified
+        if prev is None:
+            return
+        # update the key value
+        key = self._make_key((gamble, event))
+        try:
+            old_lprev, old_uprev = self[key]
+        except KeyError:
+            # not yet defined, copy as is
+            lprev = prev
+            uprev = prev
+        else:
+            # already defined: constrain interval further
+            lprev = (max(prev, old_lprev)
+                     if old_lprev is not None else prev)
+            uprev = (min(prev, old_uprev)
+                     if old_uprev is not None else prev)
+        self[key] = lprev, uprev
 
-    def __iter__(self):
-        """Yield tuples (gamble, lprev, linear)."""
-        lin_set = self._matrix.lin_set
-        for rownum in xrange(len(self.pspace) + 1, self._matrix.row_size):
-            row = self._matrix[rownum]
-            yield row[1:], -row[0], rownum in lin_set
-
-    def get_lower(self, gamble, event=None, tolerance=1e-6):
+    def get_lower(self, gamble, event=None):
         """Return the lower expectation for *gamble* conditional on
         *event* via natural extension.
 
@@ -104,16 +238,18 @@ class LowPrev:
         :param event: The event to condition on.
         :type event: |eventtype|
         :return: The lower bound for this expectation, i.e. the natural extension of the gamble.
-        :rtype: :class:`float`
+        :rtype: ``float``
         """
         gamble = Gamble.make(self.pspace, gamble)
-        if event is None:
-            self._matrix.obj_type = pycddlib.LPObjType.MIN
-            self._matrix.obj_func = [0] + gamble.values()
-            #print self._matrix # DEBUG
-            linprog = pycddlib.LinProg(self._matrix)
+        event = Event.make(self.pspace, event)
+        if event == Event.make(self.pspace, self.pspace):
+            matrix = self.matrix
+            matrix.obj_type = pycddlib.LPObjType.MIN
+            matrix.obj_func = [0] + gamble.values()
+            #print(matrix) # DEBUG
+            linprog = pycddlib.LinProg(matrix)
             linprog.solve()
-            #print linprog # DEBUG
+            #print(linprog) # DEBUG
             if linprog.status == pycddlib.LPStatusType.OPTIMAL:
                 return linprog.obj_value
             elif linprog.status == pycddlib.LPStatusType.INCONSISTENT:
@@ -121,121 +257,33 @@ class LowPrev:
             else:
                 raise RuntimeError("BUG: unexpected status (%i)" % linprog.status)
         else:
-            event = Event.make(self.pspace, event)
-            lowprev_event = self.get_lower(event.indicator())
-            if lowprev_event < tolerance:
+            a = min(gamble[omega] for omega in event)
+            b = max(gamble[omega] for omega in event)
+            if a == b:
+                # constant gamble, can only have this conditional prevision
+                # (also, scipy.optimize.brentq raises an exception if a == b)
+                return a
+            lowprev_event = self.get_lower(event)
+            if lowprev_event == 0:
                 raise ZeroDivisionError(
                     "cannot condition on event with zero lower probability")
-            return scipy.optimize.brentq(
-                f=lambda mu: self.get_lower((gamble - mu) * event),
-                a=min(gamble.values()),
-                b=max(gamble.values()))
-
-    def get_upper(self, gamble, event=None):
-        """Return the upper expectation for *gamble* conditional on
-        *event* via natural extension.
-
-        :param gamble: The gamble whose upper expectation to find.
-        :type gamble: |gambletype|
-        :param event: The event to condition on.
-        :type event: |eventtype|
-        :return: The upper bound for this expectation, i.e. the natural extension of the gamble.
-        :rtype: :class:`float`
-        """
-        gamble = Gamble.make(self.pspace, gamble)
-        return -self.get_lower(-gamble, event)
-
-    #def getcredalset(self):
-    #    """Find credal set corresponding to this lower prevision."""
-    #    raise NotImplementedError
-
-    def is_avoiding_sure_loss(self):
-        """No Dutch book? Does the lower prevision avoid sure loss?
-
-        :return: :const:`True` if avoids sure loss, :const:`False` otherwise.
-        :rtype: :class:`bool`
-        """
-        try:
-            self.get_lower(dict((w, 0) for w in self.pspace))
-        except ValueError:
-            return False
-        return True
-
-    def is_coherent(self, tolerance=1e-6):
-        """Do all assessments coincide with their natural extension? Is the
-        lower prevision coherent?
-
-        :return: :const:`True` if coherent, :const:`False` otherwise.
-        :rtype: :class:`bool`
-        """
-        # first check if we are avoiding sure loss
-        if not self.is_avoiding_sure_loss():
-            return False
-        # we're avoiding sure loss, so check the natural extension
-        for gamble, lprev, linear in self:
-            if self.get_lower(gamble) > lprev + tolerance:
-                return False
-            if linear:
-                # in the linear case, also check upper (note: we
-                # probably don't have to do this... avoiding sure loss
-                # check should take care of it already)
-                if self.get_upper(gamble) < lprev - tolerance:
-                    return False
-        return True
-
-    def is_linear(self, tolerance=1e-6):
-        """Is the lower prevision a linear prevision? More precisely,
-        we check that the natural extension is linear on the linear
-        span of the domain of the lower prevision.
-
-        :return: :const:`True` if linear, :const:`False` otherwise.
-        :rtype: :class:`bool`
-        """
-        # first check if we are avoiding sure loss
-        if not self.is_avoiding_sure_loss():
-            return False
-        # we're avoiding sure loss, so check the natural extension
-        for gamble, lprev, linear in self:
-            # implementation note: if upper - lower <= tolerance then
-            # obviously lprev is within tolerance of the lower and the
-            # upper as well, so we can keep lprev out of the picture
-            # when checking for linearity (of course, it's taken into
-            # account when calculating the natural extension)
-            if self.get_upper(gamble) - self.get_lower(gamble) > tolerance:
-                return False
-        return True
-
-    def dominates(self, gamble, other_gamble, event=None, tolerance=1e-6):
-        """Does *gamble* dominate *other_gamble* in lower prevision?
-
-        :return: :const:`True` if *gamble* dominates *other_gamble*, :const:`False` otherwise.
-        :rtype: :class:`bool`
-        """
-        gamble = Gamble.make(self.pspace, gamble)
-        other_gamble = Gamble.make(self.pspace, other_gamble)
-        return self.get_lower(gamble - other_gamble, event) > tolerance
-
-    def get_lowprob(self):
-        """Return lower probability (i.e. restriction of natural
-        extension to indicators).
-
-        :return: The lower probability.
-        :rtype: :class:`improb.SetFunction`
-        """
-        return SetFunction(
-            self.pspace,
-            dict((event, self.get_lower(event.indicator()))
-                 for event in self.pspace.subsets()))
-
-    def get_mobius_inverse(self):
-        """Return the mobius inverse of the lower probability determined by
-        this lower prevision. This usually only makes sense for completely
-        monotone lower previsions.
-
-        :return: The mobius inverse.
-        :rtype: :class:`improb.SetFunction`
-        """
-        return self.get_lowprob().get_mobius_inverse()
+            try:
+                result = scipy.optimize.brentq(
+                    f=lambda mu: float(self.get_lower((gamble - mu) * event)),
+                    a=float(a), b=float(b))
+            except ValueError as exc:
+                # re-raise with more detail
+                raise ValueError("{0}\n{1}\n{2}\n{3} {4}".format(
+                    exc,
+                    gamble, event,
+                    self.get_lower((gamble - a) * event), 
+                    self.get_lower((gamble - b) * event)))
+            # see if we can get the exact fractional solution
+            frac_result = Fraction.from_float(result).limit_denominator()
+            if self.get_lower((gamble - frac_result) * event) == 0:
+                return frac_result
+            else:
+                return result
 
     def get_credal_set(self):
         """Return extreme points of the credal set.
@@ -243,9 +291,43 @@ class LowPrev:
         :return: The extreme points.
         :rtype: Yields a :class:`tuple` for each extreme point.
         """
-        poly = pycddlib.Polyhedron(self._matrix)
+        poly = pycddlib.Polyhedron(self.matrix)
         for vert in poly.get_generators():
             yield vert[1:]
+
+    @classmethod
+    def make_random(cls, pspace=None, division=None, zero=True):
+        """Generate a random coherent lower probability."""
+        # for now this is just a pretty dumb method
+        pspace = PSpace.make(pspace)
+        while True:
+            lpr = LowPrev(pspace)
+            for event in pspace.subsets():
+                if len(event) == 0:
+                    continue
+                if len(event) == len(pspace):
+                    continue
+                gamble = event.indicator()
+                if division is None:
+                    # a number between 0 and sum(event) / len(pspace)
+                    while True:
+                        try:
+                            lpr.set_lower(gamble,
+                                          random.random() * len(event) / len(pspace))
+                        except ZeroDivisionError:
+                            break
+                else:
+                    # a number between 0 and sum(event) / len(pspace)
+                    # but discretized
+                    lpr.set_lower(gamble,
+                                  Fraction(
+                                      random.randint(
+                                          0 if zero else 1,
+                                          (division * len(event))
+                                          // len(pspace)),
+                                      division))
+            if lpr.is_avoiding_sure_loss():
+               return lpr
 
     #def optimize(self):
     #    """Removes redundant assessments."""
@@ -264,35 +346,6 @@ class LowPrev:
     #    """Disjunction (unanimity rule). Result is not necessarily
     #    coherent."""
     #    raise NotImplementedError
-
-def random_lowprob(pspace=None, division=None, zero=True):
-    """Generate a random coherent lower probability."""
-    # for now this is just a pretty dumb method
-    pspace = make_pspace(pspace)
-    events = [list(event)
-              for event in itertools.product([0, 1], repeat=len(pspace))]
-    while True:
-        lpr = LowPrev(pspace)
-        for event in events:
-            if sum(event) == 0:
-                continue
-            if sum(event) == len(pspace):
-                continue
-            gamble = dict((w, event[i]) for i, w in enumerate(pspace))
-            if division is None:
-                # a number between 0 and sum(event) / len(pspace)
-                lpr.set_lower(gamble,
-                              random.random() * sum(event) / len(pspace))
-            else:
-                # a number between 0 and sum(event) / len(pspace)
-                # but discretized
-                lpr.set_lower(gamble,
-                              random.randint(0 if zero else 1,
-                                             (division * sum(event))
-                                             // len(pspace))
-                              / division)
-        if lpr.is_avoiding_sure_loss():
-           return lpr
 
 class LinVac(LowPrev):
     """Linear-vacuous mixture.
@@ -345,13 +398,13 @@ class LinVac(LowPrev):
     def __iter__(self):
         raise NotImplementedError
 
-    def set_lower(self, gamble):
+    def set_lower(self, gamble, event=None):
         raise NotImplementedError
 
-    def set_upper(self, gamble):
+    def set_upper(self, gamble, event=None):
         raise NotImplementedError
     
-    def set_precise(self, gamble):
+    def set_precise(self, gamble, event=None):
         raise NotImplementedError
 
     def get_lower(self, gamble, event=None):
@@ -362,7 +415,7 @@ class LinVac(LowPrev):
         :param event: The event to condition on.
         :type event: |eventtype|
         :return: The lower expectation of the gamble.
-        :rtype: :class:`float`
+        :rtype: ``float``
         """
         gamble = Gamble.make(self.pspace, gamble)
         if event is None:
@@ -407,12 +460,12 @@ class BelFunc(LowPrev):
         :param event: The event to condition on.
         :type event: |eventtype|
         :return: The lower expectation of the gamble.
-        :rtype: :class:`float`
+        :rtype: ``float``
 
         >>> from improb.lowprev import BelFunc
         >>> from improb import PSpace, SetFunction
         >>> pspace = PSpace(2)
-        >>> lowprob = SetFunction(pspace, {(0,): 0.3, (1,): 0.2, (0,1): 1})
+        >>> lowprob = SetFunction(pspace, {(0,): '0.3', (1,): '0.2', (0,1): 1})
         >>> lpr = BelFunc(lowprob=lowprob)
         >>> print(lpr.mass)
             : 0.000
@@ -420,13 +473,13 @@ class BelFunc(LowPrev):
           1 : 0.200
         0 1 : 0.500
         >>> print(lpr.get_lower([1,0]))
-        0.3
+        3/10
         >>> print(lpr.get_lower([0,1]))
-        0.2
+        1/5
         >>> print(lpr.get_lower([4,9])) # 0.8 * 4 + 0.2 * 9
-        5.0
+        5
         >>> print(lpr.get_lower([5,1])) # 0.3 * 5 + 0.7 * 1
-        2.2
+        11/5
         """
         gamble = Gamble.make(self.pspace, gamble)
         if event is not None:
