@@ -23,6 +23,7 @@ import cddgmp
 import random
 import scipy.optimize
 
+from improb import PSpace, Gamble, Event
 from improb.lowprev import LowPrev
 
 class LowPoly(LowPrev):

@@ -24,7 +24,7 @@ import collections
 from fractions import Fraction
 import itertools
 
-from improb import PSpace, Gamble, Event
+from improb import PSpace, Gamble, Event, _fraction
 from improb.setfunction import SetFunction
 
 class LowPrev(collections.Mapping):
