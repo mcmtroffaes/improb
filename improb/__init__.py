@@ -39,7 +39,11 @@ def _fraction_repr(value):
     if value.denominator == 1:
         return repr(value.numerator)
     else:
-        return repr(value)
+        floatstr = str(float(value))
+        if value == Fraction(floatstr):
+            return repr(floatstr)
+        else:
+            return repr(str(value))
 
 def make_pspace(*args):
     """Convert *args* into a possibility space.

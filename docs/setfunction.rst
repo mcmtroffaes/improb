@@ -1,6 +1,12 @@
 Set Functions
 =============
 
+.. testsetup::
+
+   from fractions import Fraction
+   from improb import PSpace
+   from improb.setfunction import SetFunction
+
 .. module:: improb.setfunction
 
 .. autoclass:: SetFunction

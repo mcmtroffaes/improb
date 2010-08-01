@@ -30,7 +30,7 @@ class SetFunction(collections.MutableMapping):
     Bases: :class:`collections.MutableMapping`
     """
 
-    def __init__(self, pspace, mapping):
+    def __init__(self, pspace, mapping=None):
         """Construct a set function on the power set of the given
         possibility space.
 
@@ -40,73 +40,86 @@ class SetFunction(collections.MutableMapping):
         :type mapping: :class:`dict`
         """
         self._pspace = PSpace.make(pspace)
-        self._data = dict((event, Fraction(0))
-                          for event in self.pspace.subsets())
-        self._data.update((Event(pspace, subset), _fraction(mapping[subset]))
-                          for subset in mapping)
+        if mapping is not None:
+            self._data = dict((Event(pspace, subset), _fraction(value))
+                              for subset, value in mapping.iteritems()
+                              if _fraction(value) != 0)
+        else:
+            self._data = {}
 
     def __len__(self):
         return len(self._data)
 
     def __iter__(self):
-        return iter(self._data)
+        # iter(self._data) has no stable ordering
+        # therefore use self.pspace.subsets() instead
+        for subset in self.pspace.subsets():
+            if subset in self._data:
+                yield subset
 
     def __contains__(self, event):
-        return event in self._data
+        return Event.make(self.pspace, event) in self._data
 
     def __getitem__(self, event):
-        return self._data[Event.make(self.pspace, event)]
+        event = Event.make(self.pspace, event)
+        try:
+            return self._data[event]
+        except KeyError:
+            return _fraction(0)
+
+    def __setitem__(self, event, value):
+        event = Event.make(self.pspace, event)
+        value = _fraction(value)
+        if value != 0:
+            self._data[event] = _fraction(value)
+        else:
+            del self._data[event]
+
+    def __delitem__(self, event):
+        del self._data[Event.make(self.pspace, event)]
 
     def __repr__(self):
         """
-        >>> improb.SetFunction(3, {(): 1, (0, 2): '2.1', (0, 1, 2): 5}) # doctest: +NORMALIZE_WHITESPACE
+        >>> SetFunction(3, {(): 1, (0, 2): Fraction(21, 10), (0, 1, 2): Fraction(1, 3)}) # doctest: +NORMALIZE_WHITESPACE
         SetFunction(pspace=PSpace(3),
-                    mapping={(): 1, (0, 2): Fraction(21, 10), (0, 1, 2): 5})
+                    mapping={(): 1, (0, 2): '2.1', (0, 1, 2): '1/3'})
         """
         dict_ = [(tuple(omega for omega in self.pspace
                         if omega in event),
-                  _fraction_repr(self[event]))
-                 for event in self.pspace.subsets()
-                 if self[event] != 0]
+                  _fraction_repr(value))
+                 for event, value in self.iteritems()]
         return "SetFunction(pspace={0}, mapping={{{1}}})".format(
             repr(self._pspace), ", ".join("{0}: {1}".format(*element)
                                           for element in dict_))
 
     def __str__(self):
         """
-        >>> print(improb.SetFunction('abc', {'': 1, 'ac': 2, 'abc': 5}))
+        >>> print(SetFunction('abc', {'': 1, 'ac': 2, 'abc': 5}))
               : 1.000
-        a     : 0.000
-          b   : 0.000
-            c : 0.000
-        a b   : 0.000
         a   c : 2.000
-          b c : 0.000
         a b c : 5.000
         """
         maxlen_pspace = max(len(str(omega)) for omega in self._pspace)
-        maxlen_value = max(len("{0:.3f}".format(float(self[event])))
-                           for event in self)
+        maxlen_value = max(len("{0:.3f}".format(float(value)))
+                           for value in self.itervalues())
         return "\n".join(
             " ".join("{0: <{1}}".format(omega if omega in event else '',
                                         maxlen_pspace)
                       for omega in self._pspace) +
             " : " +
-            "{0:{1}.3f}".format(float(self[event]), maxlen_value)
-            for event in self._pspace.subsets())
+            "{0:{1}.3f}".format(float(value), maxlen_value)
+            for event, value in self.iteritems())
 
     @property
     def pspace(self):
-        """An :class:`improb.PSpace` representing the possibility space."""
+        """An :class:`~improb.PSpace` representing the possibility space."""
         return self._pspace
 
     def get_mobius_inverse(self):
         """Calculate the mobius inverse.
 
-        >>> from improb import PSpace, SetFunction
         >>> setfunc = SetFunction(PSpace('ab'), {'a': 0.25, 'b': 0.25, 'ab': 1})
         >>> print(setfunc.get_mobius_inverse())
-            : 0.000
         a   : 0.250
           b : 0.250
         a b : 0.500
