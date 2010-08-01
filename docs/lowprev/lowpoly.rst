@@ -1,5 +1,5 @@
-Polyhedral (Finitely Generated) Lower Previsions
-================================================
+Polyhedral Lower Previsions
+===========================
 
 .. module:: improb.lowprev.lowpoly
 

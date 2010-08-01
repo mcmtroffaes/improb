@@ -19,7 +19,7 @@
 
 from __future__ import division, absolute_import, print_function
 
-import pycddlib
+import cddgmp
 import random
 import scipy.optimize
 
@@ -104,7 +104,7 @@ class LowPoly(LowPrev):
         return self._matrix
 
     def _make_matrix(self):
-        """Construct pycddlib matrix representation."""
+        """Construct cddgmp matrix representation."""
         constraints = []
         lin_set = set()
 
@@ -141,9 +141,9 @@ class LowPoly(LowPrev):
                         [0] + [uprev - value if omega in event else 0
                                for omega, value in gamble.iteritems()])
         # create matrix
-        matrix = pycddlib.Matrix(constraints)
+        matrix = cddgmp.Matrix(constraints)
         matrix.lin_set = lin_set
-        matrix.rep_type = pycddlib.RepType.INEQUALITY
+        matrix.rep_type = cddgmp.RepType.INEQUALITY
         return matrix
 
     @property
@@ -240,15 +240,15 @@ class LowPoly(LowPrev):
         event = Event.make(self.pspace, event)
         if event == Event.make(self.pspace, self.pspace):
             matrix = self.matrix
-            matrix.obj_type = pycddlib.LPObjType.MIN
+            matrix.obj_type = cddgmp.LPObjType.MIN
             matrix.obj_func = [0] + gamble.values()
             #print(matrix) # DEBUG
-            linprog = pycddlib.LinProg(matrix)
+            linprog = cddgmp.LinProg(matrix)
             linprog.solve()
             #print(linprog) # DEBUG
-            if linprog.status == pycddlib.LPStatusType.OPTIMAL:
+            if linprog.status == cddgmp.LPStatusType.OPTIMAL:
                 return linprog.obj_value
-            elif linprog.status == pycddlib.LPStatusType.INCONSISTENT:
+            elif linprog.status == cddgmp.LPStatusType.INCONSISTENT:
                 raise ValueError("lower prevision incurs sure loss")
             else:
                 raise RuntimeError("BUG: unexpected status (%i)" % linprog.status)
@@ -287,7 +287,7 @@ class LowPoly(LowPrev):
         :return: The extreme points.
         :rtype: Yields a :class:`tuple` for each extreme point.
         """
-        poly = pycddlib.Polyhedron(self.matrix)
+        poly = cddgmp.Polyhedron(self.matrix)
         for vert in poly.get_generators():
             yield vert[1:]
 
