@@ -9,7 +9,6 @@ Welcome to improb's documentation!
 
    quickstart
    introduction
-   prob
-   lowprob
    lowprev
-   examples
+   prob
+   setfunction

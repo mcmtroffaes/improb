@@ -35,7 +35,7 @@ doclines = __doc__.split("\n")
 setup(
     name = "improb",
     version = __version__,
-    packages = ['improb'],
+    packages = ['improb', 'improb.lowprev'],
     author = "Matthias Troffaes",
     author_email = "matthias.troffaes@gmail.com",
     license = "GPL",

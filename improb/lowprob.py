@@ -17,10 +17,12 @@
 
 """Coherent lower probabilities."""
 
-from improb import PSpace, Gamble, Event, SetFunction
+from improb import PSpace, Gamble, Event
 from improb.lowprev import LowPrev
 
-class LowProb(SetFunction):
+# TODO restrict assignment to events
+
+class LowProb(LowPrev):
     """Coherent lower probability."""
     def __init__(self, pspace, mapping):
         """Construct a lower probability on the power set of the given
@@ -28,7 +30,7 @@ class LowProb(SetFunction):
 
         :param pspace: The possibility space.
         :type pspace: |pspacetype|
-        :param mapping: A :term:`mapping` that defines the value on each event (missing values default to zero).
+        :param mapping: A mapping that defines the value on each event (missing values default to zero).
         :type mapping: :class:`collections.Mapping <collections>`
         """
         SetFunction.__init__(self, pspace, mapping)

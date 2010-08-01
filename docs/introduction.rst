@@ -34,7 +34,6 @@ For more advanced usage of possibility spaces, use the following class:
    :members:
 
    .. automethod:: __repr__
-
    .. automethod:: __str__
 
 .. _gambles:
@@ -61,7 +60,6 @@ For more advanced usage of gambles, use the following class:
    :members:
 
    .. automethod:: __repr__
-
    .. automethod:: __str__
 
 .. _events:
@@ -86,17 +84,6 @@ For more advanced usage of events, use the following class:
    :members:
 
    .. automethod:: __repr__
-
-   .. automethod:: __str__
-
-Set Functions
--------------
-
-.. autoclass:: SetFunction
-   :members:
-
-   .. automethod:: __init__
-   .. automethod:: __repr__
    .. automethod:: __str__
 
 .. rubric:: Footnotes
@@ -106,9 +93,3 @@ Set Functions
    We use :class:`tuple` rather than :class:`set` because usually possibility
    spaces have a natural ordering, and :class:`tuple` is closest to an
    ordered set.
-
-Abstract Base Classes
----------------------
-
-.. autoclass:: improb.LowPrev
-   :members:

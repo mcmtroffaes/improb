@@ -1,7 +1,7 @@
 Probability Measures
 ====================
 
-.. currentmodule:: improb.prob
+.. module:: improb.prob
 
 .. autoclass:: Prob
    :members:

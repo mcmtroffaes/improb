@@ -15,22 +15,18 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-"""A module for working with lower previsions."""
+"""Polyhedral lower previsions."""
 
 from __future__ import division, absolute_import, print_function
 
-import collections
-from fractions import Fraction
-import itertools
 import pycddlib
 import random
 import scipy.optimize
 
-from improb import PSpace, Gamble, Event, SetFunction
-import improb
+from improb.lowprev import LowPrev
 
-class LowPrev(improb.LowPrev):
-    """The base class for working with arbitrary finitely generated
+class LowPoly(LowPrev):
+    """Implements arbitrary finitely generated
     lower previsions. These are implemented as a finite sequence of
     half-spaces, each of which constrains the convex set of
     probability mass functions. Each half-space is represented by a
@@ -346,147 +342,3 @@ class LowPrev(improb.LowPrev):
     #    """Disjunction (unanimity rule). Result is not necessarily
     #    coherent."""
     #    raise NotImplementedError
-
-class LinVac(LowPrev):
-    """Linear-vacuous mixture.
-
-    >>> from improb.lowprev import LinVac
-    >>> lpr = LinVac([0.2, 0.4, 0.5], 0.1) # doctest: +ELLIPSIS
-    Traceback (most recent call last):
-        ...
-    ValueError: probabilities must sum to one
-
-    >>> from improb.lowprev import LinVac
-    >>> lpr = LinVac([0.2, 0.3, 0.5], 0.1)
-    >>> print lpr.get_lower([1,0,0])
-    0.18
-    >>> print lpr.get_lower([0,1,0])
-    0.27
-    >>> print lpr.get_lower([0,0,1])
-    0.45
-    >>> print lpr.get_lower([3,2,1])
-    1.63
-    >>> print lpr.get_upper([3,2,1])
-    1.83
-
-    >>> from improb.lowprev import LinVac
-    >>> lpr = LinVac([0.42, 0.08, 0.18, 0.32], 0.1)
-    >>> print lpr.get_lower([5,5,-5,-5])
-    -0.5
-    >>> print lpr.get_lower([5,5,-5,-5], set([0,2])) # (6 - 31 * 0.1) / (3 + 2 * 0.1)
-    0.90625
-    >>> print lpr.get_lower([-5,-5,5,5], set([1,3])) # (6 - 31 * 0.1) / (2 + 3 * 0.1) # doctest: +ELLIPSIS
-    1.260869...
-    >>> print lpr.get_lower([0,5,0,-5]) # -(6 + 19 * 0.1) / 5
-    -1.58
-    >>> print lpr.get_lower([0,-5,0,5]) # (6 - 31 * 0.1) / 5
-    0.58
-    """
-    def __init__(self, prob, epsilon):
-        if isinstance(prob, (list, tuple)):
-            tot = sum(prob)
-            self._pspace = tuple(xrange(len(prob)))
-        elif isinstance(prob, dict):
-            tot = sum(prob.itervalues())
-            self._pspace = tuple(w for w in prob)
-        if tot < 1 - 1e-6 or tot > 1 + 1e-6:
-            raise ValueError("probabilities must sum to one")
-        self._prob = prob
-        self._epsilon = epsilon
-        self._matrix = None
-
-    def __iter__(self):
-        raise NotImplementedError
-
-    def set_lower(self, gamble, event=None):
-        raise NotImplementedError
-
-    def set_upper(self, gamble, event=None):
-        raise NotImplementedError
-    
-    def set_precise(self, gamble, event=None):
-        raise NotImplementedError
-
-    def get_lower(self, gamble, event=None):
-        """Get the lower expectation of a gamble conditional on an event.
-
-        :param gamble: The gamble.
-        :type gamble: |gambletype|
-        :param event: The event to condition on.
-        :type event: |eventtype|
-        :return: The lower expectation of the gamble.
-        :rtype: ``float``
-        """
-        gamble = Gamble.make(self.pspace, gamble)
-        if event is None:
-            event = set(self.pspace)
-        return (
-            ((1 - self._epsilon) * sum(self._prob[w] * gamble[w] for w in event)
-             + self._epsilon * min(gamble[w] for w in event))
-            /
-            ((1 - self._epsilon) * sum(self._prob[w] for w in event)
-             + self._epsilon)
-            )
-
-class BelFunc(LowPrev):
-    def __init__(self, mass=None, lowprob=None):
-        """Construct a belief function from a mass assignment or from
-        the mobius inverse of a given lower probability.
-
-        :param mass: The mass assignment.
-        :type mass: `improb.SetFunction`
-        :param lowprob: The lower probability.
-        :type lowprob: `improb.SetFunction`
-        """
-        self._mass = {}
-        if mass:
-            self._mass = mass
-        elif lowprob:
-            self._mass = lowprob.get_mobius_inverse()
-        else:
-            raise ValueError("must specify mass or lowprob")
-        self._pspace = self._mass._pspace
-        self._matrix = None
-
-    @property
-    def mass(self):
-        return self._mass
-
-    def get_lower(self, gamble, event=None):
-        """Get lower prevision.
-
-        :param gamble: The gamble.
-        :type gamble: |gambletype|
-        :param event: The event to condition on.
-        :type event: |eventtype|
-        :return: The lower expectation of the gamble.
-        :rtype: ``float``
-
-        >>> from improb.lowprev import BelFunc
-        >>> from improb import PSpace, SetFunction
-        >>> pspace = PSpace(2)
-        >>> lowprob = SetFunction(pspace, {(0,): '0.3', (1,): '0.2', (0,1): 1})
-        >>> lpr = BelFunc(lowprob=lowprob)
-        >>> print(lpr.mass)
-            : 0.000
-        0   : 0.300
-          1 : 0.200
-        0 1 : 0.500
-        >>> print(lpr.get_lower([1,0]))
-        3/10
-        >>> print(lpr.get_lower([0,1]))
-        1/5
-        >>> print(lpr.get_lower([4,9])) # 0.8 * 4 + 0.2 * 9
-        5
-        >>> print(lpr.get_lower([5,1])) # 0.3 * 5 + 0.7 * 1
-        11/5
-        """
-        gamble = Gamble.make(self.pspace, gamble)
-        if event is not None:
-            raise NotImplementedError
-        return sum(
-            (self._mass[event_] * min(gamble[w] for w in event_)
-             for event_ in self.pspace.subsets()
-             if event_),
-            0)
-

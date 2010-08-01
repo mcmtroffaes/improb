@@ -1,36 +1,16 @@
 Lower Previsions
 ================
 
-.. currentmodule:: improb.lowprev
+.. toctree::
+   :maxdepth: 2
 
-Arbitrary Finitely Generated Lower Previsions
----------------------------------------------
+   lowprev/lowpoly
+   lowprev/lowprob
+   lowprev/belfunc
+   lowprev/linvac
+   lowprev/examples
+
+.. module:: improb.lowprev
 
 .. autoclass:: LowPrev
    :members:
-
-   .. automethod:: __init__
-
-   .. automethod:: __iter__
-
-.. include:: ../tests/lowprev.txt
-
-Linear Vacuous Mixtures
------------------------
-
-.. autoclass:: LinVac
-   :members:
-
-   .. automethod:: __init__
-
-.. todo:: Add examples.
-
-Belief Functions
-----------------
-
-.. autoclass:: BelFunc
-   :members:
-
-   .. automethod:: __init__
-
-.. todo:: Add examples.
