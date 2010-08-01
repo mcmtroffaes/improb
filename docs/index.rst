@@ -10,5 +10,4 @@ Welcome to improb's documentation!
    quickstart
    introduction
    lowprev
-   prob
    setfunction

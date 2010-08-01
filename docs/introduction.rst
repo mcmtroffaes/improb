@@ -5,8 +5,7 @@ Introduction
 
 .. testsetup::
 
-   import improb
-   import itertools
+   from improb import *
 
 In brief, you can use
 

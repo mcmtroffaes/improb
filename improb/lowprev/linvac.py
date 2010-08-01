@@ -20,19 +20,19 @@
 from __future__ import division, absolute_import, print_function
 
 from improb import PSpace, Gamble, Event
-from improb.lowprev import LowPrev
+from improb.lowprev.lowprob import LowProb
+from improb.lowprev.prob import Prob
 
-class LinVac(LowPrev):
+class LinVac(LowProb):
     """Linear-vacuous mixture.
 
-    >>> from improb.lowprev import LinVac
-    >>> lpr = LinVac([0.2, 0.4, 0.5], 0.1) # doctest: +ELLIPSIS
+    >>> lpr = LinVac(prob=[0.2, 0.4, 0.5], epsilon=0.1) # doctest: +ELLIPSIS
     Traceback (most recent call last):
         ...
     ValueError: probabilities must sum to one
 
     >>> from improb.lowprev import LinVac
-    >>> lpr = LinVac([0.2, 0.3, 0.5], 0.1)
+    >>> lpr = LinVac(pspace=3, prob=[0.2, 0.3, 0.5], epsilon=0.1)
     >>> print lpr.get_lower([1,0,0])
     0.18
     >>> print lpr.get_lower([0,1,0])
@@ -57,24 +57,24 @@ class LinVac(LowPrev):
     >>> print lpr.get_lower([0,-5,0,5]) # (6 - 31 * 0.1) / 5
     0.58
     """
-    def __init__(self, prob, epsilon):
-        if isinstance(prob, (list, tuple)):
-            tot = sum(prob)
-            self._pspace = tuple(xrange(len(prob)))
-        elif isinstance(prob, dict):
-            tot = sum(prob.itervalues())
-            self._pspace = tuple(w for w in prob)
-        if tot < 1 - 1e-6 or tot > 1 + 1e-6:
-            raise ValueError("probabilities must sum to one")
-        self._prob = prob
-        self._epsilon = epsilon
-        self._matrix = None
+    def __init__(self, pspace=None, prob=None, epsilon=0):
+        if isinstance(prob, Prob) and pspace is None:
+            self._prob = prob
+        else:
+            self._prob = Prob.make(PSpace.make(pspace), prob)
+        self._epsilon = _fraction(epsilon)
 
     def __iter__(self):
         raise NotImplementedError
 
+    @property
+    def pspace(self):
+        return self._prob.pspace
+
     def set_lower(self, gamble, event=None):
-        raise NotImplementedError
+        gamble = Event.make(self.pspace, gamble)
+        if len(gamble) != 1:
+            raise ValueError('can only set lower bound on singletons')
 
     def set_upper(self, gamble, event=None):
         raise NotImplementedError

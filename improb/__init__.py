@@ -59,21 +59,21 @@ def make_pspace(*args):
 
       .. doctest::
 
-         >>> improb.make_pspace(xrange(2, 15, 3))
+         >>> make_pspace(xrange(2, 15, 3))
          (2, 5, 8, 11, 14)
 
     * A string.
 
       .. doctest::
 
-         >>> improb.make_pspace('abcdefg')
+         >>> make_pspace('abcdefg')
          ('a', 'b', 'c', 'd', 'e', 'f', 'g')
 
     * A list of strings.
 
       .. doctest::
 
-         >>> improb.make_pspace('rain cloudy sunny'.split(' '))
+         >>> make_pspace('rain cloudy sunny'.split(' '))
          ('rain', 'cloudy', 'sunny')
 
     * As a special case, you can also specify just a single integer. This
@@ -81,7 +81,7 @@ def make_pspace(*args):
 
       .. doctest::
 
-         >>> improb.make_pspace(3)
+         >>> make_pspace(3)
          (0, 1, 2)
 
     * Finally, if no arguments are specified, then the default space is
@@ -89,18 +89,18 @@ def make_pspace(*args):
 
       .. doctest::
 
-         >>> improb.make_pspace()
+         >>> make_pspace()
          (0, 1)
 
     If multiple arguments are specified, the product is calculated:
 
     .. doctest::
 
-       >>> improb.make_pspace(3, 'abc') # doctest: +NORMALIZE_WHITESPACE
+       >>> make_pspace(3, 'abc') # doctest: +NORMALIZE_WHITESPACE
        ((0, 'a'), (0, 'b'), (0, 'c'),
         (1, 'a'), (1, 'b'), (1, 'c'),
         (2, 'a'), (2, 'b'), (2, 'c'))
-       >>> improb.make_pspace(('rain', 'cloudy', 'sunny'), ('cold', 'warm')) # doctest: +NORMALIZE_WHITESPACE
+       >>> make_pspace(('rain', 'cloudy', 'sunny'), ('cold', 'warm')) # doctest: +NORMALIZE_WHITESPACE
        (('rain', 'cold'), ('rain', 'warm'),
         ('cloudy', 'cold'), ('cloudy', 'warm'),
         ('sunny', 'cold'), ('sunny', 'warm'))
@@ -109,7 +109,7 @@ def make_pspace(*args):
 
     .. doctest::
 
-       >>> improb.make_pspace([2, 2, 5, 3, 9, 5, 1, 2])
+       >>> make_pspace([2, 2, 5, 3, 9, 5, 1, 2])
        (2, 5, 3, 9, 1)
     """
     if not args:
@@ -137,8 +137,8 @@ def make_gamble(pspace, mapping):
     :returns: A gamble.
     :rtype: :class:`dict`
 
-    >>> pspace = improb.make_pspace(5)
-    >>> improb.make_gamble(pspace, [1, 9, 2, 3, 6]) # doctest: +NORMALIZE_WHITESPACE
+    >>> pspace = make_pspace(5)
+    >>> make_gamble(pspace, [1, 9, 2, 3, 6]) # doctest: +NORMALIZE_WHITESPACE
     {0: Fraction(1, 1),
      1: Fraction(9, 1),
      2: Fraction(2, 1),
@@ -153,8 +153,8 @@ def make_event(pspace, elements):
     :returns: An event.
     :rtype: :class:`set`
 
-    >>> pspace = improb.make_pspace(6)
-    >>> improb.make_event(pspace, xrange(1, 4))
+    >>> pspace = make_pspace(6)
+    >>> make_event(pspace, xrange(1, 4))
     set([1, 2, 3])
     """
     return set(omega for omega in pspace if omega in elements)
@@ -170,13 +170,13 @@ class PSpace(collections.Set, collections.Sequence, collections.Hashable):
 
     @staticmethod
     def make(pspace):
-        """If *pspace* is a :class:`PSpace`, then returns *pspace*.
-        Otherwise, converts *pspace* to a :class:`PSpace`.
+        """If *pspace* is a :class:`~improb.PSpace`, then returns *pspace*.
+        Otherwise, converts *pspace* to a :class:`~improb.PSpace`.
 
         :param pspace: The possibility space.
         :type pspace: |pspacetype|
         :return: A possibility space.
-        :rtype: :class:`PSpace`
+        :rtype: :class:`~improb.PSpace`
         """
         return pspace if isinstance(pspace, PSpace) else PSpace(pspace)
 
@@ -197,9 +197,9 @@ class PSpace(collections.Set, collections.Sequence, collections.Hashable):
 
     def __repr__(self):
         """
-        >>> improb.PSpace([2, 4, 5])
+        >>> PSpace([2, 4, 5])
         PSpace([2, 4, 5])
-        >>> improb.PSpace([0, 1, 2])
+        >>> PSpace([0, 1, 2])
         PSpace(3)
         """
         if list(self) == list(xrange(len(self))):
@@ -209,10 +209,49 @@ class PSpace(collections.Set, collections.Sequence, collections.Hashable):
 
     def __str__(self):
         """
-        >>> print(improb.PSpace([2, 4, 5]))
+        >>> print(PSpace([2, 4, 5]))
         2 4 5
         """
         return " ".join(str(omega) for omega in self)
+
+    def make_element(self, obj):
+        """Convert the given indicator gamble, or event, into an
+        element of self.
+
+        >>> pspace = PSpace(3)
+        >>> pspace.make_element(1)
+        1
+        >>> pspace.make_element(Event(pspace, [2]))
+        2
+        >>> pspace.make_element(Gamble(pspace, [1, 0, 0]))
+        0
+        >>> pspace = PSpace('abc')
+        >>> pspace.make_element('c')
+        'c'
+        >>> pspace.make_element(Event(pspace, ['a']))
+        'a'
+        >>> pspace.make_element(Gamble(pspace, {'a': 0, 'b': 1, 'c': 0}))
+        'b'
+        >>> pspace = PSpace(3)
+        >>> pspace.make_element(Event(pspace, [1, 2])) # doctest: +ELLIPSIS
+        Traceback (most recent call last):
+            ...
+        ValueError: not a singleton
+        >>> pspace.make_element(Gamble(pspace, [1, 1, 0])) # doctest: +ELLIPSIS
+        Traceback (most recent call last):
+            ...
+        ValueError: not a singleton
+        >>> pspace.make_element(Gamble(pspace, [1, 2, 0]))
+        Traceback (most recent call last):
+            ...
+        ValueError: not an indicator gamble
+        """
+        if obj in self:
+            return obj
+        event = Event.make(self, obj)
+        if len(event) != 1:
+            raise ValueError('not a singleton')
+        return list(event)[0]
 
     def subsets(self, event=None):
         r"""Iterates over all subsets of the possibility space.
@@ -222,7 +261,7 @@ class PSpace(collections.Set, collections.Sequence, collections.Hashable):
         :returns: Yields all subsets.
         :rtype: Iterator of :class:`Event`.
 
-        >>> pspace = improb.PSpace([2, 4, 5])
+        >>> pspace = PSpace([2, 4, 5])
         >>> print("\n---\n".join(str(subset) for subset in pspace.subsets()))
         2 : 0
         4 : 0
@@ -283,8 +322,8 @@ class PSpace(collections.Set, collections.Sequence, collections.Hashable):
 class Gamble(collections.Mapping, collections.Hashable):
     """An immutable gamble.
 
-    >>> pspace = improb.PSpace('abc')
-    >>> f1 = improb.Gamble(pspace, {'a': 1, 'b': 4, 'c': 8})
+    >>> pspace = PSpace('abc')
+    >>> f1 = Gamble(pspace, {'a': 1, 'b': 4, 'c': 8})
     >>> print(f1 + 2)
     a :  3.000
     b :  6.000
@@ -301,7 +340,7 @@ class Gamble(collections.Mapping, collections.Hashable):
     a : 0.500
     b : 2.000
     c : 4.000
-    >>> f2 = improb.Gamble(pspace, {'a': 5, 'b': 8, 'c': 7})
+    >>> f2 = Gamble(pspace, {'a': 5, 'b': 8, 'c': 7})
     >>> print(f1 + f2)
     a :  6.000
     b : 12.000
@@ -318,7 +357,7 @@ class Gamble(collections.Mapping, collections.Hashable):
     Traceback (most recent call last):
         ...
     TypeError: ...
-    >>> event = improb.Event(pspace, 'ac')
+    >>> event = Event(pspace, 'ac')
     >>> print(f1 + event)
     a : 2.000
     b : 4.000
@@ -360,6 +399,26 @@ class Gamble(collections.Mapping, collections.Hashable):
         :return: A gamble.
         :rtype: :class:`Gamble`
         :raises: :exc:`~exceptions.ValueError` if possibility spaces do not match
+
+        >>> pspace = PSpace('abc')
+        >>> event = Event.make(pspace, 'ac')
+        >>> gamble = event.indicator()
+        >>> print(Gamble.make(pspace, 'b'))
+        a : 0.000
+        b : 1.000
+        c : 0.000
+        >>> print(Gamble.make(pspace, event))
+        a : 1.000
+        b : 0.000
+        c : 1.000
+        >>> print(Gamble.make(pspace, gamble))
+        a : 1.000
+        b : 0.000
+        c : 1.000
+        >>> print(Gamble.make(pspace, {'a': 1, 'b': 0, 'c': 8}))
+        a : 1.000
+        b : 0.000
+        c : 8.000
         """
         pspace = PSpace.make(pspace)
         if isinstance(gamble, Gamble):
@@ -370,12 +429,15 @@ class Gamble(collections.Mapping, collections.Hashable):
             if pspace != gamble.pspace:
                 raise ValueError('possibility spaces do not match')
             return gamble.indicator()
+        elif gamble in pspace:
+            return Gamble(pspace, dict((omega, 1 if gamble == omega else 0)
+                                       for omega in pspace))
         else:
             return Gamble(pspace, gamble)
 
     @property
     def pspace(self):
-        """An :class:`improb.PSpace` representing the possibility space."""
+        """An :class:`~improb.PSpace` representing the possibility space."""
         return self._pspace
 
     def __len__(self):
@@ -396,7 +458,7 @@ class Gamble(collections.Mapping, collections.Hashable):
 
     def __repr__(self):
         """
-        >>> improb.Gamble([2, 3, 4], {2: 1, 3: 4, 4: 8}) # doctest: +NORMALIZE_WHITESPACE
+        >>> Gamble([2, 3, 4], {2: 1, 3: 4, 4: 8}) # doctest: +NORMALIZE_WHITESPACE
         Gamble(pspace=PSpace([2, 3, 4]),
                mapping={2: Fraction(1, 1),
                         3: Fraction(4, 1),
@@ -407,8 +469,8 @@ class Gamble(collections.Mapping, collections.Hashable):
 
     def __str__(self):
         """
-        >>> pspace = improb.PSpace('rain sun clouds'.split())
-        >>> print(improb.Gamble(pspace, {'rain': -14, 'sun': 4, 'clouds': 20}))
+        >>> pspace = PSpace('rain sun clouds'.split())
+        >>> print(Gamble(pspace, {'rain': -14, 'sun': 4, 'clouds': 20}))
         rain   : -14.000
         sun    :   4.000
         clouds :  20.000
@@ -458,7 +520,7 @@ class Gamble(collections.Mapping, collections.Hashable):
     __add__ = lambda self, other: self._pointwise(other, Fraction.__add__)
     __sub__ = lambda self, other: self._pointwise(other, Fraction.__sub__)
     __mul__ = lambda self, other: self._pointwise(other, Fraction.__mul__)
-    __div__ = lambda self, other: self._scalar(other, Fraction.__div__)
+    __truediv__ = lambda self, other: self._scalar(other, Fraction.__div__)
 
     def __neg__(self):
         return Gamble(self.pspace,
@@ -467,8 +529,8 @@ class Gamble(collections.Mapping, collections.Hashable):
 class Event(collections.Set, collections.Hashable):
     """An immutable event.
 
-    >>> pspace = improb.PSpace('abcdef')
-    >>> event1 = improb.Event(pspace, 'acd')
+    >>> pspace = PSpace('abcdef')
+    >>> event1 = Event(pspace, 'acd')
     >>> print(event1)
     a : 1
     b : 0
@@ -476,7 +538,7 @@ class Event(collections.Set, collections.Hashable):
     d : 1
     e : 0
     f : 0
-    >>> event2 = improb.Event(pspace, 'cdef')
+    >>> event2 = Event(pspace, 'cdef')
     >>> print(event2)
     a : 0
     b : 0
@@ -525,12 +587,17 @@ class Event(collections.Set, collections.Hashable):
             return event
         elif event is None:
             return Event(pspace, pspace)
+        elif isinstance(event, Gamble):
+            if set(event.itervalues()) != set([0, 1]):
+                raise ValueError("not an indicator gamble")
+            return Event(pspace, set(omega for omega, value in event.iteritems()
+                                     if value == 1))
         else:
             return Event(pspace, event)
 
     @property
     def pspace(self):
-        """An :class:`improb.PSpace` representing the possibility space."""
+        """An :class:`~improb.PSpace` representing the possibility space."""
         return self._pspace
 
     # must override this because the class constructor does not accept
@@ -552,16 +619,16 @@ class Event(collections.Set, collections.Hashable):
 
     def __repr__(self):
         """
-        >>> pspace = improb.PSpace([2, 3, 4])
-        >>> improb.Event(pspace, [3, 4])
+        >>> pspace = PSpace([2, 3, 4])
+        >>> Event(pspace, [3, 4])
         Event(pspace=PSpace([2, 3, 4]), elements=set([3, 4]))
         """
         return "Event(pspace=%s, elements=%s)" % (repr(self.pspace), repr(set(self)))
 
     def __str__(self):
         """
-        >>> pspace = improb.PSpace('rain sun clouds'.split())
-        >>> print(improb.Event(pspace, 'rain clouds'.split()))
+        >>> pspace = PSpace('rain sun clouds'.split())
+        >>> print(Event(pspace, 'rain clouds'.split()))
         rain   : 1
         sun    : 0
         clouds : 1
@@ -578,8 +645,8 @@ class Event(collections.Set, collections.Hashable):
         :return: Indicator gamble.
         :rtype: :class:`Gamble`
 
-        >>> pspace = improb.PSpace(5)
-        >>> event = improb.Event(pspace, [2, 4])
+        >>> pspace = PSpace(5)
+        >>> event = Event(pspace, [2, 4])
         >>> event.indicator() # doctest: +NORMALIZE_WHITESPACE
         Gamble(pspace=PSpace(5),
                mapping={0: Fraction(0, 1),
