@@ -35,7 +35,8 @@ class LowPoly(LowPrev):
     gamble, and a number (i.e. its lower expectation/prevision).
     """
 
-    def __init__(self, pspace=None, mapping=None):
+    def __init__(self, pspace=None, mapping=None,
+                 lprob=None, uprob=None, prob=None):
         """Construct a lower prevision on *pspace*.
 
         :param pspace: The possibility space.
@@ -46,7 +47,27 @@ class LowPoly(LowPrev):
         self._mapping = {}
         if mapping is not None:
             for key, value in mapping.iteritems():
-                self._mapping[self._make_key(key)] = self._make_value(value)
+                self[key] = value
+        if lprob is not None:
+            for event, value in lprob.iteritems():
+                event = Event.make(self.pspace, event)
+                try:
+                    lprev, uprev = self[event, None]
+                except KeyError:
+                    lprev, uprev = None, None
+                self[event, None] = value, uprev
+        if uprob is not None:
+            for event, value in uprob.iteritems():
+                event = Event.make(self.pspace, event)
+                try:
+                    lprev, uprev = self[event, None]
+                except KeyError:
+                    lprev, uprev = None, None
+                self[event, None] = lprev, value
+        if prob is not None:
+            for event, value in uprob.iteritems():
+                event = Event.make(self.pspace, event)
+                self[event, None] = value, value
         self._matrix = self._make_matrix()
 
     def __len__(self):
