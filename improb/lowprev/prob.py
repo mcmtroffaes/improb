@@ -21,9 +21,9 @@ import collections
 from fractions import Fraction
 
 from improb import PSpace, Gamble, Event, _fraction, _fraction_repr
-from improb.lowprev.lowprob import LowProb
+from improb.lowprev.linvac import LinVac
 
-class Prob(LowProb):
+class Prob(LinVac):
     """A probability measure.
 
     >>> p = Prob(5, ['0.1', '0.2', '0.3', '0.05', '0.35'])
@@ -39,7 +39,7 @@ class Prob(LowProb):
     10/3
     """
 
-    def __init__(self, pspace, mapping=None):
+    def __init__(self, pspace, mapping=None, prob=None):
         """Construct a probability measure on the given possibility space.
 
         :param pspace: The possibility space.
@@ -47,59 +47,33 @@ class Prob(LowProb):
         :param mapping: A mapping that defines the probability of each atom.
         :type mapping: :class:`dict`
         """
-
-        self._pspace = PSpace.make(pspace)
-        if mapping is not None:
-            self._prob = dict((omega, _fraction(mapping[omega]))
-                              for omega in self.pspace)
-        else:
-            self._prob = dict((omega, Fraction(1, len(self.pspace)))
-                              for omega in self.pspace)
+        LinVac.__init__(self, pspace, mapping)
+        if mapping is None:
+            if prob is None:
+                for omega in self.pspace:
+                    self[omega, None] = Fraction(1, len(pspace)), None
+            else:
+                for omega in self.pspace:
+                    self[omega, None] = prob[omega], None
         self._validate()
 
     def _validate(self):
         # check that values are non-negative and sum to one
-        if any(value < 0 for value in self._prob.itervalues()):
+        if any(value[0] < 0 for value in self.itervalues()):
             raise ValueError("probabilities must be non-negative")
-        if sum(self._prob.itervalues()) != 1:
+        if sum(value[0] for value in self.itervalues()) != 1:
             raise ValueError("probabilities must sum to one")
 
-    def update(self, mapping):
-        """Update the probabilities using the given mapping.
-
-        :param mapping: A mapping that defines the probability of each atom.
-        :type mapping: :class:`dict`
-        """
-        oldprob = self._prob.copy()
-        self._prob = dict((omega, _fraction(mapping[omega]))
-                          for omega in self.pspace)
-        try:
-            self._validate()
-        except ValueError:
-            self._prob = oldprob
-            raise
-
-    def __len__(self):
-        return len(self._prob)
-
-    def __iter__(self):
-        # not iter(self._prob) because we wish to iterate in same
-        # order as self.pspace
-        return (self._prob[omega] for omega in self.pspace)
-
-    def __contains__(self, gamble):
-        return self.pspace.make_element(gamble) in self._prob
-
-    def __getitem__(self, gamble):
-        return self._prob[self.pspace.make_element(gamble)]
-
-    def __setitem__(self, gamble):
-        raise NotImplementedError("use the update() method instead")
-
-    def __str__(self):
-        return str(Gamble(self.pspace, self))
+    def get_linvac(self, epsilon):
+        """Convert probability into a linear vacuous mixture."""
+        epsilon = _fraction(epsilon)
+        linvac = LinVac(self.pspace)
+        for omega in self.pspace:
+            linvac[omega, None] = (1 - epsilon) * self[omega, None][0], None
+        return linvac
 
     def get_lowprev(self, gamble, event=None):
+        # faster implementation
         return get_prev(gamble, event)
 
     def get_prev(self, gamble, event=None):
@@ -114,8 +88,3 @@ class Prob(LowProb):
                 raise ZeroDivisionError(
                     "cannot condition on event with zero probability")
             return self.get_prev(gamble * event) / event_prob
-
-    @property
-    def pspace(self):
-        """An :class:`~improb.PSpace` representing the possibility space."""
-        return self._pspace

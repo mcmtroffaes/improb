@@ -40,7 +40,6 @@ class BelFunc(LowPrev):
         else:
             raise ValueError("must specify mass or lowprob")
         self._pspace = self._mass._pspace
-        self._matrix = None
 
     @property
     def mass(self):

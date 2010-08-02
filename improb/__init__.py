@@ -592,6 +592,8 @@ class Event(collections.Set, collections.Hashable):
                 raise ValueError("not an indicator gamble")
             return Event(pspace, set(omega for omega, value in event.iteritems()
                                      if value == 1))
+        elif event in pspace:
+            return Event(pspace, (event,))
         else:
             return Event(pspace, event)
 
@@ -657,3 +659,12 @@ class Event(collections.Set, collections.Hashable):
         """
         return Gamble(self.pspace, dict((omega, 1 if omega in self else 0)
                                         for omega in self.pspace))
+
+    def is_true(self):
+        return len(self) == len(self.pspace)
+
+    def is_false(self):
+        return len(self) == 0
+
+    def is_singleton(self):
+        return len(self) == 1

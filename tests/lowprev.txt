@@ -138,7 +138,6 @@ Mobius Inverse
 >>> lpr.set_lower([1,0], '0.3')
 >>> lpr.set_lower([0,1], '0.2')
 >>> print(lpr.get_mobius_inverse())
-    : 0.000
 0   : 0.300
   1 : 0.200
 0 1 : 0.500

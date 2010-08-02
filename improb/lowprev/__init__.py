@@ -24,26 +24,12 @@ import collections
 from fractions import Fraction
 import itertools
 
-from improb import PSpace, Gamble, Event, _fraction
+from improb import PSpace, Gamble, Event
 from improb.setfunction import SetFunction
 
-class LowPrev(collections.Mapping):
+class LowPrev(collections.MutableMapping):
     """Abstract base class for working with arbitrary lower previsions."""
     __metaclass__ = ABCMeta
-
-    def _make_key(self, key):
-        """Helper function to construct a key, that is, a gamble/event pair."""
-        gamble, event = key
-        return Gamble.make(self.pspace, gamble), Event.make(self.pspace, event)
-
-    def _make_value(self, value):
-        """Helper function to construct a value, that is, a
-        lower/upper prevision pair.
-        """
-        lprev, uprev = value
-        return (
-            _fraction(lprev) if lprev is not None else None,
-            _fraction(uprev) if uprev is not None else None)
 
     @abstractproperty
     def pspace(self):
@@ -77,7 +63,7 @@ class LowPrev(collections.Mapping):
         :rtype: :class:`fractions.Fraction`
         :raises: :exc:`~exceptions.ValueError` if it incurs sure loss
         """
-        gamble, event = self._make_key((gamble, event))
+        gamble = Gamble.make(self.pspace, gamble)
         return -self.get_lower(gamble=-gamble, event=event)
 
     #def getcredalset(self):

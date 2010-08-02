@@ -20,10 +20,11 @@
 from __future__ import division, absolute_import, print_function
 
 import cddgmp
+from fractions import Fraction
 import random
 import scipy.optimize
 
-from improb import PSpace, Gamble, Event
+from improb import PSpace, Gamble, Event, _fraction
 from improb.lowprev import LowPrev
 
 class LowPoly(LowPrev):
@@ -65,6 +66,11 @@ class LowPoly(LowPrev):
         # clear matrix cache
         self._matrix = None
 
+    def __delitem__(self, key):
+        del self._mapping[self._make_key(key)]
+        # clear matrix cache
+        self._matrix = None
+
     def __str__(self):
         maxlen_pspace = max(len(str(omega)) for omega in self.pspace)
         maxlen_value = max(max(len("{0:.3f}".format(float(gamble[omega])))
@@ -103,6 +109,24 @@ class LowPoly(LowPrev):
         if self._matrix is None:
             self._matrix = self._make_matrix()
         return self._matrix
+
+    def _make_key(self, key):
+        """Helper function to construct a key for the internal
+        mapping. This implementation returns a gamble/event pair.
+        Derived classes can implement additional checks, but should
+        still return a gamble/event pair.
+        """
+        gamble, event = key
+        return Gamble.make(self.pspace, gamble), Event.make(self.pspace, event)
+
+    def _make_value(self, value):
+        """Helper function to construct a value for the internal mapping.
+        This implementation returns any lower/upper prevision pair.
+        """
+        lprev, uprev = value
+        return (
+            _fraction(lprev) if lprev is not None else None,
+            _fraction(uprev) if uprev is not None else None)
 
     def _make_matrix(self):
         """Construct cddgmp matrix representation."""

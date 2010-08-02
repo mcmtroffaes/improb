@@ -1,7 +1,7 @@
 Lower Probabilities
 ===================
 
-.. module:: improb.lowprob
+.. module:: improb.lowprev.lowprob
 
 .. autoclass:: LowProb
    :members:
