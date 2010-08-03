@@ -17,8 +17,12 @@
 
 """Coherent lower probabilities."""
 
+from fractions import Fraction
+import random
+
 from improb import PSpace, Gamble, Event
 from improb.lowprev.lowpoly import LowPoly
+from improb.setfunction import SetFunction
 
 class LowProb(LowPoly):
     """An unconditional lower probability. This class is identical to
@@ -26,9 +30,9 @@ class LowProb(LowPoly):
     unconditional assessments on events are allowed.
 
     >>> print(LowProb(3, lprob={(0, 1): '0.1', (1, 2): '0.2'}))
-      0     1     2  
-    0.000 1.000 1.000 | 0 1 2 : [0.200,      ]
-    1.000 1.000 0.000 | 0 1 2 : [0.100,      ]
+    0 1   : 0.100
+      1 2 : 0.200
+    0 1 2 : 1.000
     >>> print(LowProb(3, lprev={(3, 1, 0): 1})) # doctest: +ELLIPSIS
     Traceback (most recent call last):
         ...
@@ -41,14 +45,103 @@ class LowProb(LowPoly):
     Traceback (most recent call last):
         ...
     ValueError: not unconditional
+    >>> print(LowProb(3, lprob={(0, 1): '0.1', (1, 2): '0.2'}).mobius_inverse)
+    0 1   : 0.100
+      1 2 : 0.200
+    0 1 2 : 0.700
     """
+
+    def _clear_cache(self):
+        LowPoly._clear_cache(self)
+        try:
+            del self._set_function
+        except AttributeError:
+            pass
+        try:
+            del self._mobius_inverse
+        except AttributeError:
+            pass
+
+    @property
+    def set_function(self):
+        """The lower probability as
+        :class:`~improb.setfunction.SetFunction`.
+        """
+        # TODO should return an immutable object
+
+        # implementation detail: this is cached; delete
+        # _set_function whenever cache needs to be cleared
+        try:
+            return self._set_function
+        except AttributeError:
+            self._set_function = self._make_set_function()
+            true_event = Event.make(self.pspace, self.pspace)
+            # assign values to empty set and to possibility space
+            self._set_function[()] = 0
+            self._set_function[None] = 1
+            return self._set_function
+
+    @property
+    def mobius_inverse(self):
+        """The mobius inverse of the assigned unconditional lower
+        probabilities, as :class:`~improb.setfunction.SetFunction`.
+        """
+        # TODO should return an immutable object
+
+        # implementation detail: this is cached; delete
+        # _mobius_inverse whenever cache needs to be cleared
+        try:
+            return self._mobius_inverse
+        except AttributeError:
+            self._mobius_inverse = self._make_mobius_inverse()
+            return self._mobius_inverse
+
+    @classmethod
+    def make_random(cls, pspace=None, division=None, zero=True):
+        """Generate a random coherent lower probability."""
+        # for now this is just a pretty dumb method
+        pspace = PSpace.make(pspace)
+        while True:
+            lpr = cls(pspace)
+            for event in pspace.subsets():
+                if len(event) == 0:
+                    continue
+                if len(event) == len(pspace):
+                    continue
+                gamble = event.indicator()
+                if division is None:
+                    # a number between 0 and sum(event) / len(pspace)
+                    while True:
+                        try:
+                            lpr.set_lower(gamble,
+                                          random.random() * len(event) / len(pspace))
+                        except ZeroDivisionError:
+                            break
+                else:
+                    # a number between 0 and sum(event) / len(pspace)
+                    # but discretized
+                    lpr.set_lower(gamble,
+                                  Fraction(
+                                      random.randint(
+                                          0 if zero else 1,
+                                          (division * len(event))
+                                          // len(pspace)),
+                                      division))
+            if lpr.is_avoiding_sure_loss():
+               return lpr
+
+    def __str__(self):
+        return str(self.set_function)
 
     # we override _make_key and _make_value to meet the constraints
 
     def _make_key(self, key):
         gamble, event = LowPoly._make_key(self, key)
-        if set(gamble.itervalues()) != set([0, 1]):
-            raise ValueError('not an indicator gamble')
+        gamble_event = Event.make(self.pspace, gamble)
+        if gamble_event.is_true():
+            raise ValueError('cannot set lower probability of possibility space')
+        if gamble_event.is_false():
+            raise ValueError('cannot set lower probability of empty set')
         if not event.is_true():
             raise ValueError('not unconditional')
         return gamble, event
@@ -59,4 +152,17 @@ class LowProb(LowPoly):
             raise ValueError('cannot specify upper prevision')
         return lprev, uprev
 
-    # TODO also implement __str__
+    def _make_set_function(self):
+        return SetFunction(
+            self.pspace,
+            dict((Event.make(self.pspace, gamble), lprev)
+                 for (gamble, cond_event), (lprev, uprev) in self.iteritems()))
+
+    def _make_mobius_inverse(self):
+        """Constructs basic belief assignment corresponding to the
+        assigned unconditional lower probabilities.
+        """
+        # construct set function corresponding to this lower probability
+        return SetFunction(
+            self.pspace,
+            dict(self.set_function.get_mobius_inverse()))

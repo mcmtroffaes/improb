@@ -40,12 +40,10 @@ class SetFunction(collections.MutableMapping):
         :type mapping: :class:`dict`
         """
         self._pspace = PSpace.make(pspace)
+        self._data = {}
         if mapping is not None:
-            self._data = dict((Event(pspace, subset), _fraction(value))
-                              for subset, value in mapping.iteritems()
-                              if _fraction(value) != 0)
-        else:
-            self._data = {}
+            for event, value in mapping.iteritems():
+                self[event] = value
 
     def __len__(self):
         return len(self._data)
@@ -73,7 +71,10 @@ class SetFunction(collections.MutableMapping):
         if value != 0:
             self._data[event] = _fraction(value)
         else:
-            del self._data[event]
+            try:
+                del self._data[event]
+            except KeyError:
+                pass
 
     def __delitem__(self, event):
         del self._data[Event.make(self.pspace, event)]
@@ -116,18 +117,17 @@ class SetFunction(collections.MutableMapping):
         return self._pspace
 
     def get_mobius_inverse(self):
-        """Calculate the mobius inverse.
+        """Calculate the mobius inverse, yielding all (event, value)
+        pairs for which the value is non-zero.
 
         >>> setfunc = SetFunction(PSpace('ab'), {'a': 0.25, 'b': 0.25, 'ab': 1})
-        >>> print(setfunc.get_mobius_inverse())
+        >>> print(SetFunction(setfunc.pspace, dict(setfunc.get_mobius_inverse())))
         a   : 0.250
           b : 0.250
         a b : 0.500
         """
-        return SetFunction(
-            self.pspace,
-            dict((event,
-                  sum(((-1) ** len(event - subevent)) * self[subevent]
-                      for subevent in self.pspace.subsets(event)))
-                 for event in self.pspace.subsets()))
-
+        for event in self.pspace.subsets():
+            value = sum(((-1) ** len(event - subevent)) * self[subevent]
+                        for subevent in self.pspace.subsets(event))
+            if value != 0:
+                yield event, value

@@ -588,7 +588,7 @@ class Event(collections.Set, collections.Hashable):
         elif event is None:
             return Event(pspace, pspace)
         elif isinstance(event, Gamble):
-            if set(event.itervalues()) != set([0, 1]):
+            if not(set(event.itervalues()) <= set([0, 1])):
                 raise ValueError("not an indicator gamble")
             return Event(pspace, set(omega for omega, value in event.iteritems()
                                      if value == 1))

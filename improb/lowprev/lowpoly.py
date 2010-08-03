@@ -20,12 +20,13 @@
 from __future__ import division, absolute_import, print_function
 
 import cddgmp
+import collections
 from fractions import Fraction
-import random
 import scipy.optimize
 
 from improb import PSpace, Gamble, Event, _fraction
 from improb.lowprev import LowPrev
+from improb.setfunction import SetFunction
 
 class LowPoly(LowPrev):
     """An arbitrary finitely generated lower prevision, that is, a
@@ -40,8 +41,13 @@ class LowPoly(LowPrev):
     """
     def __init__(self, pspace=None, mapping=None,
                  lprev=None, uprev=None, prev=None,
-                 lprob=None, uprob=None, prob=None):
+                 lprob=None, uprob=None, prob=None,
+                 bba=None):
         """Construct a lower prevision on *pspace*.
+
+        Generally, you can pass a :class:`dict` as a keyword argument
+        in order to initialize the lower and upper previsions and/or
+        probabilities:
 
         >>> print(LowPoly(3, mapping={
         ...     ((3, 1, 2), None): ('1.5', None),
@@ -67,6 +73,16 @@ class LowPoly(LowPrev):
          2.000  0.000 -1.000 | 0 1 2 : [ 1.000,  1.900]
          9.000  8.000 20.000 | 0 1 2 : [15.000, 15.000]
 
+        As a special case, for lower/upper/precise probabilities, if
+        you need to set values on singletons, you can use a list
+        instead of a dictionary:
+
+        >>> print(LowPoly(3, lprob=['0.1', '0.2', '0.3'])) # doctest: +NORMALIZE_WHITESPACE
+         0      1      2
+        0.000  0.000  1.000 | 0 1 2 : [0.300, ]
+        0.000  1.000  0.000 | 0 1 2 : [0.200, ]
+        1.000  0.000  0.000 | 0 1 2 : [0.100, ]
+
         :param pspace: The possibility space.
         :type pspace: |pspacetype|
         :param mapping: Mapping from (gamble, event) to (lower prevision, upper prevision).
@@ -78,40 +94,55 @@ class LowPoly(LowPrev):
         :param prev: Mapping from gamble to precise prevision.
         :type prev: :class:`collections.Mapping`
         :param lprob: Mapping from event to lower probability.
-        :type lprob: :class:`collections.Mapping`
+        :type lprob: :class:`collections.Mapping` or :class:`collections.Sequence`
         :param uprob: Mapping from event to upper probability.
-        :type uprob: :class:`collections.Mapping`
+        :type uprob: :class:`collections.Mapping` or :class:`collections.Sequence`
         :param prob: Mapping from event to precise probability.
-        :type prob: :class:`collections.Mapping`
+        :type prob: :class:`collections.Mapping` or :class:`collections.Sequence`
+        :param bba: Mapping from event to basic belief assignment (useful for constructing belief functions).
+        :type bba: :class:`collections.Mapping` or :class:`collections.Sequence`
         """
+        def iter_items(obj):
+            """Return an iterator over all items of the mapping or the
+            sequence.
+            """
+            if isinstance(obj, collections.Mapping):
+                return obj.iteritems()
+            elif isinstance(obj, collections.Sequence):
+                return enumerate(obj)
+            else:
+                raise TypeError(
+                    'expected collections.Mapping or collections.Sequence')
         self._pspace = PSpace.make(pspace)
-        self._matrix = None
         self._mapping = {}
-        if mapping is not None:
+        if mapping:
             for key, value in mapping.iteritems():
                 self[key] = value
-        if lprev is not None:
+        if lprev:
             for gamble, value in lprev.iteritems():
                 self.set_lower(gamble, value)
-        if uprev is not None:
+        if uprev:
             for gamble, value in uprev.iteritems():
                 self.set_upper(gamble, value)
-        if prev is not None:
+        if prev:
             for gamble, value in prev.iteritems():
                 self.set_precise(gamble, value)
-        if lprob is not None:
-            for event, value in lprob.iteritems():
+        if lprob:
+            for event, value in iter_items(lprob):
                 event = Event.make(self.pspace, event)
                 self.set_lower(event, value)
-        if uprob is not None:
-            for event, value in uprob.iteritems():
+        if uprob:
+            for event, value in iter_items(uprob):
                 event = Event.make(self.pspace, event)
                 self.set_upper(event, value)
-        if prob is not None:
-            for event, value in prob.iteritems():
+        if prob:
+            for event, value in iter_items(prob):
                 event = Event.make(self.pspace, event)
                 self.set_precise(event, value)
-        self._matrix = self._make_matrix()
+        if bba:
+            setfunc = SetFunction(self.pspace, bba)
+            for event, value in setfunc.get_mobius_inverse():
+                self.set_lower(event, value)
 
     def __len__(self):
         return len(self._mapping)
@@ -127,13 +158,11 @@ class LowPoly(LowPrev):
 
     def __setitem__(self, key, value):
         self._mapping[self._make_key(key)] = self._make_value(value)
-        # clear matrix cache
-        self._matrix = None
+        self._clear_cache()
 
     def __delitem__(self, key):
         del self._mapping[self._make_key(key)]
-        # clear matrix cache
-        self._matrix = None
+        self._clear_cache()
 
     def __str__(self):
         maxlen_pspace = max(len(str(omega)) for omega in self.pspace)
@@ -168,11 +197,13 @@ class LowPoly(LowPrev):
     @property
     def matrix(self):
         """Matrix representing all the constraints of this lower prevision."""
-        # implementation detail: this is cached; set _matrix to None whenever
+        # implementation detail: this is cached; delete _matrix whenever
         # cache needs to be cleared
-        if self._matrix is None:
+        try:
+            return self._matrix
+        except AttributeError:
             self._matrix = self._make_matrix()
-        return self._matrix
+            return self._matrix
 
     def _make_key(self, key):
         """Helper function to construct a key for the internal
@@ -234,6 +265,13 @@ class LowPoly(LowPrev):
         matrix.lin_set = lin_set
         matrix.rep_type = cddgmp.RepType.INEQUALITY
         return matrix
+
+    def _clear_cache(self):
+        # clear matrix cache
+        try:
+            del self._matrix
+        except AttributeError:
+            pass
 
     @property
     def pspace(self):
@@ -379,40 +417,6 @@ class LowPoly(LowPrev):
         poly = cddgmp.Polyhedron(self.matrix)
         for vert in poly.get_generators():
             yield vert[1:]
-
-    @classmethod
-    def make_random(cls, pspace=None, division=None, zero=True):
-        """Generate a random coherent lower probability."""
-        # for now this is just a pretty dumb method
-        pspace = PSpace.make(pspace)
-        while True:
-            lpr = LowPrev(pspace)
-            for event in pspace.subsets():
-                if len(event) == 0:
-                    continue
-                if len(event) == len(pspace):
-                    continue
-                gamble = event.indicator()
-                if division is None:
-                    # a number between 0 and sum(event) / len(pspace)
-                    while True:
-                        try:
-                            lpr.set_lower(gamble,
-                                          random.random() * len(event) / len(pspace))
-                        except ZeroDivisionError:
-                            break
-                else:
-                    # a number between 0 and sum(event) / len(pspace)
-                    # but discretized
-                    lpr.set_lower(gamble,
-                                  Fraction(
-                                      random.randint(
-                                          0 if zero else 1,
-                                          (division * len(event))
-                                          // len(pspace)),
-                                      division))
-            if lpr.is_avoiding_sure_loss():
-               return lpr
 
     #def optimize(self):
     #    """Removes redundant assessments."""

@@ -20,57 +20,13 @@
 from __future__ import division, absolute_import, print_function
 
 from improb import PSpace, Gamble, Event
-from improb.lowprev import LowPrev
+from improb.lowprev.lowprob import LowProb
 
-class BelFunc(LowPrev):
-    def __init__(self, mass):
-        """Construct a belief function from a mass assignment or from
-        the mobius inverse of a given lower probability.
-
-        :param mass: The mass assignment.
-        :type mass: `improb.SetFunction`
-        """
-        if not isinstance(mass, improb.setfunction.SetFunction):
-            raise TypeError("mass must be SetFunction")
-        self._mass = mass
-
-    def __len__(self):
-        return len(self._mass)
-
-    def __iter__(self):
-        return iter(self._mass)
-
-    def __contains__(self, key):
-        return key in self._mass
-
-    def __getitem__(self, key):
-        return self._mass[key]
-
-    def __setitem__(self, key, value):
-        self._mass[key] = value
-
-    def __delitem__(self, key):
-        del self._mass[key]
-
-    def __str__(self):
-        return str(self._mass)
-
-    @property
-    def pspace(self):
-        return self._mass.pspace
-
-    @property
-    def mass(self):
-        return self._mass
-
-    def set_lower(self, gamble, lprev, event=None):
-        raise NotImplementedError('use self[event] = mass')
-
-    def set_upper(self, gamble, lprev, event=None):
-        raise NotImplementedError('use self[event] = mass')
-
-    def set_precise(self, gamble, lprev, event=None):
-        raise NotImplementedError('use self[event] = mass')
+class BelFunc(LowProb):
+    """This identical to :class:`~improb.lowprev.lowprob.LowProb`,
+    except that it uses the Mobius inverse to calculate the natural
+    extension.
+    """
 
     def get_lower(self, gamble, event=None):
         """Get lower prevision.
@@ -86,9 +42,9 @@ class BelFunc(LowPrev):
         >>> from improb.lowprev.lowprob import LowProb
         >>> from improb import PSpace
         >>> pspace = PSpace(2)
-        >>> lowprob = LowProb(pspace, lprob={(0,): '0.3', (1,): '0.2', (0,1): 1})
-        >>> lpr = BelFunc(mass=lowprob.get_mobius_inverse())
-        >>> print(lpr.mass)
+        >>> lowprob = LowProb(pspace, lprob=['0.3', '0.2'])
+        >>> lpr = BelFunc(pspace, bba=lowprob.mobius_inverse)
+        >>> print(lpr.mobius_inverse)
         0   : 0.300
           1 : 0.200
         0 1 : 0.500
@@ -104,8 +60,9 @@ class BelFunc(LowPrev):
         gamble = Gamble.make(self.pspace, gamble)
         if event is not None:
             raise NotImplementedError
+        mobius_inverse = self.mobius_inverse
         return sum(
-            (self._mass[event_] * min(gamble[w] for w in event_)
+            (mobius_inverse[event_] * min(gamble[w] for w in event_)
              for event_ in self.pspace.subsets()
              if event_),
             0)

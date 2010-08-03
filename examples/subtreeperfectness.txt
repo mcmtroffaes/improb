@@ -3,7 +3,7 @@ A Simple Subtree Imperfect Decision Tree
 
 >>> import itertools
 >>> import random
->>> from improb.lowprev import LinVac
+>>> from improb.lowprev.prob import Prob
 >>> from improb.decision import filter_maximal
 >>> random.seed(40)
 >>> n1 = 2
@@ -13,10 +13,8 @@ A Simple Subtree Imperfect Decision Tree
 ...           for omega in itertools.product(list(range(n1)), list(range(n2)))]
 >>> for i in range(20):
 ...     # construct a linear vacuous mixture
-...     prob = dict((w, 1.0) for w in pspace) # no need for randomness
-...     tot = sum(prob[w] for w in pspace)
-...     prob = dict((w, prob[w] / tot) for w in pspace)
-...     lpr = LinVac(prob, 0.2) # no need for randomness
+...     lprob = dict((omega, Fraction('0.8') * Fraction(1, len(pspace)) for omega in pspace)
+...     lpr = LinVac(pspace, lprob=lprob) # no need for randomness
 ...     # construct gambles:
 ...     # gambles[w1][d][w2] gives the gain of the w1-d-w2 path
 ...     gambles = [[[random.randint(0, 2) + 0.01 * d + w1 * 0.005
@@ -110,7 +108,7 @@ into an extensive form?
 
 >>> import itertools
 >>> import random
->>> from improb.lowprev import LowPrev
+>>> from improb.lowprev.lowprob import LowProb
 >>> from improb.decision import filter_maximal
 >>> random.seed(10)
 >>> n1 = 2
@@ -120,7 +118,7 @@ into an extensive form?
 ...           for omega in itertools.product(list(range(n1)), list(range(n2)))]
 >>> for i in range(20):
 ...     # construct a lower prevision
-...     lpr = LowPrev.make_random(pspace=pspace, zero=False, division=20)
+...     lpr = LowProb.make_random(pspace=pspace, zero=False, division=20)
 ...     # construct gambles:
 ...     # gambles[w1][d][w2] gives the gain of the w1-d-w2 path
 ...     gambles = [[[random.randint(0, 5) for w2 in range(n2)]

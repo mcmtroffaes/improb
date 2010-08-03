@@ -127,25 +127,3 @@ class LowPrev(collections.MutableMapping):
         gamble = Gamble.make(self.pspace, gamble)
         other_gamble = Gamble.make(self.pspace, other_gamble)
         return self.get_lower(gamble - other_gamble, event) > 0
-
-    def get_lowprob(self):
-        """Return lower probability (i.e. restriction of natural
-        extension to indicators).
-
-        :return: The lower probability.
-        :rtype: :class:`~improb.setfunction.SetFunction`
-        """
-        return SetFunction(
-            self.pspace,
-            dict((event, self.get_lower(event))
-                 for event in self.pspace.subsets()))
-
-    def get_mobius_inverse(self):
-        """Return the mobius inverse of the lower probability determined by
-        this lower prevision. This usually only makes sense for completely
-        monotone lower previsions.
-
-        :return: The mobius inverse.
-        :rtype: :class:`~improb.setfunction.SetFunction`
-        """
-        return self.get_lowprob().get_mobius_inverse()

@@ -20,13 +20,14 @@
 import collections
 from fractions import Fraction
 
-from improb import PSpace, Gamble, Event, _fraction, _fraction_repr
+from improb import PSpace, Gamble, Event, _fraction
 from improb.lowprev.linvac import LinVac
+from improb.lowprev.lowpoly import LowPoly
 
 class Prob(LinVac):
     """A probability measure.
 
-    >>> p = Prob(5, ['0.1', '0.2', '0.3', '0.05', '0.35'])
+    >>> p = Prob(5, prob=['0.1', '0.2', '0.3', '0.05', '0.35'])
     >>> print(p)
     0 : 0.100
     1 : 0.200
@@ -39,26 +40,22 @@ class Prob(LinVac):
     10/3
     """
 
-    def __init__(self, pspace, mapping=None, prob=None):
-        """Construct a probability measure on the given possibility space.
+    def __str__(self):
+        return str(
+            Gamble.make(self.pspace,
+                        dict((omega, self[omega, None][0])
+                             for omega in self.pspace)))
 
-        :param pspace: The possibility space.
-        :type pspace: |pspacetype|
-        :param mapping: A mapping that defines the probability of each atom.
-        :type mapping: :class:`dict`
-        """
-        LinVac.__init__(self, pspace, mapping)
-        if mapping is None:
-            if prob is None:
-                for omega in self.pspace:
-                    self[omega, None] = Fraction(1, len(pspace)), None
-            else:
-                for omega in self.pspace:
-                    self[omega, None] = prob[omega], None
-        self._validate()
+    def _make_value(self, value):
+        lprev, uprev = LowPoly._make_value(self, value)
+        if lprev != uprev:
+            raise ValueError('can only specify precise prevision')
+        return lprev, uprev
 
     def _validate(self):
         # check that values are non-negative and sum to one
+        if any(value[0] != value[1] for value in self.itervalues()):
+            raise ValueError("probabilities must be precise")
         if any(value[0] < 0 for value in self.itervalues()):
             raise ValueError("probabilities must be non-negative")
         if sum(value[0] for value in self.itervalues()) != 1:
@@ -78,9 +75,11 @@ class Prob(LinVac):
 
     def get_prev(self, gamble, event=None):
         """Calculate the conditional expectation."""
+        self._validate()
         gamble = Gamble.make(self.pspace, gamble)
         if event is None:
-            return sum(self[omega] * gamble[omega] for omega in self.pspace)
+            return sum(self[omega, None][0] * gamble[omega]
+                       for omega in self.pspace)
         else:
             event = Event.make(self.pspace, event)
             event_prob = self.get_prev(event.indicator())

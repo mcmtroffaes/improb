@@ -9,5 +9,3 @@ Probability Measures
 
 .. autoclass:: Prob
    :members:
-
-   .. automethod:: __init__

@@ -1,13 +1,15 @@
 .. testsetup::
 
    from improb.lowprev.lowpoly import LowPoly
-   from improb.lowprev.linvac import LinVac
+   from improb.lowprev.lowprob import LowProb
+   from improb.lowprev.prob import Prob
    from improb.decision import filter_maximal
 
 The following examples presume:
 
 >>> from improb.lowprev.lowpoly import LowPoly
->>> from improb.lowprev.linvac import LinVac
+>>> from improb.lowprev.lowprob import LowProb
+>>> from improb.lowprev.prob import Prob
 >>> from improb.decision import filter_maximal
 
 Natural Extension
@@ -134,10 +136,10 @@ True
 Mobius Inverse
 ~~~~~~~~~~~~~~
 
->>> lpr = LowPoly(2)
+>>> lpr = LowProb(2)
 >>> lpr.set_lower([1,0], '0.3')
 >>> lpr.set_lower([0,1], '0.2')
->>> print(lpr.get_mobius_inverse())
+>>> print(lpr.mobius_inverse)
 0   : 0.300
   1 : 0.200
 0 1 : 0.500
@@ -408,7 +410,7 @@ True
 
 Another example:
 
->>> lpr = LinVac([0.42, 0.08, 0.18, 0.32], 0.1)
+>>> lpr = Prob(4, prob=['0.42', '0.08', '0.18', '0.32']).get_linvac(0.1)
 >>> for c in range(3):
 ...     list(filter_maximal([[10-c,10-c,15-c,15-c],[10-c,5-c,15-c,20-c],[5-c,10-c,20-c,15-c],[5-c,5-c,20-c,20-c],[10,10,15,15],[5,5,20,20]], lpr.dominates))
 [[10, 5, 15, 20]]
