@@ -10,7 +10,4 @@ Linear Vacuous Mixtures
 .. autoclass:: LinVac
    :members:
 
-   .. automethod:: __init__
-   .. automethod:: __iter__
-
 .. todo:: Add examples.

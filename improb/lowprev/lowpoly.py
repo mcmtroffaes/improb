@@ -28,19 +28,61 @@ from improb import PSpace, Gamble, Event, _fraction
 from improb.lowprev import LowPrev
 
 class LowPoly(LowPrev):
-    """Implements arbitrary finitely generated
-    lower previsions. These are implemented as a finite sequence of
-    half-spaces, each of which constrains the convex set of
-    probability mass functions. Each half-space is represented by a
-    gamble, and a number (i.e. its lower expectation/prevision).
-    """
+    """An arbitrary finitely generated lower prevision, that is, a
+    finite intersection of half-spaces, each of which constrains the
+    set of probability mass functions.
 
+    This class is derived from :class:`collections.Mapping`: keys are
+    (gamble, event) pairs, values are (lprev, uprev) pairs. Instead of
+    working on the mapping directly, you can use the convenience
+    methods :meth:`set_lower`, :meth:`set_upper`, and
+    :meth:`set_precise`.
+    """
     def __init__(self, pspace=None, mapping=None,
+                 lprev=None, uprev=None, prev=None,
                  lprob=None, uprob=None, prob=None):
         """Construct a lower prevision on *pspace*.
 
+        >>> print(LowPoly(3, mapping={
+        ...     ((3, 1, 2), None): ('1.5', None),
+        ...     ((1, 0, -1), (1, 2)): ('0.25', '0.3')})
+        ...     ) # doctest: +NORMALIZE_WHITESPACE
+          0      1      2
+         1.000  0.000 -1.000 |   1 2 : [0.250, 0.300]
+         3.000  1.000  2.000 | 0 1 2 : [1.500,      ]
+        >>> print(LowPoly(3,
+        ...     lprev={(1, 3, 2): '1.5', (2, 0, -1): '1'},
+        ...     uprev={(2, 0, -1): '1.9'},
+        ...     prev={(9, 8, 20): '15'},
+        ...     lprob={(1, 2): '0.2', (1,): '0.1'},
+        ...     uprob={(1, 2): '0.3', (0,): '0.9'},
+        ...     prob={(2,): '0.3'},
+        ...     )) # doctest: +NORMALIZE_WHITESPACE
+          0      1      2
+         0.000  0.000  1.000 | 0 1 2 : [ 0.300,  0.300]
+         0.000  1.000  0.000 | 0 1 2 : [ 0.100,       ]
+         0.000  1.000  1.000 | 0 1 2 : [ 0.200,  0.300]
+         1.000  0.000  0.000 | 0 1 2 : [      ,  0.900]
+         1.000  3.000  2.000 | 0 1 2 : [ 1.500,       ]
+         2.000  0.000 -1.000 | 0 1 2 : [ 1.000,  1.900]
+         9.000  8.000 20.000 | 0 1 2 : [15.000, 15.000]
+
         :param pspace: The possibility space.
         :type pspace: |pspacetype|
+        :param mapping: Mapping from (gamble, event) to (lower prevision, upper prevision).
+        :type mapping: :class:`collections.Mapping`
+        :param lprev: Mapping from gamble to lower prevision.
+        :type lprev: :class:`collections.Mapping`
+        :param uprev: Mapping from gamble to upper prevision.
+        :type uprev: :class:`collections.Mapping`
+        :param prev: Mapping from gamble to precise prevision.
+        :type prev: :class:`collections.Mapping`
+        :param lprob: Mapping from event to lower probability.
+        :type lprob: :class:`collections.Mapping`
+        :param uprob: Mapping from event to upper probability.
+        :type uprob: :class:`collections.Mapping`
+        :param prob: Mapping from event to precise probability.
+        :type prob: :class:`collections.Mapping`
         """
         self._pspace = PSpace.make(pspace)
         self._matrix = None
@@ -48,26 +90,27 @@ class LowPoly(LowPrev):
         if mapping is not None:
             for key, value in mapping.iteritems():
                 self[key] = value
+        if lprev is not None:
+            for gamble, value in lprev.iteritems():
+                self.set_lower(gamble, value)
+        if uprev is not None:
+            for gamble, value in uprev.iteritems():
+                self.set_upper(gamble, value)
+        if prev is not None:
+            for gamble, value in prev.iteritems():
+                self.set_precise(gamble, value)
         if lprob is not None:
             for event, value in lprob.iteritems():
                 event = Event.make(self.pspace, event)
-                try:
-                    lprev, uprev = self[event, None]
-                except KeyError:
-                    lprev, uprev = None, None
-                self[event, None] = value, uprev
+                self.set_lower(event, value)
         if uprob is not None:
             for event, value in uprob.iteritems():
                 event = Event.make(self.pspace, event)
-                try:
-                    lprev, uprev = self[event, None]
-                except KeyError:
-                    lprev, uprev = None, None
-                self[event, None] = lprev, value
+                self.set_upper(event, value)
         if prob is not None:
-            for event, value in uprob.iteritems():
+            for event, value in prob.iteritems():
                 event = Event.make(self.pspace, event)
-                self[event, None] = value, value
+                self.set_precise(event, value)
         self._matrix = self._make_matrix()
 
     def __len__(self):
