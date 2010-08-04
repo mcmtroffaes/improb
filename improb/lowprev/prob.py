@@ -69,11 +69,11 @@ class Prob(LinVac):
             linvac[omega, None] = (1 - epsilon) * self[omega, None][0], None
         return linvac
 
-    def get_lowprev(self, gamble, event=None):
+    def get_lowprev(self, gamble, event=True):
         # faster implementation
         return get_prev(gamble, event)
 
-    def get_prev(self, gamble, event=None):
+    def get_prev(self, gamble, event=True):
         """Calculate the conditional expectation."""
         self._validate()
         gamble = Gamble.make(self.pspace, gamble)

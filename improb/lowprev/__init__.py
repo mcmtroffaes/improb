@@ -37,7 +37,7 @@ class LowPrev(collections.MutableMapping):
         raise NotImplementedError
 
     @abstractmethod
-    def get_lower(self, gamble, event=None):
+    def get_lower(self, gamble, event=True):
         """Return the lower expectation for *gamble* conditional on
         *event* via natural extension.
 
@@ -51,7 +51,7 @@ class LowPrev(collections.MutableMapping):
         """
         raise NotImplementedError
 
-    def get_upper(self, gamble, event=None):
+    def get_upper(self, gamble, event=True):
         """Return the upper expectation for *gamble* conditional on
         *event* via natural extension.
 
@@ -118,7 +118,7 @@ class LowPrev(collections.MutableMapping):
                 return False
         return True
 
-    def dominates(self, gamble, other_gamble, event=None):
+    def dominates(self, gamble, other_gamble, event=True):
         """Does *gamble* dominate *other_gamble* in lower prevision?
 
         :return: :const:`True` if *gamble* dominates *other_gamble*, :const:`False` otherwise.

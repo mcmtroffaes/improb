@@ -53,7 +53,7 @@ def filter_maximal(set_, dominates, *args):
                 yield element
                 maximal_elements.append(element)
 
-def dominates_pointwise(gamble, other_gamble, event=None, tolerance=1e-6):
+def dominates_pointwise(gamble, other_gamble, event=True, tolerance=1e-6):
     """Does gamble dominate other_gamble point-wise?"""
     # XXX we're ignoring the event for now
     return (all(x >= y for  x, y in zip(gamble, other_gamble))

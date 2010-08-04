@@ -59,7 +59,7 @@ class LinVac(LowProb):
             raise ValueError('must be unconditional')
         return gamble, event
 
-    def get_lower(self, gamble, event=None):
+    def get_lower(self, gamble, event=True):
         # this is faster than solving the linear program
         """Get the lower expectation of a gamble conditional on an event.
 

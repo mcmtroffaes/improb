@@ -28,7 +28,7 @@ class BelFunc(LowProb):
     extension.
     """
 
-    def get_lower(self, gamble, event=None):
+    def get_lower(self, gamble, event=True):
         """Get lower prevision.
 
         :param gamble: The gamble.

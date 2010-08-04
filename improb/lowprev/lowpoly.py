@@ -277,7 +277,7 @@ class LowPoly(LowPrev):
     def pspace(self):
         return self._pspace
 
-    def set_lower(self, gamble, lprev, event=None):
+    def set_lower(self, gamble, lprev, event=True):
         """Constrain the expectation of *gamble* to be at least *lprev*.
 
         :param gamble: The gamble whose expectation to bound.
@@ -301,7 +301,7 @@ class LowPoly(LowPrev):
                      if old_lprev is not None else lprev)
         self[key] = lprev, uprev
 
-    def set_upper(self, gamble, uprev, event=None):
+    def set_upper(self, gamble, uprev, event=True):
         """Constrain the expectation of *gamble* to be at most *uprev*.
 
         :param gamble: The gamble whose expectation to bound.
@@ -325,7 +325,7 @@ class LowPoly(LowPrev):
                      if old_uprev is not None else uprev)
         self[key] = lprev, uprev
 
-    def set_precise(self, gamble, prev, event=None):
+    def set_precise(self, gamble, prev, event=True):
         """Constrain the expectation of *gamble* to be exactly *prev*.
 
         :param gamble: The gamble whose expectation to bound.
@@ -352,7 +352,7 @@ class LowPoly(LowPrev):
                      if old_uprev is not None else prev)
         self[key] = lprev, uprev
 
-    def get_lower(self, gamble, event=None):
+    def get_lower(self, gamble, event=True):
         """Return the lower expectation for *gamble* conditional on
         *event* via natural extension.
 
