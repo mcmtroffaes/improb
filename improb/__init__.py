@@ -85,7 +85,8 @@ class NumberTypeable:
     """
     __metaclass__ = ABCMeta
 
-    NUMBER_TYPES = {'float': float, 'fraction': fractions.Fraction}
+    _NUMBER_TYPES = {'float': float, 'fraction': fractions.Fraction}
+    _TOLERANCE = {'float': 1e-6, 'fraction': 0}
 
     @abstractproperty
     def number_type(self):
@@ -94,7 +95,12 @@ class NumberTypeable:
 
     @property
     def NumberType(self):
-        return self.NUMBER_TYPES[self.number_type]
+        return self._NUMBER_TYPES[self.number_type]
+
+    @property
+    def tolerance(self):
+        """Tolerance when comparing values."""
+        return self._TOLERANCE[self.number_type]
 
     def number_value(self, value):
         """Convert value into a number.

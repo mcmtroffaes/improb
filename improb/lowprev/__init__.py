@@ -24,10 +24,10 @@ import collections
 from fractions import Fraction
 import itertools
 
-from improb import PSpace, Gamble, Event
+from improb import PSpace, Gamble, Event, NumberTypeable
 from improb.setfunction import SetFunction
 
-class LowPrev(collections.MutableMapping):
+class LowPrev(collections.MutableMapping, NumberTypeable):
     """Abstract base class for working with arbitrary lower previsions."""
     __metaclass__ = ABCMeta
 
@@ -126,4 +126,4 @@ class LowPrev(collections.MutableMapping):
         """
         gamble = Gamble.make(self.pspace, gamble)
         other_gamble = Gamble.make(self.pspace, other_gamble)
-        return self.get_lower(gamble - other_gamble, event) > 0
+        return self.get_lower(gamble - other_gamble, event) > self.tolerance
