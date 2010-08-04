@@ -24,7 +24,7 @@ import collections
 from fractions import Fraction
 import scipy.optimize
 
-from improb import PSpace, Gamble, Event, _fraction
+from improb import PSpace, Gamble, Event
 from improb.lowprev import LowPrev
 from improb.setfunction import SetFunction
 
@@ -42,7 +42,7 @@ class LowPoly(LowPrev):
     def __init__(self, pspace=None, mapping=None,
                  lprev=None, uprev=None, prev=None,
                  lprob=None, uprob=None, prob=None,
-                 bba=None):
+                 bba=None, number_type='float'):
         """Construct a lower prevision on *pspace*.
 
         Generally, you can pass a :class:`dict` as a keyword argument
@@ -101,6 +101,8 @@ class LowPoly(LowPrev):
         :type prob: :class:`collections.Mapping` or :class:`collections.Sequence`
         :param bba: Mapping from event to basic belief assignment (useful for constructing belief functions).
         :type bba: :class:`collections.Mapping` or :class:`collections.Sequence`
+        :param number_type: The number type.
+        :type number_type: :class:`str`
         """
         def iter_items(obj):
             """Return an iterator over all items of the mapping or the
@@ -115,6 +117,7 @@ class LowPoly(LowPrev):
                     'expected collections.Mapping or collections.Sequence')
         self._pspace = PSpace.make(pspace)
         self._mapping = {}
+        self._number_type = number_type
         if mapping:
             for key, value in mapping.iteritems():
                 self[key] = value
@@ -143,6 +146,10 @@ class LowPoly(LowPrev):
             setfunc = SetFunction(self.pspace, bba)
             for event, value in setfunc.get_mobius_inverse():
                 self.set_lower(event, value)
+
+    @property
+    def number_type(self):
+        return self._number_type
 
     def __len__(self):
         return len(self._mapping)
@@ -220,8 +227,8 @@ class LowPoly(LowPrev):
         """
         lprev, uprev = value
         return (
-            _fraction(lprev) if lprev is not None else None,
-            _fraction(uprev) if uprev is not None else None)
+            self.number_value(lprev) if lprev is not None else None,
+            self.number_value(uprev) if uprev is not None else None)
 
     def _make_matrix(self):
         """Construct cddgmp matrix representation."""
@@ -402,11 +409,11 @@ class LowPoly(LowPrev):
                     self.get_lower((gamble - a) * event), 
                     self.get_lower((gamble - b) * event)))
             # see if we can get the exact fractional solution
-            frac_result = Fraction.from_float(result).limit_denominator()
-            if self.get_lower((gamble - frac_result) * event) == 0:
-                return frac_result
-            else:
-                return result
+            if self.number_type == 'fraction':
+                frac_result = Fraction.from_float(result).limit_denominator()
+                if self.get_lower((gamble - frac_result) * event) == 0:
+                    return frac_result
+            return result
 
     def get_credal_set(self):
         """Return extreme points of the credal set.

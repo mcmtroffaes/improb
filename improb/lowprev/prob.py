@@ -17,10 +17,7 @@
 
 """A module for working with probability measures."""
 
-import collections
-from fractions import Fraction
-
-from improb import PSpace, Gamble, Event, _fraction
+from improb import PSpace, Gamble, Event
 from improb.lowprev.linvac import LinVac
 from improb.lowprev.lowpoly import LowPoly
 
@@ -63,7 +60,7 @@ class Prob(LinVac):
 
     def get_linvac(self, epsilon):
         """Convert probability into a linear vacuous mixture."""
-        epsilon = _fraction(epsilon)
+        epsilon = self.number_value(epsilon)
         linvac = LinVac(self.pspace)
         for omega in self.pspace:
             linvac[omega, None] = (1 - epsilon) * self[omega, None][0], None
