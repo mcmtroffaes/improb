@@ -21,29 +21,34 @@ from __future__ import division, absolute_import, print_function
 
 import collections
 
-from improb import PSpace, Gamble, Event, _fraction, _fraction_repr
+from improb import PSpace, Gamble, Event, NumberTypeable
 
-class SetFunction(collections.MutableMapping):
+class SetFunction(collections.MutableMapping, NumberTypeable):
     """A real-valued set function defined on the power set of a
     possibility space.
 
-    Bases: :class:`collections.MutableMapping`
+    Bases: :class:`collections.MutableMapping`, :class:`~improb.NumberTypeable`
     """
 
-    def __init__(self, pspace, mapping=None):
+    def __init__(self, pspace, data=None, number_type='float'):
         """Construct a set function on the power set of the given
         possibility space.
 
         :param pspace: The possibility space.
         :type pspace: |pspacetype|
-        :param mapping: A mapping that defines the value on each event (missing values default to zero).
-        :type mapping: :class:`dict`
+        :param data: A mapping that defines the value on each event (missing values default to zero).
+        :type data: :class:`dict`
         """
         self._pspace = PSpace.make(pspace)
+        self._number_type = number_type
         self._data = {}
-        if mapping is not None:
-            for event, value in mapping.iteritems():
+        if data is not None:
+            for event, value in data.iteritems():
                 self[event] = value
+
+    @property
+    def number_type(self):
+        return self._number_type
 
     def __len__(self):
         return len(self._data)
@@ -63,13 +68,13 @@ class SetFunction(collections.MutableMapping):
         try:
             return self._data[event]
         except KeyError:
-            return _fraction(0)
+            return self.number_value(0)
 
     def __setitem__(self, event, value):
         event = Event.make(self.pspace, event)
-        value = _fraction(value)
+        value = self.number_value(value)
         if value != 0:
-            self._data[event] = _fraction(value)
+            self._data[event] = value
         else:
             try:
                 del self._data[event]
@@ -81,34 +86,37 @@ class SetFunction(collections.MutableMapping):
 
     def __repr__(self):
         """
-        >>> SetFunction(3, {(): 1, (0, 2): Fraction(21, 10), (0, 1, 2): Fraction(1, 3)}) # doctest: +NORMALIZE_WHITESPACE
+        >>> SetFunction(3, {(): 1, (0, 2): '21/10', (0, 1, 2): '1/3'}, 'float') # doctest: +NORMALIZE_WHITESPACE
         SetFunction(pspace=PSpace(3),
-                    mapping={(): 1, (0, 2): '2.1', (0, 1, 2): '1/3'})
+                    data={(): 1, (0, 2): 2.1000000000000001, (0, 1, 2): 0.33333333333333331},
+                    number_type='float')
+        >>> SetFunction(3, {(): 1, (0, 2): '21/10', (0, 1, 2): '1/3'}, 'fraction') # doctest: +NORMALIZE_WHITESPACE
+        SetFunction(pspace=PSpace(3),
+                    data={(): 1, (0, 2): '2.1', (0, 1, 2): '1/3'},
+                    number_type='fraction')
         """
         dict_ = [(tuple(omega for omega in self.pspace
                         if omega in event),
-                  _fraction_repr(value))
+                  self.number_repr(value))
                  for event, value in self.iteritems()]
-        return "SetFunction(pspace={0}, mapping={{{1}}})".format(
-            repr(self._pspace), ", ".join("{0}: {1}".format(*element)
-                                          for element in dict_))
+        return "SetFunction(pspace={0}, data={{{1}}}, number_type={2})".format(
+            repr(self.pspace),
+            ", ".join("{0}: {1}".format(*element) for element in dict_),
+            repr(self.number_type))
 
     def __str__(self):
         """
-        >>> print(SetFunction('abc', {'': 1, 'ac': 2, 'abc': 5}))
-              : 1.000
-        a   c : 2.000
-        a b c : 5.000
+        >>> print(SetFunction('abc', {'': 1, 'ac': 2, 'abc': 5}, 'fraction'))
+              : 1
+        a   c : 2
+        a b c : 5
         """
         maxlen_pspace = max(len(str(omega)) for omega in self._pspace)
-        maxlen_value = max(len("{0:.3f}".format(float(value)))
-                           for value in self.itervalues())
         return "\n".join(
             " ".join("{0: <{1}}".format(omega if omega in event else '',
                                         maxlen_pspace)
                       for omega in self._pspace) +
-            " : " +
-            "{0:{1}.3f}".format(float(value), maxlen_value)
+            " : {0}".format(self.number_str(value))
             for event, value in self.iteritems())
 
     @property
@@ -120,11 +128,11 @@ class SetFunction(collections.MutableMapping):
         """Calculate the mobius inverse, yielding all (event, value)
         pairs for which the value is non-zero.
 
-        >>> setfunc = SetFunction(PSpace('ab'), {'a': 0.25, 'b': 0.25, 'ab': 1})
+        >>> setfunc = SetFunction(PSpace('ab'), {'a': 0.25, 'b': 0.25, 'ab': 1}, 'float')
         >>> print(SetFunction(setfunc.pspace, dict(setfunc.get_mobius_inverse())))
-        a   : 0.250
-          b : 0.250
-        a b : 0.500
+        a   : 0.25
+          b : 0.25
+        a b : 0.5
         """
         for event in self.pspace.subsets():
             value = sum(((-1) ** len(event - subevent)) * self[subevent]

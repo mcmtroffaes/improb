@@ -83,6 +83,7 @@ class NumberTypeable:
     1261007895663739/1125899906842624
     '1261007895663739/1125899906842624'
     """
+    __metaclass__ = ABCMeta
 
     NUMBER_TYPES = {'float': float, 'fraction': fractions.Fraction}
 
@@ -132,7 +133,7 @@ class NumberTypeable:
             if not isinstance(value, fractions.Fraction):
                 raise TypeError(
                     'expected fractions.Fraction but got {}'
-                    .format(value.__class__.name__))
+                    .format(value.__class__.__name__))
             if value.denominator == 1:
                 # integer
                 return str(value.numerator)
@@ -158,7 +159,7 @@ class NumberTypeable:
             if not isinstance(value, fractions.Fraction):
                 raise TypeError(
                     'expected fractions.Fraction but got {}'
-                    .format(value.__class__.name__))
+                    .format(value.__class__.__name__))
             if value.denominator == 1:
                 # integer
                 return repr(value.numerator)
@@ -725,15 +726,15 @@ class Event(collections.Set, collections.Hashable):
             if pspace != event.pspace:
                 raise ValueError('possibility spaces do not match')
             return event
-        elif event is None:
-            return Event(pspace, pspace)
+        elif event is True:
+            return Event(pspace, event)
+        elif event is False:
+            return Event(pspace, event)
         elif isinstance(event, Gamble):
             if not(set(event.itervalues()) <= set([0, 1])):
                 raise ValueError("not an indicator gamble")
             return Event(pspace, (omega for omega, value in event.iteritems()
                                   if value == 1))
-        elif event in pspace:
-            return Event(pspace, (event,))
         else:
             return Event(pspace, event)
 
