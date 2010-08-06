@@ -193,46 +193,6 @@ class PSpace(collections.Set, collections.Hashable):
         """
         return " ".join(str(omega) for omega in self)
 
-    # XXX remove this? (can be delegated as Event and Gamble method)
-    def make_element(self, obj):
-        """Convert the given indicator gamble, or event, into an
-        element of self.
-
-        >>> pspace = PSpace(3)
-        >>> pspace.make_element(1)
-        1
-        >>> pspace.make_element(Event(pspace, [2]))
-        2
-        >>> pspace.make_element(Gamble(pspace, [1, 0, 0]))
-        0
-        >>> pspace = PSpace('abc')
-        >>> pspace.make_element('c')
-        'c'
-        >>> pspace.make_element(Event(pspace, ['a']))
-        'a'
-        >>> pspace.make_element(Gamble(pspace, {'a': 0, 'b': 1, 'c': 0}))
-        'b'
-        >>> pspace = PSpace(3)
-        >>> pspace.make_element(Event(pspace, [1, 2])) # doctest: +ELLIPSIS
-        Traceback (most recent call last):
-            ...
-        ValueError: not a singleton
-        >>> pspace.make_element(Gamble(pspace, [1, 1, 0])) # doctest: +ELLIPSIS
-        Traceback (most recent call last):
-            ...
-        ValueError: not a singleton
-        >>> pspace.make_element(Gamble(pspace, [1, 2, 0]))
-        Traceback (most recent call last):
-            ...
-        ValueError: not an indicator gamble
-        """
-        if obj in self:
-            return obj
-        event = self.make_event(obj)
-        if len(event) != 1:
-            raise ValueError('not a singleton')
-        return list(event)[0]
-
     def subsets(self, event=True):
         r"""Iterates over all subsets of the possibility space.
 
