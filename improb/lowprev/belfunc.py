@@ -24,7 +24,7 @@ from improb.lowprev.lowprob import LowProb
 
 class BelFunc(LowProb):
     """This identical to :class:`~improb.lowprev.lowprob.LowProb`,
-    except that it uses the Mobius inverse to calculate the natural
+    except that it uses the Mobius transform to calculate the natural
     extension.
     """
 
@@ -38,17 +38,47 @@ class BelFunc(LowProb):
            \sum_{A\subseteq\Omega}
            m(A)\inf_{\omega\in A}f(\omega)
 
-        where :math:`m` is the Mobius inverse of the lower probability
+        where :math:`m` is the Mobius transform of the lower probability
         :math:`\underline{P}`.
 
         .. seealso::
 
-            :meth:`improb.setfunction.SetFunction.get_mobius_inverse`
-                Mobius inverse calculation of an arbitrary set function.
+            :meth:`improb.setfunction.SetFunction.get_mobius`
+                Mobius transform of an arbitrary set function.
+
+        .. warning::
+
+           The domain of the lower probability must contain *all*
+           events. If needed, first construct a
+           :class:`~improb.lowprev.lowprob.LowProb` and call
+           :meth:`~improb.lowprev.lowpoly.LowPoly.extend`:
+
+           >>> bel = BelFunc(2, lprob=['0.2', '0.25'], number_type='fraction') # doctest: +ELLIPSIS
+           >>> print(bel)
+           0   : 1/5
+             1 : 1/4
+           >>> bel.get_lower([1, 3]) # oops! fails...
+           Traceback (most recent call last):
+               ...
+           KeyError: ...
+           >>> lprob = LowProb(2, lprob=['0.2', '0.25'], number_type='fraction')
+           >>> lprob.extend()
+           >>> bel = BelFunc(lprob)
+           >>> print(bel)
+               : 0
+           0   : 1/5
+             1 : 1/4
+           0 1 : 1
+           >>> bel.get_lower([1, 3]) # now it works; 1 * 0.75 + 3 * 0.25 = 1.5
+           Fraction(3, 2)
+           >>> # same result, but solve linear program instead of
+           >>> # using mobius transform
+           >>> lprob.get_lower([1, 3])
+           Fraction(3, 2)
 
         This method will *not* raise an exception even if the
         assessments are not completely monotone, or even
-        incoherent---the Mobius inverse is in such case still defined,
+        incoherent---the Mobius transform is in such case still defined,
         although some of the values of :math:`m` will be negative
         (obviously, in such case, :math:`\underline{E}` will be
         incoherent as well).
@@ -58,8 +88,25 @@ class BelFunc(LowProb):
         >>> from improb import PSpace
         >>> pspace = PSpace(2)
         >>> lowprob = LowProb(pspace, lprob=['0.3', '0.2'], number_type='fraction')
-        >>> lpr = BelFunc(pspace, bba=lowprob.mobius_inverse, number_type='fraction')
-        >>> print(lpr.mobius_inverse)
+        >>> lowprob.extend(((event, True) for event in pspace.subsets()), upper=False)
+        >>> print(lowprob)
+            : 0
+        0   : 3/10
+          1 : 1/5
+        0 1 : 1
+        >>> print(lowprob.mobius)
+            : 0
+        0   : 3/10
+          1 : 1/5
+        0 1 : 1/2
+        >>> lpr = BelFunc(pspace, bba=lowprob.mobius, number_type='fraction')
+        >>> print(lpr)
+            : 0
+        0   : 3/10
+          1 : 1/5
+        0 1 : 1
+        >>> print(lpr.mobius)
+            : 0
         0   : 3/10
           1 : 1/5
         0 1 : 1/2
@@ -75,9 +122,6 @@ class BelFunc(LowProb):
         gamble = self.make_gamble(gamble)
         if event is not True:
             raise NotImplementedError
-        mobius_inverse = self.mobius_inverse
-        return sum(
-            (mobius_inverse[event_] * min(gamble[w] for w in event_)
-             for event_ in self.pspace.subsets()
-             if event_),
-            self.make_number(0))
+        mobius = self.mobius
+        return sum(mobius[event_] * min(gamble[omega] for omega in event_)
+                   for event_ in self.pspace.subsets(empty=False))

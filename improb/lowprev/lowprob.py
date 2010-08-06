@@ -32,7 +32,6 @@ class LowProb(LowPoly):
     >>> print(LowProb(3, lprob={(0, 1): '0.1', (1, 2): '0.2'}))
     0 1   : 0.1
       1 2 : 0.2
-    0 1 2 : 1.0
     >>> print(LowProb(3, lprev={(3, 1, 0): 1})) # doctest: +ELLIPSIS
     Traceback (most recent call last):
         ...
@@ -45,13 +44,25 @@ class LowProb(LowPoly):
     Traceback (most recent call last):
         ...
     ValueError: not unconditional
-    >>> print(LowProb(3, lprob={(0, 1): '0.1', (1, 2): '0.2'}).mobius_inverse)
-    0 1   : 0.1
-      1 2 : 0.2
-    0 1 2 : 0.7
-    >>> print(LowProb(3, lprob={(0, 1): '0.1', (1, 2): '0.2'}, number_type='fraction').mobius_inverse)
+    >>> lpr = LowProb(3, lprob={(0, 1): '0.1', (1, 2): '0.2', (2,): '0.05'}, number_type='fraction')
+    >>> lpr.extend()
+    >>> print(lpr)
+          : 0
+    0     : 0
+      1   : 0
+        2 : 1/20
     0 1   : 1/10
+    0   2 : 1/20
       1 2 : 1/5
+    0 1 2 : 1
+    >>> print(lpr.mobius)
+          : 0
+    0     : 0
+      1   : 0
+        2 : 1/20
+    0 1   : 1/10
+    0   2 : 0
+      1 2 : 3/20
     0 1 2 : 7/10
     """
 
@@ -62,7 +73,7 @@ class LowProb(LowPoly):
         except AttributeError:
             pass
         try:
-            del self._mobius_inverse
+            del self._mobius
         except AttributeError:
             pass
 
@@ -79,20 +90,17 @@ class LowProb(LowPoly):
             return self._set_function
         except AttributeError:
             self._set_function = self._make_set_function()
-            # assign values to empty set and to possibility space
-            self._set_function[()] = 0
-            self._set_function[True] = 1
             return self._set_function
 
     @property
-    def mobius_inverse(self):
-        """The mobius inverse of the assigned unconditional lower
+    def mobius(self):
+        """The mobius transform of the assigned unconditional lower
         probabilities, as :class:`~improb.setfunction.SetFunction`.
 
         .. seealso::
 
-            :meth:`improb.setfunction.SetFunction.get_mobius_inverse`
-                Mobius inverse calculation of an arbitrary set function.
+            :meth:`improb.setfunction.SetFunction.get_mobius`
+                Mobius transform calculation of an arbitrary set function.
 
             :class:`improb.lowprev.belfunc.BelFunc`
                 Belief functions.
@@ -100,12 +108,12 @@ class LowProb(LowPoly):
         # TODO should return an immutable object
 
         # implementation detail: this is cached; delete
-        # _mobius_inverse whenever cache needs to be cleared
+        # _mobius whenever cache needs to be cleared
         try:
-            return self._mobius_inverse
+            return self._mobius
         except AttributeError:
-            self._mobius_inverse = self._make_mobius_inverse()
-            return self._mobius_inverse
+            self._mobius = self._make_mobius()
+            return self._mobius
 
     @classmethod
     def make_random(cls, pspace=None, division=None, zero=True, number_type='float'):
@@ -148,11 +156,6 @@ class LowProb(LowPoly):
 
     def _make_key(self, key):
         gamble, event = LowPoly._make_key(self, key)
-        gamble_event = self.pspace.make_event(gamble)
-        if gamble_event.is_true():
-            raise ValueError('cannot set lower probability of possibility space')
-        if gamble_event.is_false():
-            raise ValueError('cannot set lower probability of empty set')
         if not event.is_true():
             raise ValueError('not unconditional')
         return gamble, event
@@ -170,12 +173,23 @@ class LowProb(LowPoly):
                  for (gamble, cond_event), (lprev, uprev) in self.iteritems()),
             self.number_type)
 
-    def _make_mobius_inverse(self):
+    def _make_mobius(self):
         """Constructs basic belief assignment corresponding to the
         assigned unconditional lower probabilities.
         """
         # construct set function corresponding to this lower probability
         return SetFunction(
             self.pspace,
-            dict(self.set_function.get_mobius_inverse()),
+            dict((event, self.set_function.get_mobius(event))
+                 for event in self.pspace.subsets()),
             self.number_type)
+
+    def extend(self, keys=None, lower=True, upper=True):
+        if keys is None:
+            LowPoly.extend(
+                self,
+                ((event, True) for event in self.pspace.subsets()),
+                lower=True,
+                upper=False)
+        else:
+            LowPoly.extend(self, keys, lower, upper)

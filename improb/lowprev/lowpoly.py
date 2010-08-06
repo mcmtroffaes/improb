@@ -42,8 +42,8 @@ class LowPoly(LowPrev):
     >>> lpr[{'c': 1, 'd': 8}, 'cd'] = ('1.2', None)
     >>> print(lpr) # doctest: +NORMALIZE_WHITESPACE
     a b c d
-    0 0 1 8 |     c d : [6/5  ,      ]
     2 3 0 0 | a b c d : [3/2  , 19/10]
+    0 0 1 8 |     c d : [6/5  ,      ]
 
     Instead of working on the mapping directly, you can use the
     convenience methods :meth:`set_lower`, :meth:`set_upper`, and
@@ -55,8 +55,8 @@ class LowPoly(LowPrev):
     >>> lpr.set_lower({'c': 1, 'd': 8}, '1.2', event='cd')
     >>> print(lpr) # doctest: +NORMALIZE_WHITESPACE
     a b c d
-    0 0 1 8 |     c d : [6/5  ,      ]
     2 3 0 0 | a b c d : [3/2  , 19/10]
+    0 0 1 8 |     c d : [6/5  ,      ]
     """
     def __init__(self, pspace=None, mapping=None,
                  lprev=None, uprev=None, prev=None,
@@ -73,8 +73,8 @@ class LowPoly(LowPrev):
         ...     ((1, 0, -1), (1, 2)): ('0.25', '0.3')})
         ...     ) # doctest: +NORMALIZE_WHITESPACE
          0    1   2
-        1.0  0.0 -1.0 |   1 2 : [0.25, 0.3 ]
         3.0  1.0 2.0  | 0 1 2 : [1.5 ,     ]
+        1.0  0.0 -1.0 |   1 2 : [0.25, 0.3 ]
         >>> print(LowPoly(pspace=3,
         ...     lprev={(1, 3, 2): '1.5', (2, 0, -1): '1'},
         ...     uprev={(2, 0, -1): '1.9'},
@@ -117,7 +117,6 @@ class LowPoly(LowPrev):
         a     : 1/10
           b   : 1/10
             c : 1/10
-        a b c : 1
 
         :param pspace: The possibility space.
         :type pspace: |pspacetype|
@@ -136,7 +135,7 @@ class LowPoly(LowPrev):
         :param prob: Mapping from event to precise probability.
         :type prob: :class:`collections.Mapping` or :class:`collections.Sequence`
         :param bba: Mapping from event to basic belief assignment (useful for constructing belief functions).
-        :type bba: :class:`collections.Mapping` or :class:`collections.Sequence`
+        :type bba: :class:`collections.Mapping`
         :param number_type: The number type.
         :type number_type: :class:`str`
         """
@@ -191,8 +190,8 @@ class LowPoly(LowPrev):
                 self.set_precise(event, value)
         if bba:
             setfunc = SetFunction(self.pspace, bba, self.number_type)
-            for event, value in setfunc.get_mobius_inverse():
-                self.set_lower(event, value)
+            for event in self.pspace.subsets():
+                self.set_lower(event, setfunc.get_mobius_inverse(event))
 
     def __len__(self):
         return len(self._mapping)
@@ -241,7 +240,9 @@ class LowPoly(LowPrev):
             + "]"
             for (gamble, event), (lprev, uprev)
             in sorted(self.iteritems(),
-                      key=lambda val: tuple(x for x in val[0][0].values())))
+                      key=lambda val: (
+                          tuple(-x for x in val[0][1].indicator().values())
+                          + tuple(x for x in val[0][0].values()))))
         return result
 
     @property
@@ -488,6 +489,73 @@ class LowPoly(LowPrev):
             pspace=self.pspace,
             mapping=mapping,
             number_type=self.number_type)
+
+    def extend(self, keys=None, lower=True, upper=True):
+        """Calculate coherent extension to the given keys
+        (gamble/event pairs).
+
+        :param keys: The gamble/event pairs to extend. If :const:`None`, then
+            extends to the full domain (for
+            :class:`~improb.lowprev.lowpoly.LowPoly` this raises a
+            :exc:`~exceptions.ValueError`, however some derived
+            classes implement this if they have a finite domain).
+        :type keys: :class:`collections.Iterable`
+        :param lower: Whether to extend the lower bounds.
+        :type lower: :class:`bool`
+        :param upper: Whether to extend the upper bounds.
+        :type upper: :class:`bool`
+
+        >>> pspace = PSpace('xyz')
+        >>> lpr = LowPoly(pspace=pspace, lprob=['0.1', '0.2', '0.15'], number_type='fraction')
+        >>> print(lpr)
+        x y z
+        0 0 1 | x y z : [3/20,     ]
+        0 1 0 | x y z : [1/5 ,     ]
+        1 0 0 | x y z : [1/10,     ]
+        >>> for event in pspace.subsets(empty=False):
+        ...     lpr.extend((subevent, event) for subevent in pspace.subsets(event))
+        >>> print(lpr)
+        x y z
+        0 0 0 | x y z : [0    , 0    ]
+        0 0 1 | x y z : [3/20 , 7/10 ]
+        0 1 0 | x y z : [1/5  , 3/4  ]
+        0 1 1 | x y z : [7/20 , 9/10 ]
+        1 0 0 | x y z : [1/10 , 13/20]
+        1 0 1 | x y z : [1/4  , 4/5  ]
+        1 1 0 | x y z : [3/10 , 17/20]
+        1 1 1 | x y z : [1    , 1    ]
+        0 0 0 | x y   : [0    , 0    ]
+        0 1 0 | x y   : [4/17 , 15/17]
+        1 0 0 | x y   : [2/17 , 13/17]
+        1 1 0 | x y   : [1    , 1    ]
+        0 0 0 | x   z : [0    , 0    ]
+        0 0 1 | x   z : [3/16 , 7/8  ]
+        1 0 0 | x   z : [1/8  , 13/16]
+        1 0 1 | x   z : [1    , 1    ]
+        0 0 0 | x     : [0    , 0    ]
+        1 0 0 | x     : [1    , 1    ]
+        0 0 0 |   y z : [0    , 0    ]
+        0 0 1 |   y z : [1/6  , 7/9  ]
+        0 1 0 |   y z : [2/9  , 5/6  ]
+        0 1 1 |   y z : [1    , 1    ]
+        0 0 0 |   y   : [0    , 0    ]
+        0 1 0 |   y   : [1    , 1    ]
+        0 0 0 |     z : [0    , 0    ]
+        0 0 1 |     z : [1    , 1    ]
+        """
+        if keys is None:
+            raise ValueError(
+                'cannot extend to full domain: specify keys')
+        for gamble, event in keys:
+            try:
+                lprev, uprev = self[gamble, event]
+            except KeyError:
+                lprev, uprev = None, None
+            if lower:
+                lprev = self.get_lower(gamble, event)
+            if upper:
+                uprev = self.get_upper(gamble, event)
+            self[gamble, event] = lprev, uprev
 
     #def optimize(self):
     #    """Removes redundant assessments."""

@@ -137,13 +137,16 @@ True
 ...                        for lpr_t, gamble_t in zip(lpr_t_s, gamble_t_s)]))
 13/50
 
-Mobius Inverse
-~~~~~~~~~~~~~~
+Mobius Transform
+~~~~~~~~~~~~~~~~
 
 >>> lpr = LowProb(pspace=2)
->>> lpr.set_lower([1,0], '0.3')
->>> lpr.set_lower([0,1], '0.2')
->>> print(lpr.mobius_inverse)
+>>> lpr.set_lower([0,0], 0)
+>>> lpr.set_lower([1,0], 0.3)
+>>> lpr.set_lower([0,1], 0.2)
+>>> lpr.set_lower([1,1], 1)
+>>> print(lpr.mobius)
+    : 0.0
 0   : 0.3
   1 : 0.2
 0 1 : 0.5

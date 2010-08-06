@@ -1,3 +1,8 @@
+.. testsetup::
+
+   from improb import PSpace, Gamble, Event
+   from improb.lowprev.lowpoly import LowPoly
+
 Polyhedral Lower Previsions
 ===========================
 

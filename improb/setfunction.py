@@ -62,21 +62,12 @@ class SetFunction(collections.MutableMapping, NumberTypeable):
 
     def __getitem__(self, event):
         event = self.pspace.make_event(event)
-        try:
-            return self._data[event]
-        except KeyError:
-            return self.make_number(0)
+        return self._data[event]
 
     def __setitem__(self, event, value):
         event = self.pspace.make_event(event)
         value = self.make_number(value)
-        if value != 0:
-            self._data[event] = value
-        else:
-            try:
-                del self._data[event]
-            except KeyError:
-                pass
+        self._data[event] = value
 
     def __delitem__(self, event):
         del self._data[self.pspace.make_event(event)]
@@ -125,27 +116,75 @@ class SetFunction(collections.MutableMapping, NumberTypeable):
         """An :class:`~improb.PSpace` representing the possibility space."""
         return self._pspace
 
-    def get_mobius_inverse(self):
-        """Calculate the Mobius inverse, yielding all (event, value)
-        pairs for which the value is non-zero. The Mobius inverse of a
-        set function :math:`S` is given by the formula:
+    def get_mobius(self, event):
+        """Calculate the value of the Mobius transform of the given
+        event. The Mobius transform of a set function :math:`s` is
+        given by the formula:
 
         .. math::
 
            m(A)=
-           \sum_{B\subseteq A}(-1)^{|A\setminus B|}S(B)
+           \sum_{B\subseteq A}(-1)^{|A\setminus B|}s(B)
 
         for any event :math:`A` (note that it is usually assumed that
-        :math:`S(\emptyset)=0`).
+        :math:`s(\emptyset)=0`).
 
-        >>> setfunc = SetFunction(PSpace('ab'), {'a': 0.25, 'b': 0.25, 'ab': 1}, 'float')
-        >>> print(SetFunction(setfunc.pspace, dict(setfunc.get_mobius_inverse())))
+        .. warning::
+
+           The set function must be defined for all subsets of the
+           given event.
+
+        >>> setfunc = SetFunction(PSpace('ab'), {'': 0, 'a': 0.25, 'b': 0.3, 'ab': 1}, 'float')
+        >>> print(setfunc)
+            : 0.0
         a   : 0.25
-          b : 0.25
-        a b : 0.5
+          b : 0.3
+        a b : 1.0
+        >>> inv = SetFunction(setfunc.pspace,
+        ...                   dict((event, setfunc.get_mobius(event))
+        ...                        for event in setfunc.pspace.subsets()))
+        >>> print(inv)
+            : 0.0
+        a   : 0.25
+          b : 0.3
+        a b : 0.45
         """
-        for event in self.pspace.subsets():
-            value = sum(((-1) ** len(event - subevent)) * self[subevent]
-                        for subevent in self.pspace.subsets(event))
-            if value != 0:
-                yield event, value
+        event = self.pspace.make_event(event)
+        return sum(((-1) ** len(event - subevent)) * self[subevent]
+                   for subevent in self.pspace.subsets(event))
+
+    def get_mobius_inverse(self, event):
+        """Calculate the value of the inverse Mobius transform of the
+        given event. The inverse Mobius transform of a set function :math:`m`
+        is given by the formula:
+
+        .. math::
+
+           s(A)=
+           \sum_{B\subseteq A}m(B)
+
+        for any event :math:`A` (note that it is usually assumed that
+        :math:`m(\emptyset)=0`).
+
+        .. warning::
+
+           The set function must be defined for all subsets of the
+           given event.
+
+        >>> setfunc = SetFunction(PSpace('ab'), {'': 0, 'a': 0.25, 'b': 0.3, 'ab': 0.45}, 'float')
+        >>> print(setfunc)
+            : 0.0
+        a   : 0.25
+          b : 0.3
+        a b : 0.45
+        >>> inv = SetFunction(setfunc.pspace,
+        ...                   dict((event, setfunc.get_mobius_inverse(event))
+        ...                        for event in setfunc.pspace.subsets()))
+        >>> print(inv)
+            : 0.0
+        a   : 0.25
+          b : 0.3
+        a b : 1.0
+        """
+        event = self.pspace.make_event(event)
+        return sum(self[subevent] for subevent in self.pspace.subsets(event))

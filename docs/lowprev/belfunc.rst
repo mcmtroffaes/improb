@@ -1,3 +1,8 @@
+.. testsetup::
+
+   from improb.lowprev.lowprob import LowProb
+   from improb.lowprev.belfunc import BelFunc
+
 Belief Functions
 ================
 

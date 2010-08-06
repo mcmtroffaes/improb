@@ -191,11 +191,13 @@ class PSpace(collections.Set, collections.Hashable):
         """
         return " ".join(str(omega) for omega in self)
 
-    def subsets(self, event=True):
+    def subsets(self, event=True, empty=True):
         r"""Iterates over all subsets of the possibility space.
 
         :param event: An event (optional).
         :type event: |eventtype|
+        :param event: Whether to include the empty event or not.
+        :type event: :class:`bool`
         :returns: Yields all subsets.
         :rtype: Iterator of :class:`Event`.
 
@@ -250,7 +252,7 @@ class PSpace(collections.Set, collections.Hashable):
         5 : 0
         """
         event = self.make_event(event)
-        for subset_size in xrange(len(event) + 1):
+        for subset_size in xrange(0 if empty else 1, len(event) + 1):
             for subset in itertools.combinations(event, subset_size):
                 yield Event(self, subset)
 
