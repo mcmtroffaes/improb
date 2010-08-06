@@ -20,9 +20,9 @@
 from __future__ import division, absolute_import, print_function
 
 from improb import PSpace, Gamble, Event
-from improb.lowprev.lowprob import LowProb
+from improb.lowprev.belfunc import BelFunc
 
-class LinVac(LowProb):
+class LinVac(BelFunc):
     """Linear-vacuous mixture, implemented as an unconditional lower
     probability on singletons.
 
@@ -51,7 +51,7 @@ class LinVac(LowProb):
     29/50
     """
     def _make_key(self, key):
-        gamble, event = LowProb._make_key(self, key)
+        gamble, event = BelFunc._make_key(self, key)
         gamble_event = self.pspace.make_event(gamble)
         if not gamble_event.is_singleton():
             raise ValueError('not a singleton')
@@ -61,14 +61,31 @@ class LinVac(LowProb):
 
     def get_lower(self, gamble, event=True):
         # this is faster than solving the linear program
-        """Get the lower expectation of a gamble conditional on an event.
+        r"""Calculate the lower expectation of a gamble conditional on
+        an event, by the following formula:
 
-        :param gamble: The gamble.
-        :type gamble: |gambletype|
-        :param event: The event to condition on.
-        :type event: |eventtype|
-        :return: The lower expectation of the gamble.
-        :rtype: :class:`fractions.Fraction`
+        .. math::
+
+           \underline{E}(f|A)=
+           \frac{
+           (1-\epsilon)\sum_{\omega\in A}p(\omega)f(\omega)
+           + \epsilon\min_{\omega\in A}f(\omega)
+           }{
+           (1-\epsilon)\sum_{\omega\in A}p(\omega)
+           + \epsilon
+           }
+
+        where :math:`\epsilon=1-\sum_{\omega}\underline{P}(\omega)` and
+        :math:`p(\omega)=\underline{P}(\omega)/(1-\epsilon)`. Here,
+        :math:`\underline{P}(\omega)` is simply::
+
+            self[{omega: 1}, True][0]
+
+        This method will *not* raise an exception, even if the
+        assessments are incoherent (obviously, in such case,
+        :math:`\underline{E}` will be incoherent as well). It will
+        raise an exception if not all lower probabilities on
+        singletons are defined.
         """
         gamble = self.make_gamble(gamble)
         event = self.pspace.make_event(event)

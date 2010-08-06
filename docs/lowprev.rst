@@ -2,13 +2,13 @@ Lower Previsions
 ================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
-   lowprev/prob
-   lowprev/linvac
-   lowprev/belfunc
-   lowprev/lowprob
    lowprev/lowpoly
+   lowprev/lowprob
+   lowprev/belfunc
+   lowprev/linvac
+   lowprev/prob
    lowprev/examples
 
 .. module:: improb.lowprev

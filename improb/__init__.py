@@ -38,8 +38,6 @@ class PSpace(collections.Set, collections.Hashable):
 
         :param args: The components of the space.
         :type args: :class:`collections.Iterable` or :class:`int`
-        :returns: A possibility space.
-        :rtype: :class:`tuple`
 
         Some examples of how components can be specified:
 

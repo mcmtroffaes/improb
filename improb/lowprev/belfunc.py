@@ -29,14 +29,29 @@ class BelFunc(LowProb):
     """
 
     def get_lower(self, gamble, event=True):
-        """Get lower prevision.
+        r"""Calculate the lower expectation of a gamble by the
+        following formula:
 
-        :param gamble: The gamble.
-        :type gamble: |gambletype|
-        :param event: The event to condition on.
-        :type event: |eventtype|
-        :return: The lower expectation of the gamble.
-        :rtype: ``float``
+        .. math::
+
+           \underline{E}(f)=
+           \sum_{A\subseteq\Omega}
+           m(A)\inf_{\omega\in A}f(\omega)
+
+        where :math:`m` is the Mobius inverse of the lower probability
+        :math:`\underline{P}`.
+
+        .. seealso::
+
+            :meth:`improb.setfunction.SetFunction.get_mobius_inverse`
+                Mobius inverse calculation of an arbitrary set function.
+
+        This method will *not* raise an exception even if the
+        assessments are not completely monotone, or even
+        incoherent---the Mobius inverse is in such case still defined,
+        although some of the values of :math:`m` will be negative
+        (obviously, in such case, :math:`\underline{E}` will be
+        incoherent as well).
 
         >>> from improb.lowprev.belfunc import BelFunc
         >>> from improb.lowprev.lowprob import LowProb

@@ -34,30 +34,48 @@ class LowPoly(LowPrev):
     finite intersection of half-spaces, each of which constrains the
     set of probability mass functions.
 
-    This class is derived from :class:`collections.Mapping`: keys are
-    (gamble, event) pairs, values are (lprev, uprev) pairs. Instead of
-    working on the mapping directly, you can use the convenience
-    methods :meth:`set_lower`, :meth:`set_upper`, and
-    :meth:`set_precise`.
+    This class is derived from :class:`collections.MutableMapping`:
+    keys are (gamble, event) pairs, values are (lprev, uprev) pairs:
+
+    >>> lpr = LowPoly(pspace='abcd', number_type='fraction')
+    >>> lpr[{'a': 2, 'b': 3}, 'abcd'] = ('1.5', '1.9')
+    >>> lpr[{'c': 1, 'd': 8}, 'cd'] = ('1.2', None)
+    >>> print(lpr) # doctest: +NORMALIZE_WHITESPACE
+    a b c d
+    0 0 1 8 |     c d : [6/5  ,      ]
+    2 3 0 0 | a b c d : [3/2  , 19/10]
+
+    Instead of working on the mapping directly, you can use the
+    convenience methods :meth:`set_lower`, :meth:`set_upper`, and
+    :meth:`set_precise`:
+
+    >>> lpr = LowPoly(pspace='abcd', number_type='fraction')
+    >>> lpr.set_lower({'a': 2, 'b': 3}, '1.5')
+    >>> lpr.set_upper({'a': 2, 'b': 3}, '1.9')
+    >>> lpr.set_lower({'c': 1, 'd': 8}, '1.2', event='cd')
+    >>> print(lpr) # doctest: +NORMALIZE_WHITESPACE
+    a b c d
+    0 0 1 8 |     c d : [6/5  ,      ]
+    2 3 0 0 | a b c d : [3/2  , 19/10]
     """
     def __init__(self, pspace=None, mapping=None,
                  lprev=None, uprev=None, prev=None,
                  lprob=None, uprob=None, prob=None,
                  bba=None, number_type='float'):
-        """Construct a lower prevision on *pspace*.
+        """Construct a polyhedral lower prevision on *pspace*.
 
         Generally, you can pass a :class:`dict` as a keyword argument
         in order to initialize the lower and upper previsions and/or
         probabilities:
 
-        >>> print(LowPoly(3, mapping={
+        >>> print(LowPoly(pspace=3, mapping={
         ...     ((3, 1, 2), True): ('1.5', None),
         ...     ((1, 0, -1), (1, 2)): ('0.25', '0.3')})
         ...     ) # doctest: +NORMALIZE_WHITESPACE
-          0      1      2
-         1.000  0.000 -1.000 |   1 2 : [0.250, 0.300]
-         3.000  1.000  2.000 | 0 1 2 : [1.500,      ]
-        >>> print(LowPoly(3,
+         0    1   2
+        1.0  0.0 -1.0 |   1 2 : [0.25, 0.3 ]
+        3.0  1.0 2.0  | 0 1 2 : [1.5 ,     ]
+        >>> print(LowPoly(pspace=3,
         ...     lprev={(1, 3, 2): '1.5', (2, 0, -1): '1'},
         ...     uprev={(2, 0, -1): '1.9'},
         ...     prev={(9, 8, 20): '15'},
@@ -65,24 +83,41 @@ class LowPoly(LowPrev):
         ...     uprob={(1, 2): '0.3', (0,): '0.9'},
         ...     prob={(2,): '0.3'},
         ...     )) # doctest: +NORMALIZE_WHITESPACE
-          0      1      2
-         0.000  0.000  1.000 | 0 1 2 : [ 0.300,  0.300]
-         0.000  1.000  0.000 | 0 1 2 : [ 0.100,       ]
-         0.000  1.000  1.000 | 0 1 2 : [ 0.200,  0.300]
-         1.000  0.000  0.000 | 0 1 2 : [      ,  0.900]
-         1.000  3.000  2.000 | 0 1 2 : [ 1.500,       ]
-         2.000  0.000 -1.000 | 0 1 2 : [ 1.000,  1.900]
-         9.000  8.000 20.000 | 0 1 2 : [15.000, 15.000]
+          0    1   2
+         0.0  0.0 1.0  | 0 1 2 : [0.3 , 0.3 ]
+         0.0  1.0 0.0  | 0 1 2 : [0.1 ,     ]
+         0.0  1.0 1.0  | 0 1 2 : [0.2 , 0.3 ]
+         1.0  0.0 0.0  | 0 1 2 : [    , 0.9 ]
+         1.0  3.0 2.0  | 0 1 2 : [1.5 ,     ]
+         2.0  0.0 -1.0 | 0 1 2 : [1.0 , 1.9 ]
+         9.0  8.0 20.0 | 0 1 2 : [15.0, 15.0]
 
         As a special case, for lower/upper/precise probabilities, if
         you need to set values on singletons, you can use a list
         instead of a dictionary:
 
-        >>> print(LowPoly(3, lprob=['0.1', '0.2', '0.3'])) # doctest: +NORMALIZE_WHITESPACE
-         0      1      2
-        0.000  0.000  1.000 | 0 1 2 : [0.300, ]
-        0.000  1.000  0.000 | 0 1 2 : [0.200, ]
-        1.000  0.000  0.000 | 0 1 2 : [0.100, ]
+        >>> print(LowPoly(pspace='abc', lprob=['0.1', '0.2', '0.3'], number_type='fraction')) # doctest: +NORMALIZE_WHITESPACE
+        a b c
+        0 0 1 | a b c : [3/10, ]
+        0 1 0 | a b c : [1/5 , ]
+        1 0 0 | a b c : [1/10, ]
+
+        If the first argument is a :class:`LowPoly` instance, then it
+        is copied. For example:
+
+        >>> from improb.lowprev.lowprob import LowProb
+        >>> lpr = LowPoly(pspace='abc', lprob=['0.1', '0.1', '0.1'], number_type='fraction')
+        >>> print(lpr)
+        a b c
+        0 0 1 | a b c : [1/10,     ]
+        0 1 0 | a b c : [1/10,     ]
+        1 0 0 | a b c : [1/10,     ]
+        >>> lprob = LowProb(lpr)
+        >>> print(lprob)
+        a     : 1/10
+          b   : 1/10
+            c : 1/10
+        a b c : 1
 
         :param pspace: The possibility space.
         :type pspace: |pspacetype|
@@ -121,6 +156,12 @@ class LowPoly(LowPrev):
                 raise TypeError(
                     'expected collections.Mapping or collections.Sequence')
 
+        # if first argument is a LowPoly, then override all other arguments
+        if isinstance(pspace, LowPoly):
+            mapping = dict(pspace.iteritems())
+            number_type = pspace.number_type
+            pspace = pspace.pspace
+        # initialize everything
         cdd.NumberTypeable.__init__(self, number_type)
         self._pspace = PSpace.make(pspace)
         self._mapping = {}
@@ -175,27 +216,27 @@ class LowPoly(LowPrev):
 
     def __str__(self):
         maxlen_pspace = max(len(str(omega)) for omega in self.pspace)
-        maxlen_value = max(max(len("{0:.3f}".format(float(gamble[omega])))
+        maxlen_value = max(max(len(self.number_str(gamble[omega]))
                                for omega in self.pspace)
                            for gamble, event in self)
         maxlen = max(maxlen_pspace, maxlen_value)
-        maxlen_prev = max(max(len("{0:.3f}".format(float(prev)))
+        maxlen_prev = max(max(len(self.number_str(prev))
                               for prev in prevs if prev is not None)
                            for prevs in self.itervalues())
         result = " ".join("{0: ^{1}}".format(omega, maxlen)
                           for omega in self.pspace) + "\n"
         result += "\n".join(
-            " ".join("{0:{1}.3f}".format(float(value), maxlen)
+            " ".join("{0:{1}}".format(self.number_str(value), maxlen)
                      for value in gamble.values())
             + " | "
             + " ".join("{0:{1}}".format(omega if omega in event else '',
                                         maxlen_pspace)
                        for omega in self.pspace)
             + " : ["
-            + ("{0:{1}.3f}".format(float(lprev), maxlen_prev)
+            + ("{0:{1}}".format(self.number_str(lprev), maxlen_prev)
                if lprev is not None else ' ' * maxlen_prev)
             + ", "
-            + ("{0:{1}.3f}".format(float(uprev), maxlen_prev)
+            + ("{0:{1}}".format(self.number_str(uprev), maxlen_prev)
                if uprev is not None else ' ' * maxlen_prev)
             + "]"
             for (gamble, event), (lprev, uprev)

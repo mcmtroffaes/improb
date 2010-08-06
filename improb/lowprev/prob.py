@@ -68,7 +68,11 @@ class Prob(LinVac):
             oops("probabilities must sum to one")
 
     def get_linvac(self, epsilon):
-        """Convert probability into a linear vacuous mixture."""
+        """Convert probability into a linear vacuous mixture:
+
+        .. math::
+
+           \underline{E}(f)=(1-\epsilon)E(f)+\epsilon\inf f"""
         epsilon = self.make_number(epsilon)
         return LinVac(
             self.pspace,
@@ -81,7 +85,22 @@ class Prob(LinVac):
         return get_prev(gamble, event)
 
     def get_prev(self, gamble, event=True):
-        """Calculate the conditional expectation."""
+        r"""Calculate the conditional expectation,
+
+        .. math::
+
+           E(f|A)=
+           \frac{
+           \sum_{\omega\in A}p(\omega)f(\omega)
+           }{
+           \sum_{\omega\in A}p(\omega)
+           }
+
+        where :math:`p(\omega)` is simply the probability of the
+        singleton :math:`\omega`::
+
+            self[{omega: 1}, True][0]
+        """
         self.is_valid(raise_error=True)
         gamble = self.make_gamble(gamble)
         if event is True or (isinstance(event, Event) and event.is_true()):

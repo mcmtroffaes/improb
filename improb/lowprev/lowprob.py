@@ -88,6 +88,14 @@ class LowProb(LowPoly):
     def mobius_inverse(self):
         """The mobius inverse of the assigned unconditional lower
         probabilities, as :class:`~improb.setfunction.SetFunction`.
+
+        .. seealso::
+
+            :meth:`improb.setfunction.SetFunction.get_mobius_inverse`
+                Mobius inverse calculation of an arbitrary set function.
+
+            :class:`improb.lowprev.belfunc.BelFunc`
+                Belief functions.
         """
         # TODO should return an immutable object
 

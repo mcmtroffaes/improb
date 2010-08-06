@@ -5,5 +5,6 @@ Belief Functions
 
 .. autoclass:: BelFunc
    :members:
+   :show-inheritance:
 
 .. todo:: Add examples.

@@ -9,3 +9,4 @@ Lower Probabilities
 
 .. autoclass:: LowProb
    :members:
+   :show-inheritance:

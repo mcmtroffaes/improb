@@ -126,8 +126,17 @@ class SetFunction(collections.MutableMapping, NumberTypeable):
         return self._pspace
 
     def get_mobius_inverse(self):
-        """Calculate the mobius inverse, yielding all (event, value)
-        pairs for which the value is non-zero.
+        """Calculate the Mobius inverse, yielding all (event, value)
+        pairs for which the value is non-zero. The Mobius inverse of a
+        set function :math:`S` is given by the formula:
+
+        .. math::
+
+           m(A)=
+           \sum_{B\subseteq A}(-1)^{|A\setminus B|}S(B)
+
+        for any event :math:`A` (note that it is usually assumed that
+        :math:`S(\emptyset)=0`).
 
         >>> setfunc = SetFunction(PSpace('ab'), {'a': 0.25, 'b': 0.25, 'ab': 1}, 'float')
         >>> print(SetFunction(setfunc.pspace, dict(setfunc.get_mobius_inverse())))

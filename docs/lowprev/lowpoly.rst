@@ -5,6 +5,7 @@ Polyhedral Lower Previsions
 
 .. autoclass:: LowPoly
    :members:
+   :show-inheritance:
 
    .. automethod:: __init__
    .. automethod:: __iter__

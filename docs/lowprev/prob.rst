@@ -9,3 +9,4 @@ Probability Measures
 
 .. autoclass:: Prob
    :members:
+   :show-inheritance:
