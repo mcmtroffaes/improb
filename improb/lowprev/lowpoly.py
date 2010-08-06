@@ -19,9 +19,10 @@
 
 from __future__ import division, absolute_import, print_function
 
-import cddgmp
+import cdd
 import collections
 from fractions import Fraction
+import itertools
 import scipy.optimize
 
 from improb import PSpace, Gamble, Event
@@ -50,7 +51,7 @@ class LowPoly(LowPrev):
         probabilities:
 
         >>> print(LowPoly(3, mapping={
-        ...     ((3, 1, 2), None): ('1.5', None),
+        ...     ((3, 1, 2), True): ('1.5', None),
         ...     ((1, 0, -1), (1, 2)): ('0.25', '0.3')})
         ...     ) # doctest: +NORMALIZE_WHITESPACE
           0      1      2
@@ -104,6 +105,7 @@ class LowPoly(LowPrev):
         :param number_type: The number type.
         :type number_type: :class:`str`
         """
+
         def iter_items(obj):
             """Return an iterator over all items of the mapping or the
             sequence.
@@ -111,13 +113,17 @@ class LowPoly(LowPrev):
             if isinstance(obj, collections.Mapping):
                 return obj.iteritems()
             elif isinstance(obj, collections.Sequence):
-                return enumerate(obj)
+                if len(obj) < len(self.pspace):
+                    raise ValueError('sequence too short')
+                return (((omega,), value)
+                        for omega, value in itertools.izip(self.pspace, obj))
             else:
                 raise TypeError(
                     'expected collections.Mapping or collections.Sequence')
+
+        cdd.NumberTypeable.__init__(self, number_type)
         self._pspace = PSpace.make(pspace)
         self._mapping = {}
-        self._number_type = number_type
         if mapping:
             for key, value in mapping.iteritems():
                 self[key] = value
@@ -132,24 +138,20 @@ class LowPoly(LowPrev):
                 self.set_precise(gamble, value)
         if lprob:
             for event, value in iter_items(lprob):
-                event = Event.make(self.pspace, event)
+                event = self.pspace.make_event(event)
                 self.set_lower(event, value)
         if uprob:
             for event, value in iter_items(uprob):
-                event = Event.make(self.pspace, event)
+                event = self.pspace.make_event(event)
                 self.set_upper(event, value)
         if prob:
             for event, value in iter_items(prob):
-                event = Event.make(self.pspace, event)
+                event = self.pspace.make_event(event)
                 self.set_precise(event, value)
         if bba:
-            setfunc = SetFunction(self.pspace, bba)
+            setfunc = SetFunction(self.pspace, bba, self.number_type)
             for event, value in setfunc.get_mobius_inverse():
                 self.set_lower(event, value)
-
-    @property
-    def number_type(self):
-        return self._number_type
 
     def __len__(self):
         return len(self._mapping)
@@ -219,7 +221,7 @@ class LowPoly(LowPrev):
         still return a gamble/event pair.
         """
         gamble, event = key
-        return Gamble.make(self.pspace, gamble), Event.make(self.pspace, event)
+        return self.make_gamble(gamble), self.pspace.make_event(event)
 
     def _make_value(self, value):
         """Helper function to construct a value for the internal mapping.
@@ -227,11 +229,11 @@ class LowPoly(LowPrev):
         """
         lprev, uprev = value
         return (
-            self.number_value(lprev) if lprev is not None else None,
-            self.number_value(uprev) if uprev is not None else None)
+            self.make_number(lprev) if lprev is not None else None,
+            self.make_number(uprev) if uprev is not None else None)
 
     def _make_matrix(self):
-        """Construct cddgmp matrix representation."""
+        """Construct cdd matrix representation."""
         constraints = []
         lin_set = set()
 
@@ -268,9 +270,9 @@ class LowPoly(LowPrev):
                         [0] + [uprev - value if omega in event else 0
                                for omega, value in gamble.iteritems()])
         # create matrix
-        matrix = cddgmp.Matrix(constraints)
-        matrix.lin_set = lin_set
-        matrix.rep_type = cddgmp.RepType.INEQUALITY
+        matrix = cdd.Matrix(constraints, number_type=self.number_type)
+        matrix.data.lin_set = lin_set
+        matrix.data.rep_type = cdd.RepType.INEQUALITY
         return matrix
 
     def _clear_cache(self):
@@ -370,19 +372,19 @@ class LowPoly(LowPrev):
         :return: The lower bound for this expectation, i.e. the natural extension of the gamble.
         :rtype: ``float``
         """
-        gamble = Gamble.make(self.pspace, gamble)
-        event = Event.make(self.pspace, event)
-        if event == Event.make(self.pspace, self.pspace):
+        gamble = self.make_gamble(gamble)
+        event = self.pspace.make_event(event)
+        if event == self.pspace.make_event(True):
             matrix = self.matrix
-            matrix.obj_type = cddgmp.LPObjType.MIN
-            matrix.obj_func = [0] + gamble.values()
+            matrix.data.obj_type = cdd.LPObjType.MIN
+            matrix.data.obj_func = [0] + gamble.values()
             #print(matrix) # DEBUG
-            linprog = cddgmp.LinProg(matrix)
-            linprog.solve()
+            linprog = cdd.LinProg(matrix)
+            linprog.data.solve()
             #print(linprog) # DEBUG
-            if linprog.status == cddgmp.LPStatusType.OPTIMAL:
-                return linprog.obj_value
-            elif linprog.status == cddgmp.LPStatusType.INCONSISTENT:
+            if linprog.data.status == cdd.LPStatusType.OPTIMAL:
+                return linprog.data.obj_value
+            elif linprog.data.status == cdd.LPStatusType.INCONSISTENT:
                 raise ValueError("lower prevision incurs sure loss")
             else:
                 raise RuntimeError("BUG: unexpected status (%i)" % linprog.status)
@@ -421,9 +423,30 @@ class LowPoly(LowPrev):
         :return: The extreme points.
         :rtype: Yields a :class:`tuple` for each extreme point.
         """
-        poly = cddgmp.Polyhedron(self.matrix)
-        for vert in poly.get_generators():
+        poly = cdd.Polyhedron(self.matrix)
+        for vert in poly.data.get_generators():
             yield vert[1:]
+
+    def get_coherent(self):
+        """Return a coherent version."""
+        if not self.is_avoiding_sure_loss():
+            raise ValueError('incurs sure loss')
+        # copy the assignments
+        mapping = dict(self.iteritems())
+        # note: we wrap iteritems in a list because we're changing the
+        # mapping as we iterate
+        for (gamble, event), (lprev, uprev) in list(mapping.iteritems()):
+            # fix lower and upper previsions
+            if lprev is not None:
+                lprev = self.get_lower(gamble, event)
+            if uprev is not None:
+                uprev = self.get_upper(gamble, event)
+            mapping[gamble, event] = lprev, uprev
+        # create new lower prevision (of the same class)
+        return self.__class__(
+            pspace=self.pspace,
+            mapping=mapping,
+            number_type=self.number_type)
 
     #def optimize(self):
     #    """Removes redundant assessments."""

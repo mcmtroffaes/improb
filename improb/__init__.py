@@ -22,163 +22,10 @@ from __future__ import division, absolute_import, print_function
 __version__ = '0.1.0'
 
 from abc import ABCMeta, abstractmethod, abstractproperty
+from cdd import NumberTypeable
 import collections
 import fractions
 import itertools
-
-# XXX implement in Cython for speed?
-class NumberTypeable:
-    """Base class for classes that can have different representations
-    of numbers.
-
-    >>> class A(NumberTypeable):
-    ...     def __init__(self, number_type):
-    ...         self._number_type = number_type
-    ...     number_type = property(lambda self: self._number_type)
-    >>> numbers = ['4', '2/3', '1.6', '9/6', 1.12]
-    >>> a = A('float')
-    >>> a.NumberType
-    <type 'float'>
-    >>> for number in numbers:
-    ...     x = a.number_value(number)
-    ...     print(repr(x))
-    ...     print(a.number_str(x))
-    ...     print(a.number_repr(x))
-    4.0
-    4.0
-    4.0
-    0.66666666666666663
-    0.666666666667
-    0.66666666666666663
-    1.6000000000000001
-    1.6
-    1.6000000000000001
-    1.5
-    1.5
-    1.5
-    1.1200000000000001
-    1.12
-    1.1200000000000001
-    >>> a = A('fraction')
-    >>> a.NumberType
-    <class 'fractions.Fraction'>
-    >>> for number in numbers:
-    ...     x = a.number_value(number)
-    ...     print(repr(x))
-    ...     print(a.number_str(x))
-    ...     print(a.number_repr(x))
-    Fraction(4, 1)
-    4
-    4
-    Fraction(2, 3)
-    2/3
-    '2/3'
-    Fraction(8, 5)
-    1.6
-    '1.6'
-    Fraction(3, 2)
-    1.5
-    '1.5'
-    Fraction(1261007895663739, 1125899906842624)
-    1261007895663739/1125899906842624
-    '1261007895663739/1125899906842624'
-    """
-    __metaclass__ = ABCMeta
-
-    _NUMBER_TYPES = {'float': float, 'fraction': fractions.Fraction}
-    _TOLERANCE = {'float': 1e-6, 'fraction': 0}
-
-    @abstractproperty
-    def number_type(self):
-        """The number type used: ``'float'`` or ``'fraction'``"""
-        raise NotImplementedError
-
-    @property
-    def NumberType(self):
-        return self._NUMBER_TYPES[self.number_type]
-
-    @property
-    def tolerance(self):
-        """Tolerance when comparing values."""
-        return self._TOLERANCE[self.number_type]
-
-    def number_value(self, value):
-        """Convert value into a number.
-
-        :param value: The value to convert.
-        :type value: Anything that can be converted (see examples).
-        :returns: The converted value.
-        :rtype: :class:`float` or :class:`~fractions.Fraction`,
-            depending on :attr:`number_type`.
-        """
-        if self.number_type == 'float':
-            if isinstance(value, basestring) and '/' in value:
-                numerator, denominator = value.split('/')
-                return int(numerator) / int(denominator) # result is float
-            else:
-                return float(value)
-        elif self.number_type == 'fraction':
-            # for python 2.6 compatibility, we handle float separately
-            if isinstance(value, float):
-                return fractions.Fraction.from_float(value)
-            else:
-                return fractions.Fraction(value)
-        else:
-            raise NotImplementedError(
-                "number_type '{}' not implemented".format(self.number_type))
-
-    def number_str(self, value):
-        """Convert value into a string."""
-        if self.number_type == 'float':
-            if not isinstance(value, float):
-                raise TypeError(
-                    'expected float but got {}'
-                    .format(value.__class__.__name__))
-            return str(value)
-        elif self.number_type == 'fraction':
-            if not isinstance(value, fractions.Fraction):
-                raise TypeError(
-                    'expected fractions.Fraction but got {}'
-                    .format(value.__class__.__name__))
-            if value.denominator == 1:
-                # integer
-                return str(value.numerator)
-            else:
-                # try to represent as a float
-                floatstr = str(float(value))
-                if value == fractions.Fraction(floatstr):
-                    return floatstr
-                # return exact fraction
-                return str(value)
-        else:
-            raise NotImplementedError(
-                "number_type '{}' not implemented".format(self.number_type))
-
-    def number_repr(self, value):
-        if self.number_type == 'float':
-            if not isinstance(value, float):
-                raise TypeError(
-                    'expected float but got {}'
-                    .format(value.__class__.__name__))
-            return repr(value)
-        elif self.number_type == 'fraction':
-            if not isinstance(value, fractions.Fraction):
-                raise TypeError(
-                    'expected fractions.Fraction but got {}'
-                    .format(value.__class__.__name__))
-            if value.denominator == 1:
-                # integer
-                return repr(value.numerator)
-            else:
-                # try to represent as a float
-                floatstr = str(float(value))
-                if value == fractions.Fraction(floatstr):
-                    return repr(floatstr)
-                # return exact fraction
-                return repr(str(value))
-        else:
-            raise NotImplementedError(
-                "number_type '{}' not implemented".format(self.number_type))
 
 class PSpace(collections.Set, collections.Hashable):
     """An immutable possibility space, derived from
@@ -281,6 +128,37 @@ class PSpace(collections.Set, collections.Hashable):
         """
         return pspace if isinstance(pspace, cls) else cls(pspace)
 
+    def make_event(self, event):
+        """If *event* is a :class:`Event`, then checks possibility
+        space and returns *event*. Otherwise, converts *event* to a
+        :class:`Event`.
+
+        :param pspace: The possibility space.
+        :type pspace: |pspacetype|
+        :param event: The event.
+        :type event: |eventtype|
+        :return: A event.
+        :rtype: :class:`Event`
+        :raises: :exc:`~exceptions.ValueError` if possibility spaces do not match
+        """
+        if isinstance(event, Event):
+            if self != event.pspace:
+                raise ValueError('possibility space mismatch')
+            return event
+        elif event is True:
+            return Event(self, event)
+        elif event is False:
+            return Event(self, event)
+        elif isinstance(event, Gamble):
+            if self != event.pspace:
+                raise ValueError('possibility space mismatch')
+            if not(set(event.itervalues()) <= set([0, 1])):
+                raise ValueError("not an indicator gamble")
+            return Event(self, (omega for omega, value in event.iteritems()
+                                if value == 1))
+        else:
+            return Event(self, event)
+
     def __len__(self):
         return len(self._data)
 
@@ -350,7 +228,7 @@ class PSpace(collections.Set, collections.Hashable):
         """
         if obj in self:
             return obj
-        event = Event.make(self, obj)
+        event = self.make_event(obj)
         if len(event) != 1:
             raise ValueError('not a singleton')
         return list(event)[0]
@@ -413,7 +291,7 @@ class PSpace(collections.Set, collections.Hashable):
         4 : 1
         5 : 0
         """
-        event = Event.make(self, event)
+        event = self.make_event(event)
         for subset_size in xrange(len(event) + 1):
             for subset in itertools.combinations(event, subset_size):
                 yield Event(self, subset)
@@ -488,80 +366,19 @@ class Gamble(collections.Mapping, collections.Hashable, NumberTypeable):
         :param number_type: The type to use for numbers: ``'float'`` or ``'fraction'``.
         :type number_type: ``type``
         """
+        NumberTypeable.__init__(self, number_type)
         self._pspace = PSpace.make(pspace)
-        self._number_type = number_type
         if isinstance(data, collections.Mapping):
-            self._data = dict((omega, self.number_value(data.get(omega, 0)))
+            self._data = dict((omega, self.make_number(data.get(omega, 0)))
                               for omega in self.pspace)
         elif isinstance(data, collections.Sequence):
             if len(data) < len(self.pspace):
                 raise ValueError("data sequence too short")
-            self._data = dict((omega, self.number_value(value))
+            self._data = dict((omega, self.make_number(value))
                               for omega, value
                               in itertools.izip(self.pspace, data))
         else:
             raise TypeError('specify data as sequence or mapping')
-
-    @property
-    def number_type(self):
-        return self._number_type
-
-    @staticmethod
-    def make(pspace, gamble, number_type='float'):
-        """If *gamble* is
-
-        * a :class:`Gamble`, then checks possibility space and returns
-          *gamble*,
-
-        * an :class:`Event`, then checks possibility space and returns
-          the indicator of *gamble*,
-
-        * anything else, then construct a :class:`Gamble` using
-          *gamble* as data.
-
-        :param pspace: The possibility space.
-        :type pspace: |pspacetype|
-        :param gamble: The gamble.
-        :type gamble: |gambletype|
-        :return: A gamble.
-        :rtype: :class:`Gamble`
-        :raises: :exc:`~exceptions.ValueError` if possibility spaces do not match
-
-        >>> pspace = PSpace('abc')
-        >>> event = Event.make(pspace, 'ac')
-        >>> gamble = event.indicator('fraction')
-        >>> print(Gamble.make(pspace, {'b': 1}, 'fraction'))
-        a : 0
-        b : 1
-        c : 0
-        >>> print(Gamble.make(pspace, event, 'fraction'))
-        a : 1
-        b : 0
-        c : 1
-        >>> print(Gamble.make(pspace, gamble, 'fraction'))
-        a : 1
-        b : 0
-        c : 1
-        >>> print(Gamble.make(pspace, {'a': 1, 'b': 0, 'c': 8}, 'fraction'))
-        a : 1
-        b : 0
-        c : 8
-        >>> print(Gamble.make(pspace, range(2, 9, 3), 'fraction'))
-        a : 2
-        b : 5
-        c : 8
-        """
-        pspace = PSpace.make(pspace)
-        if isinstance(gamble, Gamble):
-            if pspace != gamble.pspace:
-                raise ValueError('possibility space mismatch')
-            return gamble
-        elif isinstance(gamble, Event):
-            if pspace != gamble.pspace:
-                raise ValueError('possibility space mismatch')
-            return gamble.indicator(number_type)
-        else:
-            return Gamble(pspace, gamble, number_type)
 
     @property
     def pspace(self):
@@ -623,7 +440,7 @@ class Gamble(collections.Mapping, collections.Hashable, NumberTypeable):
         """
         :raises: :exc:`~exceptions.TypeError` if other is not a scalar
         """
-        other = self.number_value(other)
+        other = self.make_number(other)
         return Gamble(self.pspace,
                       [oper(value, other) for value in self.itervalues()],
                       self.number_type)
@@ -712,37 +529,6 @@ class Event(collections.Set, collections.Hashable):
             self._data = frozenset()
         else:
             raise TypeError("specify data as iterable, True, or False")
-
-    @staticmethod
-    def make(pspace, event):
-        """If *event* is a :class:`Event`, then checks possibility
-        space and returns *event*. Otherwise, converts *event* to a
-        :class:`Event`.
-
-        :param pspace: The possibility space.
-        :type pspace: |pspacetype|
-        :param event: The event.
-        :type event: |eventtype|
-        :return: A event.
-        :rtype: :class:`Event`
-        :raises: :exc:`~exceptions.ValueError` if possibility spaces do not match
-        """
-        pspace = PSpace.make(pspace)
-        if isinstance(event, Event):
-            if pspace != event.pspace:
-                raise ValueError('possibility spaces do not match')
-            return event
-        elif event is True:
-            return Event(pspace, event)
-        elif event is False:
-            return Event(pspace, event)
-        elif isinstance(event, Gamble):
-            if not(set(event.itervalues()) <= set([0, 1])):
-                raise ValueError("not an indicator gamble")
-            return Event(pspace, (omega for omega, value in event.iteritems()
-                                  if value == 1))
-        else:
-            return Event(pspace, event)
 
     @property
     def pspace(self):

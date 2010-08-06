@@ -27,32 +27,32 @@ class LinVac(LowProb):
     probability on singletons.
 
     >>> from improb.lowprev.prob import Prob
-    >>> lpr = Prob(3, prob=['0.2', '0.3', '0.5']).get_linvac(epsilon='0.1')
-    >>> print lpr.get_lower([1,0,0])
+    >>> lpr = Prob(3, prob=['0.2', '0.3', '0.5'], number_type='fraction').get_linvac(epsilon='0.1')
+    >>> print(lpr.get_lower([1,0,0]))
     9/50
-    >>> print lpr.get_lower([0,1,0])
+    >>> print(lpr.get_lower([0,1,0]))
     27/100
-    >>> print lpr.get_lower([0,0,1])
+    >>> print(lpr.get_lower([0,0,1]))
     9/20
-    >>> print lpr.get_lower([3,2,1])
+    >>> print(lpr.get_lower([3,2,1]))
     163/100
-    >>> print lpr.get_upper([3,2,1])
+    >>> print(lpr.get_upper([3,2,1]))
     183/100
-    >>> lpr = Prob(4, prob=['0.42', '0.08', '0.18', '0.32']).get_linvac(epsilon='0.1')
-    >>> print lpr.get_lower([5,5,-5,-5])
+    >>> lpr = Prob(4, prob=['0.42', '0.08', '0.18', '0.32'], number_type='fraction').get_linvac(epsilon='0.1')
+    >>> print(lpr.get_lower([5,5,-5,-5]))
     -1/2
-    >>> print lpr.get_lower([5,5,-5,-5], set([0,2])) # (6 - 31 * 0.1) / (3 + 2 * 0.1)
+    >>> print(lpr.get_lower([5,5,-5,-5], set([0,2]))) # (6 - 31 * 0.1) / (3 + 2 * 0.1)
     29/32
-    >>> print lpr.get_lower([-5,-5,5,5], set([1,3])) # (6 - 31 * 0.1) / (2 + 3 * 0.1) # doctest: +ELLIPSIS
+    >>> print(lpr.get_lower([-5,-5,5,5], set([1,3]))) # (6 - 31 * 0.1) / (2 + 3 * 0.1) # doctest: +ELLIPSIS
     29/23
-    >>> print lpr.get_lower([0,5,0,-5]) # -(6 + 19 * 0.1) / 5
+    >>> print(lpr.get_lower([0,5,0,-5])) # -(6 + 19 * 0.1) / 5
     -79/50
-    >>> print lpr.get_lower([0,-5,0,5]) # (6 - 31 * 0.1) / 5
+    >>> print(lpr.get_lower([0,-5,0,5])) # (6 - 31 * 0.1) / 5
     29/50
     """
     def _make_key(self, key):
         gamble, event = LowProb._make_key(self, key)
-        gamble_event = Event.make(self.pspace, gamble)
+        gamble_event = self.pspace.make_event(gamble)
         if not gamble_event.is_singleton():
             raise ValueError('not a singleton')
         if not event.is_true():
@@ -70,13 +70,13 @@ class LinVac(LowProb):
         :return: The lower expectation of the gamble.
         :rtype: :class:`fractions.Fraction`
         """
-        gamble = Gamble.make(self.pspace, gamble)
-        event = Event.make(self.pspace, event)
-        epsilon = 1 - sum(self[omega, None][0] for omega in self.pspace)
+        gamble = self.make_gamble(gamble)
+        event = self.pspace.make_event(event)
+        epsilon = 1 - sum(self[{omega: 1}, True][0] for omega in self.pspace)
         return (
-            (sum(self[omega, None][0] * gamble[omega] for omega in event)
+            (sum(self[{omega: 1}, True][0] * gamble[omega] for omega in event)
              + epsilon * min(gamble[omega] for omega in event))
             /
-            (sum(self[omega, None][0] for omega in event)
+            (sum(self[{omega: 1}, True][0] for omega in event)
              + epsilon)
             )

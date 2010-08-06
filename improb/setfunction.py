@@ -19,9 +19,10 @@
 
 from __future__ import division, absolute_import, print_function
 
+from cdd import NumberTypeable
 import collections
 
-from improb import PSpace, Gamble, Event, NumberTypeable
+from improb import PSpace, Gamble, Event
 
 class SetFunction(collections.MutableMapping, NumberTypeable):
     """A real-valued set function defined on the power set of a
@@ -39,16 +40,12 @@ class SetFunction(collections.MutableMapping, NumberTypeable):
         :param data: A mapping that defines the value on each event (missing values default to zero).
         :type data: :class:`dict`
         """
+        NumberTypeable.__init__(self, number_type)
         self._pspace = PSpace.make(pspace)
-        self._number_type = number_type
         self._data = {}
         if data is not None:
             for event, value in data.iteritems():
                 self[event] = value
-
-    @property
-    def number_type(self):
-        return self._number_type
 
     def __len__(self):
         return len(self._data)
@@ -61,18 +58,18 @@ class SetFunction(collections.MutableMapping, NumberTypeable):
                 yield subset
 
     def __contains__(self, event):
-        return Event.make(self.pspace, event) in self._data
+        return self.pspace.make_event(event) in self._data
 
     def __getitem__(self, event):
-        event = Event.make(self.pspace, event)
+        event = self.pspace.make_event(event)
         try:
             return self._data[event]
         except KeyError:
-            return self.number_value(0)
+            return self.make_number(0)
 
     def __setitem__(self, event, value):
-        event = Event.make(self.pspace, event)
-        value = self.number_value(value)
+        event = self.pspace.make_event(event)
+        value = self.make_number(value)
         if value != 0:
             self._data[event] = value
         else:
@@ -82,17 +79,21 @@ class SetFunction(collections.MutableMapping, NumberTypeable):
                 pass
 
     def __delitem__(self, event):
-        del self._data[Event.make(self.pspace, event)]
+        del self._data[self.pspace.make_event(event)]
 
     def __repr__(self):
         """
-        >>> SetFunction(3, {(): 1, (0, 2): '21/10', (0, 1, 2): '1/3'}, 'float') # doctest: +NORMALIZE_WHITESPACE
+        >>> SetFunction(3, {(): '1.0', (0, 2): '2.1', (0, 1, 2): '1/3'}, 'float') # doctest: +NORMALIZE_WHITESPACE
         SetFunction(pspace=PSpace(3),
-                    data={(): 1, (0, 2): 2.1000000000000001, (0, 1, 2): 0.33333333333333331},
+                    data={(): 1.0,
+                          (0, 2): 2.1000000000000001,
+                          (0, 1, 2): 0.33333333333333331},
                     number_type='float')
-        >>> SetFunction(3, {(): 1, (0, 2): '21/10', (0, 1, 2): '1/3'}, 'fraction') # doctest: +NORMALIZE_WHITESPACE
+        >>> SetFunction(3, {(): '1.0', (0, 2): '2.1', (0, 1, 2): '1/3'}, 'fraction') # doctest: +NORMALIZE_WHITESPACE
         SetFunction(pspace=PSpace(3),
-                    data={(): 1, (0, 2): '2.1', (0, 1, 2): '1/3'},
+                    data={(): 1,
+                          (0, 2): '21/10',
+                          (0, 1, 2): '1/3'},
                     number_type='fraction')
         """
         dict_ = [(tuple(omega for omega in self.pspace
@@ -106,10 +107,10 @@ class SetFunction(collections.MutableMapping, NumberTypeable):
 
     def __str__(self):
         """
-        >>> print(SetFunction('abc', {'': 1, 'ac': 2, 'abc': 5}, 'fraction'))
+        >>> print(SetFunction('abc', {'': 1, 'ac': 2, 'abc': '3.1'}, 'fraction'))
               : 1
         a   c : 2
-        a b c : 5
+        a b c : 31/10
         """
         maxlen_pspace = max(len(str(omega)) for omega in self._pspace)
         return "\n".join(

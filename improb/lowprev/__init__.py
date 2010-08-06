@@ -20,11 +20,12 @@
 from __future__ import division, absolute_import, print_function
 
 from abc import ABCMeta, abstractproperty, abstractmethod
+from cdd import NumberTypeable
 import collections
 from fractions import Fraction
 import itertools
 
-from improb import PSpace, Gamble, Event, NumberTypeable
+from improb import PSpace, Gamble, Event
 from improb.setfunction import SetFunction
 
 class LowPrev(collections.MutableMapping, NumberTypeable):
@@ -51,6 +52,79 @@ class LowPrev(collections.MutableMapping, NumberTypeable):
         """
         raise NotImplementedError
 
+    def make_gamble(self, gamble):
+        """If *gamble* is
+
+        * a :class:`Gamble`, then checks possibility space and number
+          type and returns *gamble*,
+
+        * an :class:`Event`, then checks possibility space and returns
+          the indicator of *gamble* with the correct number type,
+
+        * anything else, then construct a :class:`Gamble` using
+          *gamble* as data.
+
+        :param gamble: The gamble.
+        :type gamble: |gambletype|
+        :return: A gamble.
+        :rtype: :class:`Gamble`
+        :raises: :exc:`~exceptions.ValueError` if possibility spaces
+            or number types do not match
+
+        >>> from improb import PSpace, Event, Gamble
+        >>> from improb.lowprev.lowpoly import LowPoly
+        >>> lpr = LowPoly(pspace='abc', number_type='fraction')
+        >>> event = Event('abc', 'ac')
+        >>> gamble = event.indicator('fraction')
+        >>> fgamble = event.indicator('float')
+        >>> pevent = Event('ab', False)
+        >>> pgamble = Gamble('ab', [2, 5], number_type='fraction')
+        >>> print(lpr.make_gamble({'b': 1}))
+        a : 0
+        b : 1
+        c : 0
+        >>> print(lpr.make_gamble(event))
+        a : 1
+        b : 0
+        c : 1
+        >>> print(lpr.make_gamble(gamble))
+        a : 1
+        b : 0
+        c : 1
+        >>> print(lpr.make_gamble(fgamble)) # doctest: +ELLIPSIS
+        Traceback (most recent call last):
+            ...
+        ValueError: ...
+        >>> print(lpr.make_gamble(pevent)) # doctest: +ELLIPSIS
+        Traceback (most recent call last):
+            ...
+        ValueError: ...
+        >>> print(lpr.make_gamble(pgamble)) # doctest: +ELLIPSIS
+        Traceback (most recent call last):
+            ...
+        ValueError: ...
+        >>> print(lpr.make_gamble({'a': 1, 'b': 0, 'c': 8}))
+        a : 1
+        b : 0
+        c : 8
+        >>> print(lpr.make_gamble(range(2, 9, 3)))
+        a : 2
+        b : 5
+        c : 8
+        """
+        if isinstance(gamble, Gamble):
+            if self.pspace != gamble.pspace:
+                raise ValueError('possibility space mismatch')
+            if self.number_type != gamble.number_type:
+                raise ValueError('number type mismatch')
+            return gamble
+        elif isinstance(gamble, Event):
+            if self.pspace != gamble.pspace:
+                raise ValueError('possibility space mismatch')
+            return gamble.indicator(self.number_type)
+        else:
+            return Gamble(self.pspace, gamble, self.number_type)
+
     def get_upper(self, gamble, event=True):
         """Return the upper expectation for *gamble* conditional on
         *event* via natural extension.
@@ -63,7 +137,7 @@ class LowPrev(collections.MutableMapping, NumberTypeable):
         :rtype: :class:`fractions.Fraction`
         :raises: :exc:`~exceptions.ValueError` if it incurs sure loss
         """
-        gamble = Gamble.make(self.pspace, gamble)
+        gamble = self.make_gamble(gamble)
         return -self.get_lower(gamble=-gamble, event=event)
 
     #def getcredalset(self):
@@ -77,7 +151,7 @@ class LowPrev(collections.MutableMapping, NumberTypeable):
         :rtype: :class:`bool`
         """
         try:
-            self.get_lower(dict((w, 0) for w in self.pspace))
+            self.get_lower([0] * len(self.pspace))
         except ValueError:
             return False
         return True
@@ -95,9 +169,13 @@ class LowPrev(collections.MutableMapping, NumberTypeable):
         # we're avoiding sure loss, so check the natural extension
         for gamble, event in self:
             lprev, uprev = self[gamble, event]
-            if lprev is not None and self.get_lower(gamble, event) > lprev:
+            if (lprev is not None
+                and self.number_cmp(
+                    self.get_lower(gamble, event), lprev) == 1):
                 return False
-            if uprev is not None and self.get_upper(gamble, event) < uprev:
+            if (uprev is not None
+                and self.number_cmp(
+                    self.get_upper(gamble, event), uprev) == -1):
                 return False
         return True
 
@@ -114,7 +192,9 @@ class LowPrev(collections.MutableMapping, NumberTypeable):
             return False
         # we're avoiding sure loss, so check the natural extension
         for gamble, event in self:
-            if self.get_lower(gamble, event) != self.get_upper(gamble, event):
+            if self.number_cmp(
+                self.get_lower(gamble, event),
+                self.get_upper(gamble, event)) != 0:
                 return False
         return True
 
@@ -124,6 +204,7 @@ class LowPrev(collections.MutableMapping, NumberTypeable):
         :return: :const:`True` if *gamble* dominates *other_gamble*, :const:`False` otherwise.
         :rtype: :class:`bool`
         """
-        gamble = Gamble.make(self.pspace, gamble)
-        other_gamble = Gamble.make(self.pspace, other_gamble)
-        return self.get_lower(gamble - other_gamble, event) > self.tolerance
+        gamble = self.make_gamble(gamble)
+        other_gamble = self.make_gamble(other_gamble)
+        return self.number_cmp(
+            self.get_lower(gamble - other_gamble, event), 0) == 1

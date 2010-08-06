@@ -1,9 +1,10 @@
 A Simple Subtree Imperfect Decision Tree
 ----------------------------------------
 
+>>> from fractions import Fraction
 >>> import itertools
 >>> import random
->>> from improb.lowprev.prob import Prob
+>>> from improb.lowprev.linvac import LinVac
 >>> from improb.decision import filter_maximal
 >>> random.seed(40)
 >>> n1 = 2
@@ -13,7 +14,7 @@ A Simple Subtree Imperfect Decision Tree
 ...           for omega in itertools.product(list(range(n1)), list(range(n2)))]
 >>> for i in range(20):
 ...     # construct a linear vacuous mixture
-...     lprob = dict((omega, Fraction('0.8') * Fraction(1, len(pspace)) for omega in pspace)
+...     lprob = [Fraction('0.8') / len(pspace) for omega in pspace]
 ...     lpr = LinVac(pspace, lprob=lprob) # no need for randomness
 ...     # construct gambles:
 ...     # gambles[w1][d][w2] gives the gain of the w1-d-w2 path
@@ -77,8 +78,7 @@ A Simple Subtree Imperfect Decision Tree
 ...                 print(
 ...                     "w1={0}, d={1}: ".format(w1, d)
 ...                     + " ".join("{0:.3f}".format(x) for x in gambles[w1][d]))
-...         print("p=" + " ".join("{0:.3f}".format(prob[w]) for w in pspace))
-...         print("eps={0:.3f}".format(lpr._epsilon))
+...         print("lpr=" + " ".join(str(x) for x in lprob))
 ...         print(sorted(normstrats))
 ...         print(sorted(localstrats))
 ...         #print(sorted(localstrats - normstrats))
@@ -95,8 +95,7 @@ w1=0, d=2: 2.020 1.020
 w1=1, d=0: 0.005 1.005
 w1=1, d=1: 2.015 1.015
 w1=1, d=2: 0.025 2.025
-p=0.250 0.250 0.250 0.250
-eps=0.200
+lpr=1/5 1/5 1/5 1/5
 [(0, 1), (2, 1), (2, 2)]
 [(0, 1), (0, 2), (2, 1), (2, 2)]
 
@@ -118,7 +117,7 @@ into an extensive form?
 ...           for omega in itertools.product(list(range(n1)), list(range(n2)))]
 >>> for i in range(20):
 ...     # construct a lower prevision
-...     lpr = LowProb.make_random(pspace=pspace, zero=False, division=20)
+...     lpr = LowProb.make_random(pspace=pspace, zero=False)
 ...     # construct gambles:
 ...     # gambles[w1][d][w2] gives the gain of the w1-d-w2 path
 ...     gambles = [[[random.randint(0, 5) for w2 in range(n2)]
@@ -181,7 +180,7 @@ into an extensive form?
 ...                 print(
 ...                     "w1={0}, d={1}: ".format(w1, d)
 ...                     + " ".join("{0:.2f}".format(x) for x in gambles[w1][d]))
-...         for gamble, lprev in lpr:
+...         for (gamble, event), (lprev, uprev) in lpr.iteritems():
 ...             print("lpr({0})={1:.2f}".format(gamble, lprev))
 ...         print(sorted(normstrats2))
 ...         print(sorted(localstrats))

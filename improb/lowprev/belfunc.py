@@ -42,12 +42,12 @@ class BelFunc(LowProb):
         >>> from improb.lowprev.lowprob import LowProb
         >>> from improb import PSpace
         >>> pspace = PSpace(2)
-        >>> lowprob = LowProb(pspace, lprob=['0.3', '0.2'])
-        >>> lpr = BelFunc(pspace, bba=lowprob.mobius_inverse)
+        >>> lowprob = LowProb(pspace, lprob=['0.3', '0.2'], number_type='fraction')
+        >>> lpr = BelFunc(pspace, bba=lowprob.mobius_inverse, number_type='fraction')
         >>> print(lpr.mobius_inverse)
-        0   : 0.300
-          1 : 0.200
-        0 1 : 0.500
+        0   : 3/10
+          1 : 1/5
+        0 1 : 1/2
         >>> print(lpr.get_lower([1,0]))
         3/10
         >>> print(lpr.get_lower([0,1]))
@@ -57,13 +57,12 @@ class BelFunc(LowProb):
         >>> print(lpr.get_lower([5,1])) # 0.3 * 5 + 0.7 * 1
         11/5
         """
-        gamble = Gamble.make(self.pspace, gamble)
-        if event is not None:
+        gamble = self.make_gamble(gamble)
+        if event is not True:
             raise NotImplementedError
         mobius_inverse = self.mobius_inverse
         return sum(
             (mobius_inverse[event_] * min(gamble[w] for w in event_)
              for event_ in self.pspace.subsets()
              if event_),
-            0)
-
+            self.make_number(0))

@@ -30,9 +30,9 @@ class LowProb(LowPoly):
     unconditional assessments on events are allowed.
 
     >>> print(LowProb(3, lprob={(0, 1): '0.1', (1, 2): '0.2'}))
-    0 1   : 0.100
-      1 2 : 0.200
-    0 1 2 : 1.000
+    0 1   : 0.1
+      1 2 : 0.2
+    0 1 2 : 1.0
     >>> print(LowProb(3, lprev={(3, 1, 0): 1})) # doctest: +ELLIPSIS
     Traceback (most recent call last):
         ...
@@ -46,9 +46,13 @@ class LowProb(LowPoly):
         ...
     ValueError: not unconditional
     >>> print(LowProb(3, lprob={(0, 1): '0.1', (1, 2): '0.2'}).mobius_inverse)
-    0 1   : 0.100
-      1 2 : 0.200
-    0 1 2 : 0.700
+    0 1   : 0.1
+      1 2 : 0.2
+    0 1 2 : 0.7
+    >>> print(LowProb(3, lprob={(0, 1): '0.1', (1, 2): '0.2'}, number_type='fraction').mobius_inverse)
+    0 1   : 1/10
+      1 2 : 1/5
+    0 1 2 : 7/10
     """
 
     def _clear_cache(self):
@@ -75,10 +79,9 @@ class LowProb(LowPoly):
             return self._set_function
         except AttributeError:
             self._set_function = self._make_set_function()
-            true_event = Event.make(self.pspace, self.pspace)
             # assign values to empty set and to possibility space
             self._set_function[()] = 0
-            self._set_function[None] = 1
+            self._set_function[True] = 1
             return self._set_function
 
     @property
@@ -97,38 +100,38 @@ class LowProb(LowPoly):
             return self._mobius_inverse
 
     @classmethod
-    def make_random(cls, pspace=None, division=None, zero=True):
+    def make_random(cls, pspace=None, division=None, zero=True, number_type='float'):
         """Generate a random coherent lower probability."""
         # for now this is just a pretty dumb method
         pspace = PSpace.make(pspace)
-        while True:
-            lpr = cls(pspace)
-            for event in pspace.subsets():
-                if len(event) == 0:
-                    continue
-                if len(event) == len(pspace):
-                    continue
-                gamble = event.indicator()
-                if division is None:
-                    # a number between 0 and sum(event) / len(pspace)
-                    while True:
-                        try:
-                            lpr.set_lower(gamble,
-                                          random.random() * len(event) / len(pspace))
-                        except ZeroDivisionError:
-                            break
-                else:
-                    # a number between 0 and sum(event) / len(pspace)
-                    # but discretized
-                    lpr.set_lower(gamble,
-                                  Fraction(
-                                      random.randint(
-                                          0 if zero else 1,
-                                          (division * len(event))
-                                          // len(pspace)),
-                                      division))
-            if lpr.is_avoiding_sure_loss():
-               return lpr
+        lpr = cls(pspace=pspace, number_type=number_type)
+        for event in pspace.subsets():
+            if len(event) == 0:
+                continue
+            if len(event) == len(pspace):
+                continue
+            gamble = event.indicator(number_type)
+            if division is None:
+                # a number between 0 and len(event) / len(pspace)
+                lprob = random.random() * len(event) / len(pspace)
+            else:
+                # a number between 0 and len(event) / len(pspace)
+                # but discretized
+                lprob = Fraction(
+                    random.randint(
+                        0 if zero else 1,
+                        (division * len(event)) // len(pspace)),
+                    division)
+            # make a copy of lpr
+            tmplpr = cls(pspace=pspace, mapping=lpr, number_type=number_type)
+            # set new assignment, and give up if it incurs sure loss
+            tmplpr.set_lower(gamble, lprob)
+            if not tmplpr.is_avoiding_sure_loss():
+                break
+            else:
+                lpr.set_lower(gamble, lprob)
+        # done! return coherent version of it
+        return lpr.get_coherent()
 
     def __str__(self):
         return str(self.set_function)
@@ -137,7 +140,7 @@ class LowProb(LowPoly):
 
     def _make_key(self, key):
         gamble, event = LowPoly._make_key(self, key)
-        gamble_event = Event.make(self.pspace, gamble)
+        gamble_event = self.pspace.make_event(gamble)
         if gamble_event.is_true():
             raise ValueError('cannot set lower probability of possibility space')
         if gamble_event.is_false():
@@ -155,8 +158,9 @@ class LowProb(LowPoly):
     def _make_set_function(self):
         return SetFunction(
             self.pspace,
-            dict((Event.make(self.pspace, gamble), lprev)
-                 for (gamble, cond_event), (lprev, uprev) in self.iteritems()))
+            dict((self.pspace.make_event(gamble), lprev)
+                 for (gamble, cond_event), (lprev, uprev) in self.iteritems()),
+            self.number_type)
 
     def _make_mobius_inverse(self):
         """Constructs basic belief assignment corresponding to the
@@ -165,4 +169,5 @@ class LowProb(LowPoly):
         # construct set function corresponding to this lower probability
         return SetFunction(
             self.pspace,
-            dict(self.set_function.get_mobius_inverse()))
+            dict(self.set_function.get_mobius_inverse()),
+            self.number_type)

@@ -39,13 +39,6 @@ take a *number_type* argument to override the default. If it is
 ``'float'`` then float arithmetic is used, and if it is ``'fraction'``
 then rational arithmetic is used.
 
-Internally, the following base class is used to support this
-functionality---you usually do not need to use this class directly and
-it is documented here only for the sake of completeness.
-
-.. autoclass:: NumberTypeable
-   :members:
-
 .. _possibility-spaces:
 
 Possibility Spaces
