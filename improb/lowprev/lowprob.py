@@ -184,12 +184,13 @@ class LowProb(LowPoly):
                  for event in self.pspace.subsets()),
             self.number_type)
 
-    def extend(self, keys=None, lower=True, upper=True):
+    def extend(self, keys=None, lower=True, upper=True, algorithm='linprog'):
         if keys is None:
             LowPoly.extend(
                 self,
                 ((event, True) for event in self.pspace.subsets()),
                 lower=True,
-                upper=False)
+                upper=False,
+                algorithm=algorithm)
         else:
-            LowPoly.extend(self, keys, lower, upper)
+            LowPoly.extend(self, keys, lower, upper, algorithm)

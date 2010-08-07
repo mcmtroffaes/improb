@@ -403,17 +403,15 @@ class LowPoly(LowPrev):
                      if old_uprev is not None else prev)
         self[key] = lprev, uprev
 
-    def get_lower(self, gamble, event=True):
-        """Return the lower expectation for *gamble* conditional on
-        *event* via natural extension.
-
-        :param gamble: The gamble whose lower expectation to find.
-        :type gamble: |gambletype|
-        :param event: The event to condition on.
-        :type event: |eventtype|
-        :return: The lower bound for this expectation, i.e. the natural extension of the gamble.
-        :rtype: ``float``
-        """
+    def get_lower(self, gamble, event=True, algorithm='linprog'):
+        """Calculate lower expectation, using linear programming."""
+        # set fastest algorithm
+        if algorithm is None:
+            algorithm = 'linprog'
+        # check algorithm
+        if algorithm != 'linprog':
+            raise ValueError("invalid algorithm '{0}'".format(algorithm))
+        # calculate lower expectation
         gamble = self.make_gamble(gamble)
         event = self.pspace.make_event(event)
         if event == self.pspace.make_event(True):
@@ -437,25 +435,28 @@ class LowPoly(LowPrev):
                 # constant gamble, can only have this conditional prevision
                 # (also, scipy.optimize.brentq raises an exception if a == b)
                 return a
-            lowprev_event = self.get_lower(event)
+            lowprev_event = self.get_lower(event.indicator(self.number_type),
+                                           algorithm=algorithm)
             if lowprev_event == 0:
                 raise ZeroDivisionError(
                     "cannot condition on event with zero lower probability")
             try:
                 result = scipy.optimize.brentq(
-                    f=lambda mu: float(self.get_lower((gamble - mu) * event)),
+                    f=lambda mu: float(self.get_lower((gamble - mu) * event,
+                                                      algorithm=algorithm)),
                     a=float(a), b=float(b))
             except ValueError as exc:
                 # re-raise with more detail
                 raise ValueError("{0}\n{1}\n{2}\n{3} {4}".format(
                     exc,
                     gamble, event,
-                    self.get_lower((gamble - a) * event), 
-                    self.get_lower((gamble - b) * event)))
+                    self.get_lower((gamble - a) * event, algorithm=algorithm), 
+                    self.get_lower((gamble - b) * event, algorithm=algorithm)))
             # see if we can get the exact fractional solution
             if self.number_type == 'fraction':
                 frac_result = Fraction.from_float(result).limit_denominator()
-                if self.get_lower((gamble - frac_result) * event) == 0:
+                if self.get_lower((gamble - frac_result) * event,
+                                  algorithm=algorithm) == 0:
                     return frac_result
             return result
 
@@ -469,8 +470,8 @@ class LowPoly(LowPrev):
         for vert in poly.data.get_generators():
             yield vert[1:]
 
-    def get_coherent(self):
-        """Return a coherent version."""
+    def get_coherent(self, algorithm='linprog'):
+        """Return a coherent version, using linear programming."""
         if not self.is_avoiding_sure_loss():
             raise ValueError('incurs sure loss')
         # copy the assignments
@@ -480,9 +481,9 @@ class LowPoly(LowPrev):
         for (gamble, event), (lprev, uprev) in list(mapping.iteritems()):
             # fix lower and upper previsions
             if lprev is not None:
-                lprev = self.get_lower(gamble, event)
+                lprev = self.get_lower(gamble, event, algorithm=algorithm)
             if uprev is not None:
-                uprev = self.get_upper(gamble, event)
+                uprev = self.get_upper(gamble, event, algorithm=algorithm)
             mapping[gamble, event] = lprev, uprev
         # create new lower prevision (of the same class)
         return self.__class__(
@@ -490,9 +491,9 @@ class LowPoly(LowPrev):
             mapping=mapping,
             number_type=self.number_type)
 
-    def extend(self, keys=None, lower=True, upper=True):
+    def extend(self, keys=None, lower=True, upper=True, algorithm='linprog'):
         """Calculate coherent extension to the given keys
-        (gamble/event pairs).
+        (gamble/event pairs), using linear programming.
 
         :param keys: The gamble/event pairs to extend. If :const:`None`, then
             extends to the full domain (for
@@ -552,10 +553,46 @@ class LowPoly(LowPrev):
             except KeyError:
                 lprev, uprev = None, None
             if lower:
-                lprev = self.get_lower(gamble, event)
+                lprev = self.get_lower(gamble, event, algorithm)
             if upper:
-                uprev = self.get_upper(gamble, event)
+                uprev = self.get_upper(gamble, event, algorithm)
             self[gamble, event] = lprev, uprev
+
+    def is_avoiding_sure_loss(self, algorithm='linprog'):
+        try:
+            self.get_lower([0] * len(self.pspace), algorithm=algorithm)
+        except ValueError:
+            return False
+        return True
+
+    def is_coherent(self, algorithm='linprog'):
+        # first check if we are avoiding sure loss
+        if not self.is_avoiding_sure_loss(algorithm):
+            return False
+        # we're avoiding sure loss, so check the natural extension
+        for gamble, event in self:
+            lprev, uprev = self[gamble, event]
+            if (lprev is not None
+                and self.number_cmp(
+                    self.get_lower(gamble, event, algorithm), lprev) == 1):
+                return False
+            if (uprev is not None
+                and self.number_cmp(
+                    self.get_upper(gamble, event, algorithm), uprev) == -1):
+                return False
+        return True
+
+    def is_linear(self, algorithm='linprog'):
+        # first check if we are avoiding sure loss
+        if not self.is_avoiding_sure_loss(algorithm):
+            return False
+        # we're avoiding sure loss, so check the natural extension
+        for gamble, event in self:
+            if self.number_cmp(
+                self.get_lower(gamble, event, algorithm),
+                self.get_upper(gamble, event, algorithm)) != 0:
+                return False
+        return True
 
     #def optimize(self):
     #    """Removes redundant assessments."""

@@ -28,8 +28,10 @@ class BelFunc(LowProb):
     extension.
     """
 
-    def get_lower(self, gamble, event=True):
-        r"""Calculate the lower expectation of a gamble by the
+    def get_lower(self, gamble, event=True, algorithm='mobius'):
+        r"""Calculate the lower expectation of a gamble.
+
+        The default algorithm is the mobius transform, using the
         following formula:
 
         .. math::
@@ -48,9 +50,8 @@ class BelFunc(LowProb):
 
         .. warning::
 
-           The domain of the lower probability must contain *all*
-           events. If needed, first construct a
-           :class:`~improb.lowprev.lowprob.LowProb` and call
+           To use the Mobius transform, the domain of the lower probability
+           must contain *all* events. If needed, call
            :meth:`~improb.lowprev.lowpoly.LowPoly.extend`:
 
            >>> bel = BelFunc(2, lprob=['0.2', '0.25'], number_type='fraction') # doctest: +ELLIPSIS
@@ -61,27 +62,27 @@ class BelFunc(LowProb):
            Traceback (most recent call last):
                ...
            KeyError: ...
-           >>> lprob = LowProb(2, lprob=['0.2', '0.25'], number_type='fraction')
-           >>> lprob.extend()
-           >>> bel = BelFunc(lprob)
+           >>> # solve linear program instead of trying Mobius transform
+           >>> bel.get_lower([1, 3], algorithm='linprog') # 1 * 0.75 + 3 * 0.25 = 1.5
+           Fraction(3, 2)
+           >>> bel.extend()
            >>> print(bel)
                : 0
            0   : 1/5
              1 : 1/4
            0 1 : 1
-           >>> bel.get_lower([1, 3]) # now it works; 1 * 0.75 + 3 * 0.25 = 1.5
-           Fraction(3, 2)
-           >>> # same result, but solve linear program instead of
-           >>> # using mobius transform
-           >>> lprob.get_lower([1, 3])
+           >>> # now try with Mobius transform; should give same result
+           >>> bel.get_lower([1, 3]) # now it works
            Fraction(3, 2)
 
-        This method will *not* raise an exception even if the
-        assessments are not completely monotone, or even
-        incoherent---the Mobius transform is in such case still defined,
-        although some of the values of :math:`m` will be negative
-        (obviously, in such case, :math:`\underline{E}` will be
-        incoherent as well).
+        .. warning::
+
+           With the fast version, this method will *not* raise an
+           exception even if the assessments are not completely
+           monotone, or even incoherent---the Mobius transform is in
+           such case still defined, although some of the values of
+           :math:`m` will be negative (obviously, in such case,
+           :math:`\underline{E}` will be incoherent as well).
 
         >>> from improb.lowprev.belfunc import BelFunc
         >>> from improb.lowprev.lowprob import LowProb
@@ -119,6 +120,13 @@ class BelFunc(LowProb):
         >>> print(lpr.get_lower([5,1])) # 0.3 * 5 + 0.7 * 1
         11/5
         """
+        # default algorithm
+        if algorithm is None:
+            algorithm = 'mobius'
+        # other algorithm?
+        if algorithm != 'mobius':
+            return LowProb.get_lower(self, gamble, event, algorithm)
+        # do Mobius transform
         gamble = self.make_gamble(gamble)
         if event is not True:
             raise NotImplementedError

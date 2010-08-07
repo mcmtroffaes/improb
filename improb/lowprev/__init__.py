@@ -38,7 +38,7 @@ class LowPrev(collections.MutableMapping, NumberTypeable):
         raise NotImplementedError
 
     @abstractmethod
-    def get_lower(self, gamble, event=True):
+    def get_lower(self, gamble, event=True, algorithm=None):
         """Return the lower expectation for *gamble* conditional on
         *event* via natural extension.
 
@@ -46,11 +46,30 @@ class LowPrev(collections.MutableMapping, NumberTypeable):
         :type gamble: |gambletype|
         :param event: The event to condition on.
         :type event: |eventtype|
-        :return: The upper bound for this expectation, i.e. the natural extension of the gamble.
-        :rtype: :class:`fractions.Fraction`
-        :raises: :exc:`~exceptions.ValueError` if it incurs sure loss
+        :param algorithm: The algorithm to use (the default value uses
+           the most efficient algorithm).
+        :type algorithm: :class:`str`
+        :return: The lower bound for this expectation, i.e. the natural extension of the gamble.
+        :rtype: :class:`float` or :class:`~fractions.Fraction`
         """
         raise NotImplementedError
+
+    def get_upper(self, gamble, event=True, algorithm=None):
+        """Return the upper expectation for *gamble* conditional on
+        *event* via natural extension.
+
+        :param gamble: The gamble whose upper expectation to find.
+        :type gamble: |gambletype|
+        :param event: The event to condition on.
+        :type event: |eventtype|
+        :param algorithm: The algorithm to use (:const:`None` for the
+            most efficient algorithm).
+        :type algorithm: :class:`str`
+        :return: The upper bound for this expectation, i.e. the natural extension of the gamble.
+        :rtype: :class:`float` or :class:`~fractions.Fraction`
+        """
+        gamble = self.make_gamble(gamble)
+        return -self.get_lower(gamble=-gamble, event=event, algorithm=algorithm)
 
     def make_gamble(self, gamble):
         """If *gamble* is
@@ -125,86 +144,62 @@ class LowPrev(collections.MutableMapping, NumberTypeable):
         else:
             return Gamble(self.pspace, gamble, self.number_type)
 
-    def get_upper(self, gamble, event=True):
-        """Return the upper expectation for *gamble* conditional on
-        *event* via natural extension.
-
-        :param gamble: The gamble whose upper expectation to find.
-        :type gamble: |gambletype|
-        :param event: The event to condition on.
-        :type event: |eventtype|
-        :return: The upper bound for this expectation, i.e. the natural extension of the gamble.
-        :rtype: :class:`fractions.Fraction`
-        :raises: :exc:`~exceptions.ValueError` if it incurs sure loss
-        """
-        gamble = self.make_gamble(gamble)
-        return -self.get_lower(gamble=-gamble, event=event)
-
     #def getcredalset(self):
     #    """Find credal set corresponding to this lower prevision."""
     #    raise NotImplementedError
 
-    def is_avoiding_sure_loss(self):
+    @abstractmethod
+    def is_avoiding_sure_loss(self, algorithm=None):
         """No Dutch book? Does the lower prevision avoid sure loss?
 
         :return: :const:`True` if avoids sure loss, :const:`False` otherwise.
         :rtype: :class:`bool`
         """
-        try:
-            self.get_lower([0] * len(self.pspace))
-        except ValueError:
-            return False
-        return True
+        raise NotImplementedError
 
-    def is_coherent(self):
+    @abstractmethod
+    def is_coherent(self, algorithm=None):
         """Do all assessments coincide with their natural extension? Is the
         lower prevision coherent?
 
+        :param algorithm: The algorithm to use (the default value uses
+           the most efficient algorithm).
+        :type algorithm: :class:`str`
         :return: :const:`True` if coherent, :const:`False` otherwise.
         :rtype: :class:`bool`
         """
-        # first check if we are avoiding sure loss
-        if not self.is_avoiding_sure_loss():
-            return False
-        # we're avoiding sure loss, so check the natural extension
-        for gamble, event in self:
-            lprev, uprev = self[gamble, event]
-            if (lprev is not None
-                and self.number_cmp(
-                    self.get_lower(gamble, event), lprev) == 1):
-                return False
-            if (uprev is not None
-                and self.number_cmp(
-                    self.get_upper(gamble, event), uprev) == -1):
-                return False
-        return True
+        raise NotImplementedError
 
-    def is_linear(self):
+    @abstractmethod
+    def is_linear(self, algorithm=None):
         """Is the lower prevision a linear prevision? More precisely,
         we check that the natural extension is linear on the linear
         span of the domain of the lower prevision.
 
+        :param algorithm: The algorithm to use (the default value uses
+           the most efficient algorithm).
+        :type algorithm: :class:`str`
         :return: :const:`True` if linear, :const:`False` otherwise.
         :rtype: :class:`bool`
         """
-        # first check if we are avoiding sure loss
-        if not self.is_avoiding_sure_loss():
-            return False
-        # we're avoiding sure loss, so check the natural extension
-        for gamble, event in self:
-            if self.number_cmp(
-                self.get_lower(gamble, event),
-                self.get_upper(gamble, event)) != 0:
-                return False
-        return True
+        raise NotImplementedError
 
-    def dominates(self, gamble, other_gamble, event=True):
+    def dominates(self, gamble, other_gamble, event=True, algorithm=None):
         """Does *gamble* dominate *other_gamble* in lower prevision?
 
+        :param gamble: The left hand side gamble.
+        :type gamble: |gambletype|
+        :param other_gamble: The right hand side gamble.
+        :type other_gamble: |gambletype|
+        :param event: The event to condition on.
+        :type event: |eventtype|
+        :param algorithm: The algorithm to use (the default value uses
+           the most efficient algorithm).
+        :type algorithm: :class:`str`
         :return: :const:`True` if *gamble* dominates *other_gamble*, :const:`False` otherwise.
         :rtype: :class:`bool`
         """
         gamble = self.make_gamble(gamble)
         other_gamble = self.make_gamble(other_gamble)
         return self.number_cmp(
-            self.get_lower(gamble - other_gamble, event), 0) == 1
+            self.get_lower(gamble - other_gamble, event, algorithm), 0) == 1

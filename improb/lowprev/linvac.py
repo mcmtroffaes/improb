@@ -59,8 +59,7 @@ class LinVac(BelFunc):
             raise ValueError('must be unconditional')
         return gamble, event
 
-    def get_lower(self, gamble, event=True):
-        # this is faster than solving the linear program
+    def get_lower(self, gamble, event=True, algorithm='linvac'):
         r"""Calculate the lower expectation of a gamble conditional on
         an event, by the following formula:
 
@@ -85,8 +84,14 @@ class LinVac(BelFunc):
         assessments are incoherent (obviously, in such case,
         :math:`\underline{E}` will be incoherent as well). It will
         raise an exception if not all lower probabilities on
-        singletons are defined.
+        singletons are defined (if needed, extend it first).
         """
+        # default algorithm
+        if algorithm is None:
+            algorithm = 'linvac'
+        # other algorithms?
+        if algorithm != 'linvac':
+            BelFunc.get_lower(self, gamble, event, algorithm)
         gamble = self.make_gamble(gamble)
         event = self.pspace.make_event(event)
         epsilon = 1 - sum(self[{omega: 1}, True][0] for omega in self.pspace)

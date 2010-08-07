@@ -80,11 +80,11 @@ class Prob(LinVac):
                    for omega in self.pspace],
             number_type=self.number_type)
 
-    def get_lowprev(self, gamble, event=True):
+    def get_lowprev(self, gamble, event=True, algorithm='linear'):
         # faster implementation
-        return get_prev(gamble, event)
+        return get_prev(gamble, event, algorithm)
 
-    def get_prev(self, gamble, event=True):
+    def get_prev(self, gamble, event=True, algorithm='linear'):
         r"""Calculate the conditional expectation,
 
         .. math::
@@ -101,6 +101,12 @@ class Prob(LinVac):
 
             self[{omega: 1}, True][0]
         """
+        # default algorithm
+        if algorithm is None:
+            algorithm = 'linear'
+        # other algorithms?
+        if algorithm != 'linear':
+            LinVac.get_lower(self, gamble, event, algorithm)
         self.is_valid(raise_error=True)
         gamble = self.make_gamble(gamble)
         if event is True or (isinstance(event, Event) and event.is_true()):
