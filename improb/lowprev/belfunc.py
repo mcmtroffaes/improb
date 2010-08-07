@@ -88,7 +88,7 @@ class BelFunc(LowProb):
         >>> from improb import PSpace
         >>> pspace = PSpace(2)
         >>> lowprob = LowProb(pspace, lprob=['0.3', '0.2'], number_type='fraction')
-        >>> lowprob.extend(((event, True) for event in pspace.subsets()), upper=False)
+        >>> lowprob.extend()
         >>> print(lowprob)
             : 0
         0   : 3/10
