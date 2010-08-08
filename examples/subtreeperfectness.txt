@@ -15,7 +15,7 @@ A Simple Subtree Imperfect Decision Tree
 >>> for i in range(20):
 ...     # construct a linear vacuous mixture
 ...     lprob = [Fraction('0.8') / len(pspace) for omega in pspace]
-...     lpr = LinVac(pspace, lprob=lprob) # no need for randomness
+...     lpr = LinVac(pspace, lprob=lprob, number_type='float') # no need for randomness
 ...     # construct gambles:
 ...     # gambles[w1][d][w2] gives the gain of the w1-d-w2 path
 ...     gambles = [[[random.randint(0, 2) + 0.01 * d + w1 * 0.005

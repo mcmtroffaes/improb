@@ -70,8 +70,8 @@ class LowPoly(LowPrev):
 
         >>> print(LowPoly(pspace=3, mapping={
         ...     ((3, 1, 2), True): ('1.5', None),
-        ...     ((1, 0, -1), (1, 2)): ('0.25', '0.3')})
-        ...     ) # doctest: +NORMALIZE_WHITESPACE
+        ...     ((1, 0, -1), (1, 2)): ('0.25', '0.3')},
+        ...     number_type='float')) # doctest: +NORMALIZE_WHITESPACE
          0    1   2
         3.0  1.0 2.0  | 0 1 2 : [1.5 ,     ]
         1.0  0.0 -1.0 |   1 2 : [0.25, 0.3 ]
@@ -82,7 +82,7 @@ class LowPoly(LowPrev):
         ...     lprob={(1, 2): '0.2', (1,): '0.1'},
         ...     uprob={(1, 2): '0.3', (0,): '0.9'},
         ...     prob={(2,): '0.3'},
-        ...     )) # doctest: +NORMALIZE_WHITESPACE
+        ...     number_type='float')) # doctest: +NORMALIZE_WHITESPACE
           0    1   2
          0.0  0.0 1.0  | 0 1 2 : [0.3 , 0.3 ]
          0.0  1.0 0.0  | 0 1 2 : [0.1 ,     ]
@@ -189,7 +189,10 @@ class LowPoly(LowPrev):
                 event = self.pspace.make_event(event)
                 self.set_precise(event, value)
         if bba:
-            setfunc = SetFunction(self.pspace, bba, self.number_type)
+            setfunc = SetFunction(
+                pspace=self.pspace,
+                data=bba,
+                number_type=self.number_type)
             for event in self.pspace.subsets():
                 self.set_lower(event, setfunc.get_mobius_inverse(event))
 
@@ -241,7 +244,7 @@ class LowPoly(LowPrev):
             for (gamble, event), (lprev, uprev)
             in sorted(self.iteritems(),
                       key=lambda val: (
-                          tuple(-x for x in val[0][1].indicator().values())
+                          tuple(-x for x in val[0][1].indicator(number_type='fraction').values())
                           + tuple(x for x in val[0][0].values()))))
         return result
 
@@ -313,8 +316,8 @@ class LowPoly(LowPrev):
                                for omega, value in gamble.iteritems()])
         # create matrix
         matrix = cdd.Matrix(constraints, number_type=self.number_type)
-        matrix.data.lin_set = lin_set
-        matrix.data.rep_type = cdd.RepType.INEQUALITY
+        matrix.lin_set = lin_set
+        matrix.rep_type = cdd.RepType.INEQUALITY
         return matrix
 
     def _clear_cache(self):
@@ -416,15 +419,15 @@ class LowPoly(LowPrev):
         event = self.pspace.make_event(event)
         if event == self.pspace.make_event(True):
             matrix = self.matrix
-            matrix.data.obj_type = cdd.LPObjType.MIN
-            matrix.data.obj_func = [0] + gamble.values()
+            matrix.obj_type = cdd.LPObjType.MIN
+            matrix.obj_func = [0] + gamble.values()
             #print(matrix) # DEBUG
             linprog = cdd.LinProg(matrix)
-            linprog.data.solve()
+            linprog.solve()
             #print(linprog) # DEBUG
-            if linprog.data.status == cdd.LPStatusType.OPTIMAL:
-                return linprog.data.obj_value
-            elif linprog.data.status == cdd.LPStatusType.INCONSISTENT:
+            if linprog.status == cdd.LPStatusType.OPTIMAL:
+                return linprog.obj_value
+            elif linprog.status == cdd.LPStatusType.INCONSISTENT:
                 raise ValueError("lower prevision incurs sure loss")
             else:
                 raise RuntimeError("BUG: unexpected status (%i)" % linprog.status)
@@ -467,7 +470,7 @@ class LowPoly(LowPrev):
         :rtype: Yields a :class:`tuple` for each extreme point.
         """
         poly = cdd.Polyhedron(self.matrix)
-        for vert in poly.data.get_generators():
+        for vert in poly.get_generators():
             yield vert[1:]
 
     def get_coherent(self, algorithm='linprog'):
