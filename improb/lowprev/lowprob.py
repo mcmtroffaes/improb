@@ -29,18 +29,18 @@ class LowProb(LowPoly):
     :class:`~improb.lowprev.lowpoly.LowPoly`, except that only
     unconditional assessments on events are allowed.
 
-    >>> print(LowProb(3, lprob={(0, 1): '0.1', (1, 2): '0.2'}))
+    >>> print(LowProb(3, lprob={(0, 1): '0.1', (1, 2): '0.2'}, number_type='float'))
     0 1   : 0.1
       1 2 : 0.2
-    >>> print(LowProb(3, lprev={(3, 1, 0): 1})) # doctest: +ELLIPSIS
+    >>> print(LowProb(3, lprev={(3, 1, 0): 1}, number_type='float')) # doctest: +ELLIPSIS
     Traceback (most recent call last):
         ...
     ValueError: not an indicator gamble
-    >>> print(LowProb(3, uprob={(0, 1): '0.1'})) # doctest: +ELLIPSIS
+    >>> print(LowProb(3, uprob={(0, 1): '0.1'}, number_type='float')) # doctest: +ELLIPSIS
     Traceback (most recent call last):
         ...
     ValueError: cannot specify upper prevision
-    >>> print(LowProb(3, mapping={((3, 1, 0), (0, 1)): ('1.4', None)})) # doctest: +ELLIPSIS
+    >>> print(LowProb(3, mapping={((3, 1, 0), (0, 1)): ('1.4', None)}, number_type='float')) # doctest: +ELLIPSIS
     Traceback (most recent call last):
         ...
     ValueError: not unconditional
@@ -126,7 +126,7 @@ class LowProb(LowPoly):
                 continue
             if len(event) == len(pspace):
                 continue
-            gamble = event.indicator(number_type)
+            gamble = event.indicator(number_type=number_type)
             if division is None:
                 # a number between 0 and len(event) / len(pspace)
                 lprob = random.random() * len(event) / len(pspace)
@@ -168,10 +168,10 @@ class LowProb(LowPoly):
 
     def _make_set_function(self):
         return SetFunction(
-            self.pspace,
-            dict((self.pspace.make_event(gamble), lprev)
-                 for (gamble, cond_event), (lprev, uprev) in self.iteritems()),
-            self.number_type)
+            pspace=self.pspace,
+            data=dict((self.pspace.make_event(gamble), lprev)
+                      for (gamble, cond_event), (lprev, uprev) in self.iteritems()),
+            number_type=self.number_type)
 
     def _make_mobius(self):
         """Constructs basic belief assignment corresponding to the
@@ -179,10 +179,10 @@ class LowProb(LowPoly):
         """
         # construct set function corresponding to this lower probability
         return SetFunction(
-            self.pspace,
-            dict((event, self.set_function.get_mobius(event))
-                 for event in self.pspace.subsets()),
-            self.number_type)
+            pspace=self.pspace,
+            data=dict((event, self.set_function.get_mobius(event))
+                      for event in self.pspace.subsets()),
+            number_type=self.number_type)
 
     def extend(self, keys=None, lower=True, upper=True, algorithm='linprog'):
         if keys is None:

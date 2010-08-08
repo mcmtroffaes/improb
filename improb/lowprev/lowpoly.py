@@ -61,7 +61,7 @@ class LowPoly(LowPrev):
     def __init__(self, pspace=None, mapping=None,
                  lprev=None, uprev=None, prev=None,
                  lprob=None, uprob=None, prob=None,
-                 bba=None, number_type='float'):
+                 bba=None, number_type=None):
         """Construct a polyhedral lower prevision on *pspace*.
 
         Generally, you can pass a :class:`dict` as a keyword argument

@@ -140,9 +140,9 @@ class LowPrev(collections.MutableMapping, NumberTypeable):
         elif isinstance(gamble, Event):
             if self.pspace != gamble.pspace:
                 raise ValueError('possibility space mismatch')
-            return gamble.indicator(self.number_type)
+            return gamble.indicator(number_type=self.number_type)
         else:
-            return Gamble(self.pspace, gamble, self.number_type)
+            return Gamble(self.pspace, gamble, number_type=self.number_type)
 
     #def getcredalset(self):
     #    """Find credal set corresponding to this lower prevision."""

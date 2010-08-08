@@ -260,7 +260,7 @@ class Gamble(collections.Mapping, collections.Hashable, NumberTypeable):
     """An immutable gamble.
 
     >>> pspace = PSpace('abc')
-    >>> f1 = Gamble(pspace, {'a': 1, 'b': 4, 'c': 8}, 'fraction')
+    >>> f1 = Gamble(pspace, {'a': 1, 'b': 4, 'c': 8}, number_type='fraction')
     >>> print(f1)
     a : 1
     b : 4
@@ -281,7 +281,7 @@ class Gamble(collections.Mapping, collections.Hashable, NumberTypeable):
     a : 1/3
     b : 4/3
     c : 8/3
-    >>> f2 = Gamble(pspace, {'a': 5, 'b': 8, 'c': 7}, 'fraction')
+    >>> f2 = Gamble(pspace, {'a': 5, 'b': 8, 'c': 7}, number_type='fraction')
     >>> print(f1 + f2)
     a : 6
     b : 12
@@ -316,7 +316,7 @@ class Gamble(collections.Mapping, collections.Hashable, NumberTypeable):
         ...
     TypeError: ...
     """
-    def __init__(self, pspace, data, number_type='float'):
+    def __init__(self, pspace, data, number_type=None):
         """Construct a gamble on the given possibility space.
 
         :param pspace: The possibility space.
@@ -326,7 +326,6 @@ class Gamble(collections.Mapping, collections.Hashable, NumberTypeable):
         :param number_type: The type to use for numbers: ``'float'`` or ``'fraction'``.
         :type number_type: ``type``
         """
-        NumberTypeable.__init__(self, number_type)
         self._pspace = PSpace.make(pspace)
         if isinstance(data, collections.Mapping):
             self._data = dict((omega, self.make_number(data.get(omega, 0)))
@@ -364,12 +363,12 @@ class Gamble(collections.Mapping, collections.Hashable, NumberTypeable):
 
     def __repr__(self):
         """
-        >>> Gamble([2, 3, 4], {2: 1, 3: 4, 4: 8}, 'float') # doctest: +NORMALIZE_WHITESPACE
+        >>> Gamble([2, 3, 4], {2: 1, 3: 4, 4: 8}, number_type='float') # doctest: +NORMALIZE_WHITESPACE
         Gamble(pspace=PSpace([2, 3, 4]),
                mapping={2: 1.0,
                         3: 4.0,
                         4: 8.0})
-        >>> Gamble([2, 3, 4], {2: '2/6', 3: '4.0', 4: 8}, 'fraction') # doctest: +NORMALIZE_WHITESPACE
+        >>> Gamble([2, 3, 4], {2: '2/6', 3: '4.0', 4: 8}, number_type='fraction') # doctest: +NORMALIZE_WHITESPACE
         Gamble(pspace=PSpace([2, 3, 4]),
                mapping={2: '1/3',
                         3: 4,
@@ -385,7 +384,7 @@ class Gamble(collections.Mapping, collections.Hashable, NumberTypeable):
     def __str__(self):
         """
         >>> pspace = PSpace('rain sun clouds'.split())
-        >>> print(Gamble(pspace, {'rain': -14, 'sun': 4, 'clouds': 20}))
+        >>> print(Gamble(pspace, {'rain': -14, 'sun': 4, 'clouds': 20}, number_type='float'))
         rain   : -14.0
         sun    : 4.0
         clouds : 20.0
@@ -403,7 +402,7 @@ class Gamble(collections.Mapping, collections.Hashable, NumberTypeable):
         other = self.make_number(other)
         return Gamble(self.pspace,
                       [oper(value, other) for value in self.itervalues()],
-                      self.number_type)
+                      number_type=self.number_type)
 
     def _pointwise(self, other, oper):
         """
@@ -419,10 +418,10 @@ class Gamble(collections.Mapping, collections.Hashable, NumberTypeable):
                 [oper(value, other_value)
                  for value, other_value
                  in itertools.izip(self.itervalues(), other.itervalues())],
-                self.number_type)
+                number_type=self.number_type)
         elif isinstance(other, Event):
             return self._pointwise(
-                other.indicator(self.number_type), oper)
+                other.indicator(number_type=self.number_type), oper)
         else:
             # will raise a type error if operand is not scalar
             return self._scalar(other, oper)
@@ -434,7 +433,7 @@ class Gamble(collections.Mapping, collections.Hashable, NumberTypeable):
 
     def __neg__(self):
         return Gamble(self.pspace, [-value for value in self.itervalues()],
-                      self.number_type)
+                      number_type=self.number_type)
 
 class Event(collections.Set, collections.Hashable):
     """An immutable event.
@@ -534,7 +533,7 @@ class Event(collections.Set, collections.Hashable):
                 omega, maxlen_pspace, 1 if omega in self else 0)
             for omega in self.pspace)
 
-    def indicator(self, number_type='float'):
+    def indicator(self, number_type=None):
         """Return indicator gamble for the event.
 
         :param number_type: The number type.
@@ -544,14 +543,14 @@ class Event(collections.Set, collections.Hashable):
 
         >>> pspace = PSpace(5)
         >>> event = Event(pspace, [2, 4])
-        >>> event.indicator('fraction') # doctest: +NORMALIZE_WHITESPACE
+        >>> event.indicator(number_type='fraction') # doctest: +NORMALIZE_WHITESPACE
         Gamble(pspace=PSpace(5),
                mapping={0: 0,
                         1: 0,
                         2: 1,
                         3: 0,
                         4: 1})
-        >>> event.indicator('float') # doctest: +NORMALIZE_WHITESPACE
+        >>> event.indicator(number_type='float') # doctest: +NORMALIZE_WHITESPACE
         Gamble(pspace=PSpace(5),
                mapping={0: 0.0,
                         1: 0.0,
@@ -562,7 +561,7 @@ class Event(collections.Set, collections.Hashable):
         return Gamble(self.pspace,
                       dict((omega, 1 if omega in self else 0)
                            for omega in self.pspace),
-                      number_type)
+                      number_type=number_type)
 
     def is_true(self):
         return len(self) == len(self.pspace)
