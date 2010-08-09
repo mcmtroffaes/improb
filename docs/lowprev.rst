@@ -1,3 +1,5 @@
+.. module:: improb.lowprev
+
 Lower Previsions
 ================
 
@@ -10,8 +12,6 @@ Lower Previsions
    lowprev/linvac
    lowprev/prob
    lowprev/examples
-
-.. module:: improb.lowprev
 
 .. autoclass:: LowPrev
    :members:

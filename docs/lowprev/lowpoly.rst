@@ -3,10 +3,10 @@
    from improb import PSpace, Gamble, Event
    from improb.lowprev.lowpoly import LowPoly
 
+.. module:: improb.lowprev.lowpoly
+
 Polyhedral Lower Previsions
 ===========================
-
-.. module:: improb.lowprev.lowpoly
 
 .. autoclass:: LowPoly
    :members:

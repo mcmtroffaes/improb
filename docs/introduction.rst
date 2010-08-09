@@ -1,11 +1,11 @@
-Introduction
-============
-
-.. module:: improb
-
 .. testsetup::
 
    from improb import *
+
+.. module:: improb
+
+Introduction
+============
 
 To get started quickly, use
 

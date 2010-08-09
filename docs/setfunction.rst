@@ -1,6 +1,3 @@
-Set Functions
-=============
-
 .. testsetup::
 
    from fractions import Fraction
@@ -8,6 +5,9 @@ Set Functions
    from improb.setfunction import SetFunction
 
 .. module:: improb.setfunction
+
+Set Functions
+=============
 
 .. autoclass:: SetFunction
    :members:
