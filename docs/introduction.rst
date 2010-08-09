@@ -9,7 +9,7 @@ Introduction
 
 To get started quickly, use
 
-* :class:`float` for :ref:`values <values>`,
+* :class:`float` or :class:`str` for :ref:`values <values>`,
 * :class:`int` or :class:`list` for :ref:`possibility spaces <possibility-spaces>`,
 * :class:`list` or :class:`dict` for :ref:`gambles <gambles>`, and
 * :class:`list` for :ref:`events <events>`.
@@ -34,10 +34,16 @@ or ``'1/3'``---these are internally converted to their exact
 representation if you work with fractions, or their approximate
 representation if you work with floats.
 
-The default is to work with approximate arithmetic. All constructors
-take a *number_type* argument to override the default. If it is
-``'float'`` then float arithmetic is used, and if it is ``'fraction'``
-then rational arithmetic is used.
+The constructors of lower previsions and gambles have a mandatory
+*number_type* keyword argument: if it is ``'float'`` then float
+arithmetic is used, and if it is ``'fraction'`` then rational
+arithmetic is used.
+
+.. seealso::
+
+    :class:`cdd.NumberTypeable`
+        A general purpose class for objects which admit different
+        numerical representations.
 
 .. _possibility-spaces:
 

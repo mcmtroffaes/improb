@@ -204,5 +204,7 @@ rst_epilog = """
 
 todo_include_todos = True
 
-intersphinx_mapping = {'python': ('http://docs.python.org/', None)}
-
+intersphinx_mapping = {
+    'python': ('http://docs.python.org/', None),
+    'cdd': ('http://mcmtroffaes.github.com/pycddlib', None),
+}
