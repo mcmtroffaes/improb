@@ -33,9 +33,9 @@ class Prob(LinVac):
     2 : 3/10
     3 : 1/20
     4 : 7/20
-    >>> print(p.get_prev([2, 4, 3, 8, 1]))
+    >>> print(p.get_precise([2, 4, 3, 8, 1]))
     53/20
-    >>> print(p.get_prev([2, 4, 3, 8, 1], [0, 1]))
+    >>> print(p.get_precise([2, 4, 3, 8, 1], [0, 1]))
     10/3
     """
 
@@ -82,9 +82,9 @@ class Prob(LinVac):
 
     def get_lowprev(self, gamble, event=True, algorithm='linear'):
         # faster implementation
-        return get_prev(gamble, event, algorithm)
+        return get_precise(gamble, event, algorithm)
 
-    def get_prev(self, gamble, event=True, algorithm='linear'):
+    def get_precise(self, gamble, event=True, algorithm='linear'):
         r"""Calculate the conditional expectation,
 
         .. math::
@@ -117,8 +117,8 @@ class Prob(LinVac):
                        for omega in self.pspace)
         else:
             event = self.pspace.make_event(event)
-            event_prob = self.get_prev(event.indicator(self.number_type))
+            event_prob = self.get_precise(event.indicator(self.number_type))
             if event_prob == 0:
                 raise ZeroDivisionError(
                     "cannot condition on event with zero probability")
-            return self.get_prev(gamble * event) / event_prob
+            return self.get_precise(gamble * event) / event_prob
