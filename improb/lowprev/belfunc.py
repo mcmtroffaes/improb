@@ -31,8 +31,8 @@ class BelFunc(LowProb):
     def get_lower(self, gamble, event=True, algorithm='mobius'):
         r"""Calculate the lower expectation of a gamble.
 
-        The default algorithm is the mobius transform, using the
-        following formula:
+        The default algorithm is to use the Mobius transform :math:`m`
+        of the lower probability :math:`\underline{P}`:
 
         .. math::
 
@@ -40,10 +40,10 @@ class BelFunc(LowProb):
            \sum_{A\subseteq\Omega}
            m(A)\inf_{\omega\in A}f(\omega)
 
-        where :math:`m` is the Mobius transform of the lower probability
-        :math:`\underline{P}`.
-
         .. seealso::
+
+            :meth:`improb.lowprev.lowprob.LowProb.is_completely_monotone`
+                To check for complete monotonicity.
 
             :meth:`improb.setfunction.SetFunction.get_mobius`
                 Mobius transform of an arbitrary set function.
@@ -77,12 +77,26 @@ class BelFunc(LowProb):
 
         .. warning::
 
-           With the fast version, this method will *not* raise an
+           With the Mobius algorithm, this method will *not* raise an
            exception even if the assessments are not completely
            monotone, or even incoherent---the Mobius transform is in
            such case still defined, although some of the values of
            :math:`m` will be negative (obviously, in such case,
            :math:`\underline{E}` will be incoherent as well).
+
+           >>> bel = BelFunc(
+           ...     pspace='abcd',
+           ...     lprob={'ab': '0.2', 'bc': '0.2', 'abc': '0.2', 'b': '0.1'},
+           ...     number_type='fraction')
+           >>> bel.extend()
+           >>> bel.is_completely_monotone() # (it is in fact not even 2-monotone)
+           False
+           >>> # exact linear programming algorithm
+           >>> bel.get_lower([1, 2, 1, 0], algorithm='linprog')
+           Fraction(2, 5)
+           >>> # mobius algorithm: different result!!
+           >>> bel.get_lower([1, 2, 1, 0])
+           Fraction(3, 10)
 
         >>> from improb.lowprev.belfunc import BelFunc
         >>> from improb.lowprev.lowprob import LowProb
@@ -90,6 +104,8 @@ class BelFunc(LowProb):
         >>> pspace = PSpace(2)
         >>> lowprob = LowProb(pspace, lprob=['0.3', '0.2'], number_type='fraction')
         >>> lowprob.extend()
+        >>> lowprob.is_completely_monotone()
+        True
         >>> print(lowprob)
             : 0
         0   : 3/10
@@ -101,6 +117,8 @@ class BelFunc(LowProb):
           1 : 1/5
         0 1 : 1/2
         >>> lpr = BelFunc(pspace, bba=lowprob.mobius, number_type='fraction')
+        >>> lpr.is_completely_monotone()
+        True
         >>> print(lpr)
             : 0
         0   : 3/10

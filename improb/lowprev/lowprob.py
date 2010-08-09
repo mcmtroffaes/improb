@@ -194,3 +194,104 @@ class LowProb(LowPoly):
                 algorithm=algorithm)
         else:
             LowPoly.extend(self, keys, lower, upper, algorithm)
+
+    def is_completely_monotone(self):
+        """Checks whether the lower probability is completely monotone
+        or not.
+
+        .. warning::
+
+           The lower probability must be defined for all events. If
+           needed, call :meth:`~improb.lowprev.lowpoly.LowPoly.extend`
+           first.
+
+        >>> lpr = LowProb(
+        ...     pspace='abcd',
+        ...     lprob={'ab': '0.2', 'bc': '0.2', 'abc': '0.2', 'b': '0.1'},
+        ...     number_type='fraction')
+        >>> lpr.extend()
+        >>> print(lpr)
+                : 0
+        a       : 0
+          b     : 1/10
+            c   : 0
+              d : 0
+        a b     : 1/5
+        a   c   : 0
+        a     d : 0
+          b c   : 1/5
+          b   d : 1/10
+            c d : 0
+        a b c   : 1/5
+        a b   d : 1/5
+        a   c d : 0
+          b c d : 1/5
+        a b c d : 1
+        >>> print(lpr.mobius)
+                : 0
+        a       : 0
+          b     : 1/10
+            c   : 0
+              d : 0
+        a b     : 1/10
+        a   c   : 0
+        a     d : 0
+          b c   : 1/10
+          b   d : 0
+            c d : 0
+        a b c   : -1/10
+        a b   d : 0
+        a   c d : 0
+          b c d : 0
+        a b c d : 4/5
+        >>> lpr.is_completely_monotone() # (it is in fact not even 2-monotone)
+        False
+
+        >>> lpr = LowProb(
+        ...     pspace='abcd',
+        ...     lprob={'ab': '0.2', 'bc': '0.2', 'abc': '0.3', 'b': '0.1'},
+        ...     number_type='fraction')
+        >>> lpr.extend()
+        >>> print(lpr)
+                : 0
+        a       : 0
+          b     : 1/10
+            c   : 0
+              d : 0
+        a b     : 1/5
+        a   c   : 0
+        a     d : 0
+          b c   : 1/5
+          b   d : 1/10
+            c d : 0
+        a b c   : 3/10
+        a b   d : 1/5
+        a   c d : 0
+          b c d : 1/5
+        a b c d : 1
+        >>> print(lpr.mobius)
+                : 0
+        a       : 0
+          b     : 1/10
+            c   : 0
+              d : 0
+        a b     : 1/10
+        a   c   : 0
+        a     d : 0
+          b c   : 1/10
+          b   d : 0
+            c d : 0
+        a b c   : 0
+        a b   d : 0
+        a   c d : 0
+          b c d : 0
+        a b c d : 7/10
+        >>> lpr.is_completely_monotone()
+        True
+        """
+        # it is necessary and sufficient that the Mobius transform is
+        # non-negative
+        for value in self.mobius.itervalues():
+            if self.number_cmp(value) < 0:
+                return False
+        return True
