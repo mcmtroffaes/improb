@@ -191,13 +191,18 @@ class PSpace(collections.Set, collections.Hashable):
         """
         return " ".join(str(omega) for omega in self)
 
-    def subsets(self, event=True, empty=True):
+    def subsets(self, event=True, empty=True, full=True, size=None):
         r"""Iterates over all subsets of the possibility space.
 
         :param event: An event (optional).
         :type event: |eventtype|
-        :param event: Whether to include the empty event or not.
-        :type event: :class:`bool`
+        :param empty: Whether to include the empty event or not.
+        :type empty: :class:`bool`
+        :param full: Whether to include *event* or not.
+        :type full: :class:`bool`
+        :param size: Any size constraints. If specified, then *empty*
+            and *full* are ignored.
+        :type size: :class:`int` or :class:`collections.Interable`
         :returns: Yields all subsets.
         :rtype: Iterator of :class:`Event`.
 
@@ -250,9 +255,26 @@ class PSpace(collections.Set, collections.Hashable):
         2 : 1
         4 : 1
         5 : 0
+        >>> print("\n---\n".join(str(subset) for subset in pspace.subsets([2, 4], empty=False, full=False)))
+        2 : 1
+        4 : 0
+        5 : 0
+        ---
+        2 : 0
+        4 : 1
+        5 : 0
         """
         event = self.make_event(event)
-        for subset_size in xrange(0 if empty else 1, len(event) + 1):
+        if size is None:
+            size_range = xrange(0 if empty else 1,
+                                len(event) + (1 if full else 0))
+        elif isinstance(size, collections.Iterable):
+            size_range = size
+        elif isinstance(size, (int, long)):
+            size_range = (size,)
+        else:
+            raise ValueError('invalid size')
+        for subset_size in size_range:
             for subset in itertools.combinations(event, subset_size):
                 yield Event(self, subset)
 
