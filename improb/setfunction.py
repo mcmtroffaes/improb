@@ -21,6 +21,7 @@ from __future__ import division, absolute_import, print_function
 
 import cdd
 import collections
+import itertools
 
 from improb import PSpace, Gamble, Event
 
@@ -30,9 +31,6 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
 
     Bases: :class:`collections.MutableMapping`, :class:`cdd.NumberTypeable`
     """
-
-    _constraints_bba_n_monotone = {}
-    """Caches the constraints calculated for n-monotonicity."""
 
     def __init__(self, pspace, data=None, number_type='float'):
         """Construct a set function on the power set of the given
@@ -196,6 +194,23 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
         event = self.pspace.make_event(event)
         return sum(self[subevent] for subevent in self.pspace.subsets(event))
 
+    def is_bba_n_monotone(self, monotonicity=None):
+        """Has the set function, as basic belief assignment, the given
+        level of monotonicity?
+
+        .. warning::
+
+           The set function must be defined for all events.
+        """
+        # iterate over all constraints
+        for constraint in self.get_constraints_bba_n_monotone(
+            self.pspace, xrange(1, monotonicity + 1)):
+            # check the constraint
+            if self.number_cmp(
+                sum(self[event] for event in constraint)) < 0:
+                return False
+        return True
+
     @classmethod
     def get_constraints_bba_n_monotone(cls, pspace, monotonicity=None):
         """Yields constraints for basic belief assignments with given
@@ -205,10 +220,8 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
         capacities through the use of Mobius inversion. Mathematical
         Social Sciences 17(3), pages 263-283*.
 
-        The elements are the coefficients on the basic belief
-        assignments of events, following the ordering of
-        ``pspace.subsets()``. The constant term is always zero so is
-        omitted.
+        Each constraint is an iterable of events---the sum of the mass
+        function over this iterable must be non-negative.
 
         .. note::
 
@@ -232,8 +245,10 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
         ...                    for event in PSpace(pspace).subsets()))
         ...     for constraint in sorted(
         ...         SetFunction.get_constraints_bba_n_monotone(pspace, mono)):
+        ...         constraint = set(constraint)
         ...         print(" ".join("{0:<{1}}".format(value, len(pspace))
-        ...                        for value in constraint))
+        ...                        1 if event in constraint else 0
+        ...                        for event in PSpace(pspace).subsets()))
         1 monotonicity:
             a   b   c   ab  ac  bc  abc
         0   0   0   1   0   0   0   0  
@@ -275,23 +290,94 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
         # check value
         if monotonicity <= 0:
             raise ValueError("specify a strictly positive monotonicity")
-        # try cached version
-        try:
-            constraints = cls._constraints_bba_n_monotone[len(pspace), monotonicity]
-        except KeyError:
-            pass
-        else:
-            for constraint in constraints:
-                yield constraint
-            return
-        # not in cache: calculate it
-        constraints = []
+        # yield all constraints
         for event in pspace.subsets(size=xrange(monotonicity, len(pspace) + 1)):
             for subevent in pspace.subsets(event, size=monotonicity):
-                midevents = set(pspace.subsets(event, contains=subevent))
-                constraint = [1 if midevent in midevents else 0
-                              for midevent in pspace.subsets()]
-                yield constraint
-                constraints.append(constraint)
-        # save result in cache
-        cls._constraints_bba_n_monotone[len(pspace), monotonicity] = constraints
+                yield pspace.subsets(event, contains=subevent)
+
+    @classmethod
+    def make_extreme_bba_n_monotone(cls, pspace, monotonicity=None):
+        """Yield extreme basic belief assignments with given monotonicity.
+
+        .. warning::
+
+           Currently this doesn't work very well except for the cases
+           below.
+
+        >>> bbas = list(SetFunction.make_extreme_bba_n_monotone('abc', monotonicity=2))
+        >>> len(bbas)
+        8
+        >>> all(bba.is_bba_n_monotone(2) for bba in bbas)
+        True
+        >>> all(bba.is_bba_n_monotone(3) for bba in bbas)
+        False
+        >>> bbas = list(SetFunction.make_extreme_bba_n_monotone('abc', monotonicity=3))
+        >>> len(bbas)
+        7
+        >>> all(bba.is_bba_n_monotone(2) for bba in bbas)
+        True
+        >>> all(bba.is_bba_n_monotone(3) for bba in bbas)
+        True
+        >>> bbas = list(SetFunction.make_extreme_bba_n_monotone('abcd', monotonicity=2))
+        >>> len(bbas)
+        41
+        >>> all(bba.is_bba_n_monotone(2) for bba in bbas)
+        True
+        >>> all(bba.is_bba_n_monotone(3) for bba in bbas)
+        False
+        >>> all(bba.is_bba_n_monotone(4) for bba in bbas)
+        False
+        >>> bbas = list(SetFunction.make_extreme_bba_n_monotone('abcd', monotonicity=3))
+        >>> len(bbas)
+        16
+        >>> all(bba.is_bba_n_monotone(2) for bba in bbas)
+        True
+        >>> all(bba.is_bba_n_monotone(3) for bba in bbas)
+        True
+        >>> all(bba.is_bba_n_monotone(4) for bba in bbas)
+        False
+        >>> bbas = list(SetFunction.make_extreme_bba_n_monotone('abcd', monotonicity=4))
+        >>> len(bbas)
+        15
+        >>> all(bba.is_bba_n_monotone(2) for bba in bbas)
+        True
+        >>> all(bba.is_bba_n_monotone(3) for bba in bbas)
+        True
+        >>> all(bba.is_bba_n_monotone(4) for bba in bbas)
+        True
+        >>> # cddlib hangs on larger possibility spaces
+        >>> #bbas = list(SetFunction.make_extreme_bba_n_monotone('abcde', monotonicity=2))
+        """
+        pspace = PSpace.make(pspace)
+        # constraint for empty set and full set
+        matrix = cdd.Matrix(
+            [[0] + [1 if event.is_false() else 0 for event in pspace.subsets()],
+             [-1] + [1 for event in pspace.subsets()]],
+            linear=True,
+            number_type='fraction')
+        # constraints for monotonicity
+        matrix.extend([[0] + [1 if event in constraint else 0
+                             for event in pspace.subsets()]
+                       for constraint
+                       in cls.get_constraints_bba_n_monotone(
+                           pspace, xrange(1, monotonicity + 1))
+                       ])
+        matrix.rep_type = cdd.RepType.INEQUALITY
+
+        # debug: simplify matrix
+        #print(pspace, monotonicity) # debug
+        ##print("original:", len(matrix))
+        #matrix.canonicalize()
+        #print("new     :", len(matrix))
+        #print(matrix) # debug
+
+        # calculate extreme points
+        poly = cdd.Polyhedron(matrix)
+        # convert these points back to lower probabilities
+        #print(poly.get_generators()) # debug
+        for vert in poly.get_generators():
+            yield cls(
+                pspace=pspace,
+                data=dict((event, vert[1 + index])
+                           for index, event in enumerate(pspace.subsets())),
+                number_type='fraction')

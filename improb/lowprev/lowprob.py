@@ -17,6 +17,8 @@
 
 """Coherent lower probabilities."""
 
+from __future__ import division, absolute_import, print_function
+
 import cdd
 import collections
 from fractions import Fraction
