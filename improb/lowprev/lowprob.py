@@ -342,13 +342,14 @@ class LowProb(LowPoly):
 
             The result is cached, for speed.
 
-        >>> for mono in xrange(1, 3 + 1):
+        >>> pspace = "abc"
+        >>> for mono in xrange(1, len(pspace) + 1):
         ...     print("{0} monotonicity:".format(mono))
-        ...     print(" ".join("{0:<3}".format("".join(i for i in event))
-        ...                    for event in PSpace("abc").subsets()))
+        ...     print(" ".join("{0:<{1}}".format("".join(i for i in event), len(pspace))
+        ...                    for event in PSpace(pspace).subsets()))
         ...     for constraint in sorted(
-        ...         LowProb.get_constraints_n_monotone("abc", mono)):
-        ...         print(" ".join("{0:<3}".format(value)
+        ...         LowProb.get_constraints_n_monotone(pspace, mono)):
+        ...         print(" ".join("{0:<{1}}".format(value, len(pspace))
         ...                        for value in constraint))
         1 monotonicity:
             a   b   c   ab  ac  bc  abc
