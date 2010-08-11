@@ -202,6 +202,12 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
 
            The set function must be defined for all events.
         """
+        # check empty set and sum
+        if self.number_cmp(self[False]) != 0:
+            return False
+        if self.number_cmp(sum(self[event] for event in self.pspace.subsets()),
+                           1) != 0:
+            return False
         # iterate over all constraints
         for constraint in self.get_constraints_bba_n_monotone(
             self.pspace, xrange(1, monotonicity + 1)):
@@ -243,12 +249,15 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
         ...     print("{0} monotonicity:".format(mono))
         ...     print(" ".join("{0:<{1}}".format("".join(i for i in event), len(pspace))
         ...                    for event in PSpace(pspace).subsets()))
-        ...     for constraint in sorted(
-        ...         SetFunction.get_constraints_bba_n_monotone(pspace, mono)):
-        ...         constraint = set(constraint)
-        ...         print(" ".join("{0:<{1}}".format(value, len(pspace))
-        ...                        1 if event in constraint else 0
-        ...                        for event in PSpace(pspace).subsets()))
+        ...     constraints = SetFunction.get_constraints_bba_n_monotone(pspace, mono)
+        ...     constraints = [set(constraint) for constraint in constraints]
+        ...     constraints = [[1 if event in constraint else 0
+        ...                     for event in PSpace(pspace).subsets()]
+        ...                    for constraint in constraints]
+        ...     for constraint in sorted(constraints):
+        ...         print(" ".join("{0:<{1}}"
+        ...                        .format(value, len(pspace))
+        ...                        for value in constraint))
         1 monotonicity:
             a   b   c   ab  ac  bc  abc
         0   0   0   1   0   0   0   0  
@@ -356,12 +365,12 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
             linear=True,
             number_type='fraction')
         # constraints for monotonicity
+        constraints = [set(constraint) for constraint in
+                       cls.get_constraints_bba_n_monotone(
+                           pspace, xrange(1, monotonicity + 1))]
         matrix.extend([[0] + [1 if event in constraint else 0
-                             for event in pspace.subsets()]
-                       for constraint
-                       in cls.get_constraints_bba_n_monotone(
-                           pspace, xrange(1, monotonicity + 1))
-                       ])
+                              for event in pspace.subsets()]
+                       for constraint in constraints])
         matrix.rep_type = cdd.RepType.INEQUALITY
 
         # debug: simplify matrix
