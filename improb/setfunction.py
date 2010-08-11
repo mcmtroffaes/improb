@@ -31,6 +31,9 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
     Bases: :class:`collections.MutableMapping`, :class:`cdd.NumberTypeable`
     """
 
+    _constraints_bba_n_monotone = {}
+    """Caches the constraints calculated for n-monotonicity."""
+
     def __init__(self, pspace, data=None, number_type='float'):
         """Construct a set function on the power set of the given
         possibility space.
@@ -192,3 +195,103 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
         """
         event = self.pspace.make_event(event)
         return sum(self[subevent] for subevent in self.pspace.subsets(event))
+
+    @classmethod
+    def get_constraints_bba_n_monotone(cls, pspace, monotonicity=None):
+        """Yields constraints for basic belief assignments with given
+        monotonicity. This follows the algorithm described in
+        Proposition 4 of *Chateauneuf and Jaffray. Some
+        characterizations of lower probabilities and other monotone
+        capacities through the use of Mobius inversion. Mathematical
+        Social Sciences 17(3), pages 263-283*.
+
+        The elements are the coefficients on the basic belief
+        assignments of events, following the ordering of
+        ``pspace.subsets()``. The constant term is always zero so is
+        omitted.
+
+        .. note::
+
+            The trivial constraints that the empty set must have mass
+            zero, and that the masses must sum to one, are not
+            included.
+
+        .. note::
+
+            To get *all* the constraints for n-monotonicity, call this
+            method with monotonicity=xrange(1, n + 1).
+
+        .. note::
+
+            The result is cached, for speed.
+
+        >>> pspace = "abc"
+        >>> for mono in xrange(1, len(pspace) + 1):
+        ...     print("{0} monotonicity:".format(mono))
+        ...     print(" ".join("{0:<{1}}".format("".join(i for i in event), len(pspace))
+        ...                    for event in PSpace(pspace).subsets()))
+        ...     for constraint in sorted(
+        ...         SetFunction.get_constraints_bba_n_monotone(pspace, mono)):
+        ...         print(" ".join("{0:<{1}}".format(value, len(pspace))
+        ...                        for value in constraint))
+        1 monotonicity:
+            a   b   c   ab  ac  bc  abc
+        0   0   0   1   0   0   0   0  
+        0   0   0   1   0   0   1   0  
+        0   0   0   1   0   1   0   0  
+        0   0   0   1   0   1   1   1  
+        0   0   1   0   0   0   0   0  
+        0   0   1   0   0   0   1   0  
+        0   0   1   0   1   0   0   0  
+        0   0   1   0   1   0   1   1  
+        0   1   0   0   0   0   0   0  
+        0   1   0   0   0   1   0   0  
+        0   1   0   0   1   0   0   0  
+        0   1   0   0   1   1   0   1  
+        2 monotonicity:
+            a   b   c   ab  ac  bc  abc
+        0   0   0   0   0   0   1   0  
+        0   0   0   0   0   0   1   1  
+        0   0   0   0   0   1   0   0  
+        0   0   0   0   0   1   0   1  
+        0   0   0   0   1   0   0   0  
+        0   0   0   0   1   0   0   1  
+        3 monotonicity:
+            a   b   c   ab  ac  bc  abc
+        0   0   0   0   0   0   0   1  
+        """
+        pspace = PSpace.make(pspace)
+        # check type
+        if monotonicity is None:
+            raise ValueError("specify monotonicity")
+        elif isinstance(monotonicity, collections.Iterable):
+            # special case: return it for all values in the iterable
+            for mono in monotonicity:
+                for constraint in cls.get_constraints_bba_n_monotone(pspace, mono):
+                    yield constraint
+            return
+        elif not isinstance(monotonicity, (int, long)):
+            raise TypeError("monotonicity must be integer")
+        # check value
+        if monotonicity <= 0:
+            raise ValueError("specify a strictly positive monotonicity")
+        # try cached version
+        try:
+            constraints = cls._constraints_bba_n_monotone[len(pspace), monotonicity]
+        except KeyError:
+            pass
+        else:
+            for constraint in constraints:
+                yield constraint
+            return
+        # not in cache: calculate it
+        constraints = []
+        for event in pspace.subsets(size=xrange(monotonicity, len(pspace) + 1)):
+            for subevent in pspace.subsets(event, size=monotonicity):
+                midevents = set(pspace.subsets(event, contains=subevent))
+                constraint = [1 if midevent in midevents else 0
+                              for midevent in pspace.subsets()]
+                yield constraint
+                constraints.append(constraint)
+        # save result in cache
+        cls._constraints_bba_n_monotone[len(pspace), monotonicity] = constraints
