@@ -19,6 +19,10 @@
 
 from __future__ import division, absolute_import, print_function
 
+import math
+import random
+import fractions
+
 from improb import PSpace, Gamble, Event
 from improb.lowprev.linvac import LinVac
 from improb.lowprev.lowpoly import LowPoly
@@ -122,3 +126,46 @@ class Prob(LinVac):
                 raise ZeroDivisionError(
                     "cannot condition on event with zero probability")
             return self.get_precise(gamble * event) / event_prob
+
+    @classmethod
+    def make_random(cls, pspace=None, division=None, zero=True,
+                    number_type='float'):
+        """Generate a random probability mass function.
+
+        >>> import random
+        >>> random.seed(25)
+        >>> print(Prob.make_random("abcd", division=10))
+        a : 0.4
+        b : 0.0
+        c : 0.1
+        d : 0.5
+        >>> random.seed(25)
+        >>> print(Prob.make_random("abcd", division=10, zero=False))
+        a : 0.3
+        b : 0.1
+        c : 0.2
+        d : 0.4
+        """
+        pspace = PSpace.make(pspace)
+        lpr = cls(pspace=pspace, number_type=number_type)
+        # get a uniform sample from the simplex
+        probs = [-math.log(random.random()) for omega in pspace]
+        sum_probs = sum(probs)
+        probs = [prob / sum_probs for prob in probs]
+        if division is not None:
+            # discretize the probabilities
+            probs = [int(prob * division + 0.5) + (0 if zero else 1)
+                     for prob in probs]
+            # now, again ensure they sum to division
+            while sum(probs) < division:
+                probs[random.randrange(len(probs))] += 1
+            while sum(probs) > division:
+                while True:
+                    idx = random.randrange(len(probs))
+                    if probs[idx] > (1 if zero else 2):
+                        probs[idx] -= 1
+                        break
+            # convert to fraction
+            probs = [fractions.Fraction(prob, division) for prob in probs]
+        # return the probability
+        return cls(pspace=pspace, number_type=number_type, prob=probs)

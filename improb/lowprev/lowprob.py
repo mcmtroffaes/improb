@@ -124,7 +124,8 @@ class LowProb(LowPoly):
             return self._mobius
 
     @classmethod
-    def make_random(cls, pspace=None, division=None, zero=True, number_type='float'):
+    def make_random(cls, pspace=None, division=None, zero=True,
+                    number_type='float'):
         """Generate a random coherent lower probability."""
         # for now this is just a pretty dumb method
         pspace = PSpace.make(pspace)
