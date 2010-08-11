@@ -191,7 +191,8 @@ class PSpace(collections.Set, collections.Hashable):
         """
         return " ".join(str(omega) for omega in self)
 
-    def subsets(self, event=True, empty=True, full=True, size=None):
+    def subsets(self, event=True, empty=True, full=True,
+                size=None, contains=False):
         r"""Iterates over all subsets of the possibility space.
 
         :param event: An event (optional).
@@ -203,6 +204,9 @@ class PSpace(collections.Set, collections.Hashable):
         :param size: Any size constraints. If specified, then *empty*
             and *full* are ignored.
         :type size: :class:`int` or :class:`collections.Interable`
+        :param contains: An event that must be contained in all
+            returned subsets.
+        :type contains: |eventtype|
         :returns: Yields all subsets.
         :rtype: Iterator of :class:`Event`.
 
@@ -263,8 +267,28 @@ class PSpace(collections.Set, collections.Hashable):
         2 : 0
         4 : 1
         5 : 0
+        >>> print("\n---\n".join(str(subset) for subset in pspace.subsets(True, contains=[4])))
+        2 : 0
+        4 : 1
+        5 : 0
+        ---
+        2 : 1
+        4 : 1
+        5 : 0
+        ---
+        2 : 0
+        4 : 1
+        5 : 1
+        ---
+        2 : 1
+        4 : 1
+        5 : 1
         """
         event = self.make_event(event)
+        contains = self.make_event(contains)
+        if not(contains <= event):
+            # nothing to iterate over!!
+            return
         if size is None:
             size_range = xrange(0 if empty else 1,
                                 len(event) + (1 if full else 0))
@@ -275,8 +299,8 @@ class PSpace(collections.Set, collections.Hashable):
         else:
             raise ValueError('invalid size')
         for subset_size in size_range:
-            for subset in itertools.combinations(event, subset_size):
-                yield Event(self, subset)
+            for subset in itertools.combinations(event - contains, subset_size):
+                yield Event(self, subset) | contains
 
 class Gamble(collections.Mapping, collections.Hashable, NumberTypeable):
     """An immutable gamble.
