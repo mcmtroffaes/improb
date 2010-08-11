@@ -153,10 +153,10 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
         return sum(((-1) ** len(event - subevent)) * self[subevent]
                    for subevent in self.pspace.subsets(event))
 
-    def get_mobius_inverse(self, event):
-        """Calculate the value of the inverse Mobius transform of the
-        given event. The inverse Mobius transform of a set function :math:`m`
-        is given by the formula:
+    def get_zeta(self, event):
+        """Calculate the value of the zeta transform (inverse Mobius
+        transform) of the given event. The zeta transform of a set
+        function :math:`m` is given by the formula:
 
         .. math::
 
@@ -181,7 +181,7 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
           b : 0.3
         a b : 0.45
         >>> inv = SetFunction(pspace='ab',
-        ...                   data=dict((event, setfunc.get_mobius_inverse(event))
+        ...                   data=dict((event, setfunc.get_zeta(event))
         ...                             for event in setfunc.pspace.subsets()),
         ...                   number_type='float')
         >>> print(inv)

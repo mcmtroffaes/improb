@@ -194,7 +194,7 @@ class LowPoly(LowPrev):
                 data=bba,
                 number_type=self.number_type)
             for event in self.pspace.subsets():
-                self.set_lower(event, setfunc.get_mobius_inverse(event))
+                self.set_lower(event, setfunc.get_zeta(event))
 
     def __len__(self):
         return len(self._mapping)
