@@ -389,6 +389,9 @@ class LowProb(LowPoly):
         -1  1   1   1   -1  -1  -1  1  
         2   -1  -1  -1  0   0   0   1  
         """
+
+        # old algorithm, commented out for now
+        """
         pspace = PSpace.make(pspace)
         # check type
         if monotonicity is None:
@@ -473,6 +476,17 @@ class LowProb(LowPoly):
                     yield constraint
         # cache the result
         cls._constraints_n_monotone[len(pspace), monotonicity] = constraints
+        """
+        # new algorithm, based on transformation of constraints on bba
+        pspace = PSpace.make(pspace)
+        for constraint in SetFunction.get_constraints_bba_n_monotone(
+            pspace, monotonicity):
+            constraint = set(constraint) # so we can iterate over it repeatedly
+            yield tuple(sum(((-1) ** len(superevent - event)
+                             for superevent in constraint
+                             if event <= superevent),
+                            0)
+                        for event in pspace.subsets())
 
     @classmethod
     def make_extreme_n_monotone(cls, pspace, monotonicity=None):
