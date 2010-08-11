@@ -335,6 +335,12 @@ class LowProb(LowPoly):
 
         .. note::
 
+            The trivial constraints that the empty set must have lower
+            probability zero, and that the possibility space must have
+            lower probability one, are not included.
+
+        .. note::
+
             To get *all* the constraints for n-monotonicity, call this
             method with monotonicity=xrange(1, n + 1).
 
@@ -421,7 +427,10 @@ class LowProb(LowPoly):
                     constraint = [0] * len(powerset)
                     constraint[event_index[event]] = 1
                     constraint[event_index[subset]] = -1
-                    constraints.append(tuple(constraint))
+                    constraint = tuple(constraint)
+                    constraints.append(constraint)
+                    # and yield it
+                    yield constraint
         else: # monotonicity >= 2
             # alias, for convenience
             k = monotonicity
@@ -456,14 +465,12 @@ class LowProb(LowPoly):
                     # XXX extra check for redundancy
                     if constraint in other_constraints:
                         continue
-                    # ok, append it
+                    # ok, append and yield it
                     other_constraints.add(constraint)
                     constraints.append(constraint)
+                    yield constraint
         # cache the result
         cls._constraints_n_monotone[len(pspace), monotonicity] = constraints
-        # return an iterator to the constraints
-        for constraint in constraints:
-            yield constraint
 
     @classmethod
     def make_extreme_n_monotone(cls, pspace, monotonicity=None):
@@ -501,10 +508,32 @@ class LowProb(LowPoly):
         True
         >>> all(lpr.is_n_monotone(3) for lpr in lprs)
         False
-        >>> # cddlib hangs on these...
+        >>> all(lpr.is_n_monotone(4) for lpr in lprs)
+        False
+        >>> lprs = list(LowProb.make_extreme_n_monotone('abcd', monotonicity=3))
+        >>> len(lprs)
+        16
+        >>> all(lpr.is_coherent() for lpr in lprs)
+        True
+        >>> all(lpr.is_n_monotone(2) for lpr in lprs)
+        True
+        >>> all(lpr.is_n_monotone(3) for lpr in lprs)
+        True
+        >>> all(lpr.is_n_monotone(4) for lpr in lprs)
+        False
+        >>> lprs = list(LowProb.make_extreme_n_monotone('abcd', monotonicity=4))
+        >>> len(lprs)
+        15
+        >>> all(lpr.is_coherent() for lpr in lprs)
+        True
+        >>> all(lpr.is_n_monotone(2) for lpr in lprs)
+        True
+        >>> all(lpr.is_n_monotone(3) for lpr in lprs)
+        True
+        >>> all(lpr.is_n_monotone(4) for lpr in lprs)
+        True
+        >>> # cddlib hangs on larger possibility spaces
         >>> #lprs = list(LowProb.make_extreme_n_monotone('abcde', monotonicity=2))
-        >>> #lprs = list(LowProb.make_extreme_n_monotone('abcd', monotonicity=3))
-        >>> #lprs = list(LowProb.make_extreme_n_monotone('abcd', monotonicity=4))
         """
         pspace = PSpace.make(pspace)
         # constraint for empty set and full set
@@ -519,11 +548,18 @@ class LowProb(LowPoly):
                        in cls.get_constraints_n_monotone(
                            pspace, xrange(1, monotonicity + 1))
                        ])
-        # calculate extreme points
         matrix.rep_type = cdd.RepType.INEQUALITY
+
+        # debug: simplify matrix
+        #print(pspace, monotonicity) # debug
+        #print("original:", len(matrix))
+        #matrix.canonicalize()
+        #print("new     :", len(matrix))
+        #print(matrix) # debug
+
+        # calculate extreme points
         poly = cdd.Polyhedron(matrix)
         # convert these points back to lower probabilities
-        #print(matrix) # debug
         #print(poly.get_generators()) # debug
         for vert in poly.get_generators():
             yield cls(
