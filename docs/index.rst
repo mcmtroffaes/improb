@@ -11,3 +11,4 @@ Welcome to improb's documentation!
    introduction
    lowprev
    setfunction
+   decision
