@@ -126,8 +126,7 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
            m(A)=
            \sum_{B\subseteq A}(-1)^{|A\setminus B|}s(B)
 
-        for any event :math:`A` (note that it is usually assumed that
-        :math:`s(\emptyset)=0`).
+        for any event :math:`A`.
 
         .. warning::
 
@@ -220,29 +219,63 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
     @classmethod
     def get_constraints_bba_n_monotone(cls, pspace, monotonicity=None):
         """Yields constraints for basic belief assignments with given
-        monotonicity. This follows the algorithm described in
-        Proposition 4 of *Chateauneuf and Jaffray. Some
-        characterizations of lower probabilities and other monotone
-        capacities through the use of Mobius inversion. Mathematical
-        Social Sciences 17(3), pages 263-283*.
+        monotonicity.
 
-        Each constraint is an iterable of events---the sum of the mass
-        function over this iterable must be non-negative.
+        :param pspace: The possibility space.
+        :type pspace: |pspacetype|
+        :param monotonicity: Requested level of monotonicity (see
+            notes below for details).
+        :type monotonicity: :class:`int` or
+            :class:`collections.Iterable` of :class:`int`
+
+        This follows the algorithm described in Proposition 2 (for
+        1-monotonicity) and Proposition 4 (for n-monotonicity) of
+        *Chateauneuf and Jaffray, 1989. Some characterizations of
+        lower probabilities and other monotone capacities through the
+        use of Mobius inversion. Mathematical Social Sciences 17(3),
+        pages 263-283*:
+
+        A set function :math:`s` defined on the power set of
+        :math:`\Omega` is :math:`n`-monotone if and only if its Mobius
+        transform :math:`m` satisfies:
+
+        .. math::
+
+            m(\emptyset)=0, \qquad\sum_{A\subseteq\Omega} m(A)=1,
+
+        and
+
+        .. math::
+
+            \sum_{B\colon C\subseteq B\subseteq A} m(B)\ge 0
+
+        for all :math:`C\subseteq A\subseteq\Omega`, with
+        :math:`1\le|C|\le n`.
+
+        This implementation iterates over all :math:`C\subseteq
+        A\subseteq\Omega`, with :math:`|C|=n`, and yields each
+        constraint as an iterable of the events :math:`\{B\colon
+        C\subseteq B\subseteq A\}`. For example, you can then check
+        the constraint by summing over this iterable.
+
+        .. note::
+
+            As just mentioned, this method returns the constraints
+            corresponding to the latter equation for :math:`|C|`
+            **equal** to *monotonicity*. To get **all** the
+            constraints for n-monotonicity, call this method with
+            *monotonicity=xrange(1, n + 1)*.
+
+            The rationale for this approach is that, in case you
+            already know that (n-1)-monotonicity is satisfied, then
+            you only need the constraints for *monotonicity=n* to
+            check for n-monotonicity.
 
         .. note::
 
             The trivial constraints that the empty set must have mass
             zero, and that the masses must sum to one, are not
             included.
-
-        .. note::
-
-            To get *all* the constraints for n-monotonicity, call this
-            method with monotonicity=xrange(1, n + 1).
-
-        .. note::
-
-            The result is cached, for speed.
 
         >>> pspace = "abc"
         >>> for mono in xrange(1, len(pspace) + 1):
