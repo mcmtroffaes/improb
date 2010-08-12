@@ -71,9 +71,6 @@ class LowProb(LowPoly):
     0 1 2 : 7/10
     """
 
-    _constraints_n_monotone = {}
-    """Caches the constraints calculated for n-monotonicity."""
-
     def _clear_cache(self):
         LowPoly._clear_cache(self)
         try:
@@ -320,21 +317,67 @@ class LowProb(LowPoly):
             # check the constraint
             if self.number_cmp(
                 sum(coeff * self[event, True][0]
-                    for coeff, event in itertools.izip(
-                        constraint, self.pspace.subsets()))) < 0:
+                    for event, coeff in constraint)) < 0:
                 return False
         return True
 
     @classmethod
     def get_constraints_n_monotone(cls, pspace, monotonicity=None):
         """Yields constraints for lower probabilities with given
-        monotonicity. This follows the algorithm described in: *Erik
-        Quaeghebeur and Gert de Cooman. Extreme lower probabilities.
-        Fuzzy Sets and Systems 159(16), pages 2163-2175*.
+        monotonicity.
 
-        The elements are the coefficients on the lower probabilities
-        of the events, following the ordering of ``pspace.subsets()``.
-        The constant term is always zero so is omitted.
+        As described in
+        :meth:`~improb.setfunction.SetFunction.get_constraints_bba_n_monotone`,
+        the n-monotonicity constraints on basic belief assignment are:
+
+        .. math::
+
+            \sum_{B\colon C\subseteq B\subseteq A}m(B)\ge 0
+
+        for all :math:`C\subseteq A\subseteq\Omega`, with
+        :math:`1\le|C|\le n`.
+
+        By the Mobius transform, this is equivalent to:
+
+        .. math::
+
+            \sum_{B\colon C\subseteq B\subseteq A}
+            \sum_{D\colon D\subseteq B}(-1)^{|B\setminus D|}
+            \underline{P}(D)\ge 0
+
+        Once noted that
+
+        .. math::
+
+            (C\subseteq B\subseteq A\quad \& \quad D\subseteq B)
+            \iff
+            (C\cup D\subseteq B\subseteq A\quad \& \quad D\subseteq A),
+
+        we can conveniently rewrite the sum as:
+
+        .. math::
+
+            \sum_{D\colon D\subseteq A}
+            \sum_{B\colon C\cup D\subseteq B\subseteq A}(-1)^{|B\setminus D|}
+            \underline{P}(D)\ge 0
+
+        This implementation iterates over all :math:`C\subseteq
+        A\subseteq\Omega`, with :math:`|C|=n`, and yields each
+        constraint as an iterable of (event, coefficient) pairs, where
+        zero coefficients are omitted.
+
+        .. note::
+
+            As just mentioned, this method returns the constraints
+            corresponding to the latter equation for :math:`|C|`
+            equal to *monotonicity*. To get all the
+            constraints for n-monotonicity, call this method with
+            *monotonicity=xrange(1, n + 1)*.
+
+            The rationale for this approach is that, in case you
+            already know that (n-1)-monotonicity is satisfied, then
+            you only need the constraints for *monotonicity=n* to
+            check for n-monotonicity.
 
         .. note::
 
@@ -342,22 +385,18 @@ class LowProb(LowPoly):
             probability zero, and that the possibility space must have
             lower probability one, are not included.
 
-        .. note::
-
-            To get *all* the constraints for n-monotonicity, call this
-            method with monotonicity=xrange(1, n + 1).
-
-        .. note::
-
-            The result is cached, for speed.
-
-        >>> pspace = "abc"
+        >>> pspace = PSpace("abc")
         >>> for mono in xrange(1, len(pspace) + 1):
         ...     print("{0} monotonicity:".format(mono))
         ...     print(" ".join("{0:<{1}}".format("".join(i for i in event), len(pspace))
-        ...                    for event in PSpace(pspace).subsets()))
-        ...     for constraint in sorted(
-        ...         LowProb.get_constraints_n_monotone(pspace, mono)):
+        ...                    for event in pspace.subsets()))
+        ...     constraints = [
+        ...         dict(constraint) for constraint in
+        ...         LowProb.get_constraints_n_monotone(pspace, mono)]
+        ...     constraints = [
+        ...         [constraint.get(event, 0) for event in pspace.subsets()]
+        ...         for constraint in constraints]
+        ...     for constraint in sorted(constraints):
         ...         print(" ".join("{0:<{1}}".format(value, len(pspace))
         ...                        for value in constraint))
         1 monotonicity:
@@ -381,17 +420,10 @@ class LowProb(LowPoly):
         0   1   0   0   -1  -1  0   1  
         1   -1  -1  0   1   0   0   0  
         1   -1  0   -1  0   1   0   0  
-        1   -1  0   0   0   0   -1  1  
         1   0   -1  -1  0   0   1   0  
-        1   0   -1  0   0   -1  0   1  
-        1   0   0   -1  -1  0   0   1  
         3 monotonicity:
             a   b   c   ab  ac  bc  abc
         -1  1   1   1   -1  -1  -1  1  
-        2   -1  -1  -1  0   0   0   1  
-        """
-
-        # old algorithm, commented out for now
         """
         pspace = PSpace.make(pspace)
         # check type
@@ -408,86 +440,15 @@ class LowProb(LowPoly):
         # check value
         if monotonicity <= 0:
             raise ValueError("specify a strictly positive monotonicity")
-        # try cached version
-        try:
-            constraints = cls._constraints_n_monotone[len(pspace), monotonicity]
-        except KeyError:
-            pass
-        else:
-            for constraint in constraints:
-                yield constraint
-            return
-        # not in cache: calculate it
-        constraints = []
-        powerset = list(pspace.subsets())
-        event_index = dict((event, index)
-                           for index, event in enumerate(powerset))
-        if monotonicity == 1:
-            # for every generating event
-            for event in pspace.subsets(empty=False):
-                # k=1 monotonicity constraint
-                # note: we can restrict to events of just one size less
-                # the others will follow by transitivity
-                for subset in pspace.subsets(event,
-                                             full=False, size=len(event) - 1):
-                    constraint = [0] * len(powerset)
-                    constraint[event_index[event]] = 1
-                    constraint[event_index[subset]] = -1
-                    constraint = tuple(constraint)
-                    constraints.append(constraint)
-                    # and yield it
-                    yield constraint
-        else: # monotonicity >= 2
-            # alias, for convenience
-            k = monotonicity
-            # get constraints for lower levels (to check redundancy)
-            other_constraints = set(
-                cls.get_constraints_n_monotone(pspace, xrange(1, k)))
-            # for every generating event
-            for event in pspace.subsets(empty=False):
-                # iterate over all combinations of k subsets (non-empty,
-                # and not the event itself)
-                for k_subsets in itertools.combinations(
-                    pspace.subsets(event, empty=False, full=False), k):
-                    # calculate union and intersection
-                    union = reduce(lambda x, y: x | y, k_subsets)
-                    intersection = reduce(lambda x, y: x & y, k_subsets)
-                    if union != event:
-                        # not admissible
-                        continue
-                    if intersection in k_subsets:
-                        # leads to redundant constraint
-                        continue
-                    # initialize constraint
-                    constraint = [0] * len(powerset)
-                    constraint[event_index[event]] = 1
-                    # iterate over all subsets of k_subsets
-                    intersections = set()
-                    for j in xrange(1, len(k_subsets) + 1):
-                        for j_subsets in itertools.combinations(k_subsets, j):
-                            intersection = reduce(lambda x, y: x & y, j_subsets)
-                            constraint[event_index[intersection]] += (-1) ** j
-                    constraint = tuple(constraint) # tuple is hashable
-                    # XXX extra check for redundancy
-                    if constraint in other_constraints:
-                        continue
-                    # ok, append and yield it
-                    other_constraints.add(constraint)
-                    constraints.append(constraint)
-                    yield constraint
-        # cache the result
-        cls._constraints_n_monotone[len(pspace), monotonicity] = constraints
-        """
-        # new algorithm, based on transformation of constraints on bba
-        pspace = PSpace.make(pspace)
-        for constraint in SetFunction.get_constraints_bba_n_monotone(
-            pspace, monotonicity):
-            constraint = set(constraint) # so we can iterate over it repeatedly
-            yield tuple(sum(((-1) ** len(superevent - event)
-                             for superevent in constraint
-                             if event <= superevent),
-                            0)
-                        for event in pspace.subsets())
+        # yield all constraints
+        for event_a in pspace.subsets(size=xrange(monotonicity, len(pspace) + 1)):
+            for subevent_c in pspace.subsets(event_a, size=monotonicity):
+                yield (
+                    (subevent_d,
+                     sum((-1) ** len(event_b - subevent_d)
+                         for event_b in pspace.subsets(
+                             event_a, contains=(subevent_d | subevent_c))))
+                    for subevent_d in pspace.subsets(event_a))
 
     @classmethod
     def make_extreme_n_monotone(cls, pspace, monotonicity=None):
@@ -560,11 +521,12 @@ class LowProb(LowPoly):
             linear=True,
             number_type='fraction')
         # constraints for monotonicity
-        matrix.extend([(0,) + constraint
-                       for constraint
-                       in cls.get_constraints_n_monotone(
-                           pspace, xrange(1, monotonicity + 1))
-                       ])
+        constraints = [
+            dict(constraint) for constraint in
+            cls.get_constraints_n_monotone(pspace, xrange(1, monotonicity + 1))]
+        matrix.extend([[0] + [constraint.get(event, 0)
+                              for event in pspace.subsets()]
+                       for constraint in constraints])
         matrix.rep_type = cdd.RepType.INEQUALITY
 
         # debug: simplify matrix

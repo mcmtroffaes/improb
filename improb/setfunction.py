@@ -262,7 +262,7 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
 
             As just mentioned, this method returns the constraints
             corresponding to the latter equation for :math:`|C|`
-            **equal** to *monotonicity*. To get **all** the
+            equal to *monotonicity*. To get all the
             constraints for n-monotonicity, call this method with
             *monotonicity=xrange(1, n + 1)*.
 
