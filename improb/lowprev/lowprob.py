@@ -303,17 +303,42 @@ class LowProb(LowPoly):
         return True
 
     def is_n_monotone(self, monotonicity=None):
-        """Has the lower probability the given level of monotonicity?
+        """Given that the lower probability is (n-1)-monotone, is the
+        lower probability n-monotone?
+
+        .. note::
+
+            To check for n-monotonicity, call this method with
+            *monotonicity=xrange(n + 1)*.
+
+        .. note::
+
+            For convenience, 0-montonicity is defined as empty set and
+            possibility space having lower probability 0 and 1
+            respectively.
 
         .. warning::
 
            The lower probability must be defined for all events. If
            needed, call :meth:`~improb.lowprev.lowpoly.LowPoly.extend`
            first.
+
+        .. warning::
+
+            For large levels of monotonicity, it is slightly more
+            efficient to call
+            :meth:`~improb.setfunction.SetFunction.is_bba_n_monotone`
+            on :attr:`~improb.lowprev.lowprob.LowProb.mobius`.
         """
+        # check 0-monotonicity
+        if monotonicity == 0:
+            if self.number_cmp(self[False, True]) != 0:
+                return False
+            if self.number_cmp(self[True, True], 1) != 0:
+                return False
         # iterate over all constraints
         for constraint in self.get_constraints_n_monotone(
-            self.pspace, xrange(1, monotonicity + 1)):
+            self.pspace, monotonicity):
             # check the constraint
             if self.number_cmp(
                 sum(coeff * self[event, True][0]
@@ -325,6 +350,13 @@ class LowProb(LowPoly):
     def get_constraints_n_monotone(cls, pspace, monotonicity=None):
         """Yields constraints for lower probabilities with given
         monotonicity.
+
+        :param pspace: The possibility space.
+        :type pspace: |pspacetype|
+        :param monotonicity: Requested level of monotonicity (see
+            notes below for details).
+        :type monotonicity: :class:`int` or
+            :class:`collections.Iterable` of :class:`int`
 
         As described in
         :meth:`~improb.setfunction.SetFunction.get_constraints_bba_n_monotone`,
@@ -383,7 +415,8 @@ class LowProb(LowPoly):
 
             The trivial constraints that the empty set must have lower
             probability zero, and that the possibility space must have
-            lower probability one, are not included.
+            lower probability one, are not included: so for
+            *monotonicity=0* this method returns an empty iterator.
 
         >>> pspace = PSpace("abc")
         >>> for mono in xrange(1, len(pspace) + 1):
@@ -438,8 +471,11 @@ class LowProb(LowPoly):
         elif not isinstance(monotonicity, (int, long)):
             raise TypeError("monotonicity must be integer")
         # check value
-        if monotonicity <= 0:
-            raise ValueError("specify a strictly positive monotonicity")
+        if monotonicity < 0:
+            raise ValueError("specify a non-negative monotonicity")
+        if monotonicity == 0:
+            # don't return constraints in this case
+            return
         # yield all constraints
         for event_a in pspace.subsets(size=xrange(monotonicity, len(pspace) + 1)):
             for subevent_c in pspace.subsets(event_a, size=monotonicity):
