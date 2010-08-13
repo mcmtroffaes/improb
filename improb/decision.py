@@ -23,6 +23,7 @@ import itertools
 import numbers
 
 from improb import PSpace, Event, Gamble
+from improb._compat import OrderedDict
 
 def filter_maximal(set_, dominates, *args):
     """Filter elements that are maximal according to the given
@@ -75,12 +76,13 @@ class Tree(collections.MutableMapping):
     5
     >>> list(t.get_normal_form_gambles())
     [5]
-    >>> t = Chance({(0,): Reward(5), (1,): Reward(6)})
+    >>> t = Chance(pspace=(0, 1), data={(0,): Reward(5), (1,): Reward(6)})
     >>> t.pspace
     PSpace(2)
     >>> print(t)
-    O--+--0--5
-       +--1--6
+    O--(0)--5
+       |
+       (1)--6
     >>> list(t.get_normal_form_gambles())
     [{0: 5, 1: 6}]
     >>> t = Decision({"d1": Reward(5), "d2": Reward(6)})
@@ -88,20 +90,36 @@ class Tree(collections.MutableMapping):
     None
     >>> list(sorted(t.get_normal_form_gambles()))
     [5, 6]
-    >>> t1 = Chance({(0,1): Reward(1), (2,3): Reward(2)})
-    >>> t2 = Chance({(0,1): Reward(5), (2,3): Reward(6)})
-    >>> t12 = Decision({"d1": t1, "d2": t2})
-    >>> t3 = Chance({(0,1): Reward(8), (2,3): Reward(9)})
-    >>> t = Chance({(0,2): t12, (1,3): t3})
+    >>> pspace = PSpace(4)
+    >>> t1 = Chance(pspace)
+    >>> t1[(0,1)] = Reward(1)
+    >>> t1[(2,3)] = Reward(2)
+    >>> t2 = Chance(pspace)
+    >>> t2[(0,1)] = Reward(5)
+    >>> t2[(2,3)] = Reward(6)
+    >>> t12 = Decision()
+    >>> t12["d1"] = t1
+    >>> t12["d2"] = t2
+    >>> t3 = Chance(pspace)
+    >>> t3[(0,1)] = Reward(8)
+    >>> t3[(2,3)] = Reward(9)
+    >>> t = Chance(pspace)
+    >>> t[(0,2)] = t12
+    >>> t[(1,3)] = t3
     >>> print(t)
-    O--+--(1, 3)--O--+--(2, 3)--9
-       |             +--(0, 1)--8
-       +--(0, 2)--#--+--d2--O--+--(2, 3)--6
-       |             |         +--(0, 1)--5
-       |             +--d1--O--+--(2, 3)--2
-       |             |         +--(0, 1)--1
+    O--(0,2)--#--d1--O--(0,1)--1
+       |         |      |
+       |         |      (2,3)--2
+       |         |
+       |         d2--O--(0,1)--5
+       |                |
+       |                (2,3)--6
+       |
+       (1,3)--O--(0,1)--8
+                 |
+                 (2,3)--9
     >>> t.pspace
-    (0, 1, 2, 3)
+    PSpace(4)
     >>> sorted(tuple(gamble[w] for w in t.pspace) for gamble in t.get_normal_form_gambles())
     [(1, 8, 2, 9), (5, 8, 6, 9)]
     """
@@ -130,18 +148,29 @@ class Tree(collections.MutableMapping):
     def __str__(self):
         """Return string representation of tree."""
         # note: special case for Event to make it fit on a single line
-        children = [",".join(str(omega) for omega in key)
+        children = [("(" + ",".join(str(omega) for omega in key) + ")")
                     if isinstance(key, Event) else str(key)
                     for key in self]
         subtrees = [str(subtree).split('\n')
                     for subtree in self.itervalues()]
-        width = max(len(child) for child in children) + 4
-        children = ['+' + child.center(width, '-') + subtree[0]
+        width = max(len(child) for child in children) + 2
+        children = [child.ljust(width, '-') + subtree[0]
                     for child, subtree in itertools.izip(children, subtrees)]
-        children = ["\n".join([child]
-                               + ["   |" + " " * width + line
-                                  for line in subtree[1:]])
-                    for child, subtree in itertools.izip(children, subtrees)]
+        children = (
+            ["\n".join([child]
+                       + ["|" + " " * (width - 1) + line
+                          for line in subtree[1:]]
+                       + ["|"])
+             for child, subtree
+             in itertools.izip(children[:-1], subtrees[:-1])]
+            +
+            ["\n".join([child]
+                       + [" " * width + line
+                          for line in subtree[1:]])
+             for child, subtree
+             in itertools.izip(children[-1:], subtrees[-1:])]
+            )
+        
         return "\n".join(children)
 
     @abstractmethod
@@ -187,16 +216,22 @@ class Reward(Tree):
         return str(self.reward)
 
 class Decision(Tree):
-    """A decision tree rooted at a decision node."""
-    def __init__(self, data):
-        if not isinstance(data, collections.Mapping):
+    """A decision tree rooted at a decision node.
+
+    :param data: Mapping from decisions (i.e. strings, but any
+        immutable object would work) to trees.
+    :type data: `collections.Mapping`
+    """
+    def __init__(self, data=None):
+        self._data = OrderedDict()
+        # check type
+        if isinstance(data, collections.Mapping):
+            for key, value in data.iteritems():
+                if not isinstance(value, Tree):
+                    raise TypeError('children must have Tree values')
+                self[key] = value
+        elif data is not None:
             raise TypeError('specify a mapping')
-        if not data:
-            raise ValueError('specify a non-empty mapping')
-        for value in data.itervalues():
-            if not isinstance(value, Tree):
-                raise TypeError('children must have Tree values')
-        self._data = data
 
     @property
     def pspace(self):
@@ -234,24 +269,37 @@ class Decision(Tree):
         return "#--" + "\n   ".join(Tree.__str__(self).split("\n"))
 
 class Chance(Tree):
-    """A decision tree rooted at a chance node."""
-    def __init__(self, data):
-        if not isinstance(data, collections.Mapping):
-            raise TypeError('specify a mapping')
-        self._pspace = PSpace.make(itertools.chain(*data.keys()))
-        self._data = dict(
-            (self.pspace.make_event(key), value)
-            for key, value in data.iteritems())
+    """A decision tree rooted at a chance node.
+
+    :param pspace: The possibility space.
+    :type pspace: |pspacetype|
+    :param data: Mapping from events to trees (optional).
+    :type data: `collections.Mapping`
+    """
+    def __init__(self, pspace, data=None):
+        self._data = OrderedDict()
+        self._pspace = PSpace.make(pspace)
+        # extract data
+        if isinstance(data, collections.Mapping):
+            for key, value in data.iteritems():
+                self[key] = value
+        elif data is not None:
+            raise TypeError('data must be a mapping')
 
     def check_pspace(self):
         """Events of the chance nodes must form the possibility space.
 
-        >>> t = Chance({(0,): Reward(5), (0,1): Reward(6)})
-        >>> t.check_pspace()
-        >>> t = Chance({(0,): Reward(5), (1,): Reward(6)})
-        >>> del t[(1,)]
-        >>> t.check_pspace()
-        >>> t = Chance({(0,): Reward(5), (1,): Reward(6)})
+        >>> t = Chance(pspace=(0,1), data={(0,): Reward(5), (0,1): Reward(6)})
+        >>> t.check_pspace() # doctest: +ELLIPSIS
+        Traceback (most recent call last):
+            ...
+        ValueError: ...
+        >>> t = Chance(pspace=(0,1), data={(0,): Reward(5)})
+        >>> t.check_pspace() # doctest: +ELLIPSIS
+        Traceback (most recent call last):
+            ...
+        ValueError: ...
+        >>> t = Chance(pspace=(0,1), data={(0,): Reward(5), (1,): Reward(6)})
         >>> t.check_pspace()
         """
         # check that there are no pairwise intersections
@@ -279,12 +327,12 @@ class Chance(Tree):
             *[tuple(subtree.get_normal_form_gambles())
               for subtree in self.itervalues()])
         for gambles in all_gambles:
-            normal_form_gamble = {}
+            normal_form_gamble = Gamble(pspace)
             for event, gamble in itertools.izip(self.iterkeys(), gambles):
                 for omega in event:
                     if isinstance(gamble, numbers.Real):
                         normal_form_gamble[omega] = gamble
-                    elif isinstance(gamble, dict):
+                    elif isinstance(gamble, Gamble):
                         normal_form_gamble[omega] = gamble[omega]
                     else:
                         raise RuntimeError(
