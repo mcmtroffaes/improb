@@ -18,6 +18,7 @@
 """A module with utility functions for decision making."""
 
 from abc import ABCMeta, abstractmethod, abstractproperty
+import cdd # NumberTypeable
 import collections
 import itertools
 import numbers
@@ -67,42 +68,49 @@ def dominates_pointwise(gamble, other_gamble, event=True, tolerance=1e-6):
                     for x, y in zip(gamble, other_gamble)))
 
 class Tree(collections.MutableMapping):
-    """A decision tree.
+    r"""A decision tree.
 
-    >>> t = Reward(5)
+    >>> t = Reward(5, number_type='float')
     >>> print(t.pspace)
     None
     >>> print(t)
-    5
+    5.0
     >>> list(t.get_normal_form_gambles())
-    [5]
-    >>> t = Chance(pspace=(0, 1), data={(0,): Reward(5), (1,): Reward(6)})
+    [5.0]
+    >>> t = Chance(pspace=(0, 1), data={(0,): Reward(5, number_type='float'), (1,): Reward(6, number_type='float')})
     >>> t.pspace
     PSpace(2)
+    >>> t.get_number_type()
+    'float'
     >>> print(t)
-    O--(0)--5
+    O--(0)--5.0
        |
-       (1)--6
+       (1)--6.0
     >>> list(t.get_normal_form_gambles())
-    [{0: 5, 1: 6}]
-    >>> t = Decision({"d1": Reward(5), "d2": Reward(6)})
+    [Gamble(pspace=PSpace(2), mapping={0: 5.0, 1: 6.0})]
+    >>> t = Decision({"d1": Reward(5, number_type='float'),
+    ...               "d2": Reward(6, number_type='float')})
     >>> print(t.pspace)
     None
+    >>> print(t) # dict can change ordering
+    #--d2--6.0
+       |
+       d1--5.0
     >>> list(sorted(t.get_normal_form_gambles()))
-    [5, 6]
+    [5.0, 6.0]
     >>> pspace = PSpace(4)
     >>> t1 = Chance(pspace)
-    >>> t1[(0,1)] = Reward(1)
-    >>> t1[(2,3)] = Reward(2)
+    >>> t1[(0,1)] = Reward(1, number_type='fraction')
+    >>> t1[(2,3)] = Reward(2, number_type='fraction')
     >>> t2 = Chance(pspace)
-    >>> t2[(0,1)] = Reward(5)
-    >>> t2[(2,3)] = Reward(6)
+    >>> t2[(0,1)] = Reward(5, number_type='fraction')
+    >>> t2[(2,3)] = Reward(6, number_type='fraction')
     >>> t12 = Decision()
     >>> t12["d1"] = t1
     >>> t12["d2"] = t2
     >>> t3 = Chance(pspace)
-    >>> t3[(0,1)] = Reward(8)
-    >>> t3[(2,3)] = Reward(9)
+    >>> t3[(0,1)] = Reward(8, number_type='fraction')
+    >>> t3[(2,3)] = Reward(9, number_type='fraction')
     >>> t = Chance(pspace)
     >>> t[(0,2)] = t12
     >>> t[(1,3)] = t3
@@ -120,8 +128,16 @@ class Tree(collections.MutableMapping):
                  (2,3)--9
     >>> t.pspace
     PSpace(4)
-    >>> sorted(tuple(gamble[w] for w in t.pspace) for gamble in t.get_normal_form_gambles())
-    [(1, 8, 2, 9), (5, 8, 6, 9)]
+    >>> print("\n-----\n".join(str(gamble) for gamble in t.get_normal_form_gambles()))
+    0 : 1
+    1 : 8
+    2 : 2
+    3 : 9
+    -----
+    0 : 5
+    1 : 8
+    2 : 6
+    3 : 9
     """
     __metaclass__ = ABCMeta
 
@@ -131,6 +147,11 @@ class Tree(collections.MutableMapping):
         in the tree.
         """
         raise NotImplementedError
+
+    def get_number_type(self):
+        for subtree in self.itervalues():
+            # this just picks the first reward node
+            return subtree.get_number_type()
 
     def check_pspace(self):
         """Check the possibility spaces.
@@ -178,16 +199,19 @@ class Tree(collections.MutableMapping):
         """Yield all normal form gambles."""
         raise NotImplementedError
 
-class Reward(Tree):
+class Reward(Tree, cdd.NumberTypeable):
     """A reward node."""
-    def __init__(self, reward):
+    def __init__(self, reward, number_type=None):
         if not isinstance(reward, numbers.Real):
             raise TypeError('specify a numeric reward')
-        self.reward = reward
+        self.reward = self.make_number(reward)
 
     @property
     def pspace(self):
         return None
+
+    def get_number_type(self):
+        return self.number_type
 
     def get_normal_form_gambles(self):
         """Yield all normal form gambles."""
@@ -197,7 +221,7 @@ class Reward(Tree):
         return False
 
     def __iter__(self):
-        return ()
+        return iter([]) # empty iterator
 
     def __len__(self):
         return 0
@@ -235,9 +259,9 @@ class Decision(Tree):
 
     @property
     def pspace(self):
-        for tree in self.itervalues():
-            if tree.pspace is not None:
-                return tree.pspace
+        for subtree in self.itervalues():
+            if subtree.pspace is not None:
+                return subtree.pspace
         # no chance node children, so return None
         return None
 
@@ -289,17 +313,17 @@ class Chance(Tree):
     def check_pspace(self):
         """Events of the chance nodes must form the possibility space.
 
-        >>> t = Chance(pspace=(0,1), data={(0,): Reward(5), (0,1): Reward(6)})
+        >>> t = Chance(pspace=(0,1), data={(0,): Reward(5, number_type='float'), (0,1): Reward(6, number_type='float')})
         >>> t.check_pspace() # doctest: +ELLIPSIS
         Traceback (most recent call last):
             ...
         ValueError: ...
-        >>> t = Chance(pspace=(0,1), data={(0,): Reward(5)})
+        >>> t = Chance(pspace=(0,1), data={(0,): Reward(5, number_type='float')})
         >>> t.check_pspace() # doctest: +ELLIPSIS
         Traceback (most recent call last):
             ...
         ValueError: ...
-        >>> t = Chance(pspace=(0,1), data={(0,): Reward(5), (1,): Reward(6)})
+        >>> t = Chance(pspace=(0,1), data={(0,): Reward(5, number_type='float'), (1,): Reward(6, number_type='float')})
         >>> t.check_pspace()
         """
         # check that there are no pairwise intersections
@@ -320,6 +344,7 @@ class Chance(Tree):
 
     def get_normal_form_gambles(self):
         """Yield all normal form gambles."""
+        number_type = self.get_number_type()
         # note: this implementation depends on the fact that
         # iterating self.itervalues() and
         # self.iterkeys() correspond to each other
@@ -327,17 +352,17 @@ class Chance(Tree):
             *[tuple(subtree.get_normal_form_gambles())
               for subtree in self.itervalues()])
         for gambles in all_gambles:
-            normal_form_gamble = Gamble(pspace)
+            data = {}
             for event, gamble in itertools.izip(self.iterkeys(), gambles):
                 for omega in event:
                     if isinstance(gamble, numbers.Real):
-                        normal_form_gamble[omega] = gamble
+                        data[omega] = gamble
                     elif isinstance(gamble, Gamble):
-                        normal_form_gamble[omega] = gamble[omega]
+                        data[omega] = gamble[omega]
                     else:
                         raise RuntimeError(
                             "expected int, long, float, or dict")
-            yield normal_form_gamble
+            yield Gamble(pspace=self.pspace, data=data, number_type=number_type)
 
     def __contains__(self, key):
         return self.pspace.make_event(key) in self._data
