@@ -34,6 +34,8 @@ begin
  0 -1/2 1/2 3/2
  0 3/2 1/2 -1/2
 end
+minimize
+ 0 0 0 0
 >>> print(lpr.get_lower([1,2,3]))
 3/2
 >>> print(lpr.get_upper([1,2,3]))
@@ -68,6 +70,33 @@ False
 [[1, 0, 0, 0], [0, 1, 0, 0]]
 >>> list(filter_maximal([[0,0,0,0], [0,1,0,0], [0,0,1,0], [0,0,0,1]], lpr.dominates))
 [[0, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
+
+Another example, involving zero probabilities (see Example 9 and 11 in
+[#walley2004]_):
+
+>>> pspace = PSpace(2, 2, 2, 2, 2)
+>>> a1 = pspace.make_event((0,), (0, 1), (0, 1), (0, 1), (0, 1))
+>>> a2 = pspace.make_event((0, 1), (0,), (0, 1), (0, 1), (0, 1))
+>>> a3 = pspace.make_event((0, 1), (0, 1), (0,), (0, 1), (0, 1))
+>>> a4 = pspace.make_event((0, 1), (0, 1), (0, 1), (0,), (0, 1))
+>>> a5 = pspace.make_event((0, 1), (0, 1), (0, 1), (0, 1), (0,))
+>>> lpr = LowPoly(pspace, number_type='fraction')
+>>> lpr[a1, True] = ('0.6', '0.6')
+>>> lpr[a1.complement() | a2, True] = ('0.4', '0.4')
+>>> lpr[a2 | a3, True] = ('0.8', '0.8')
+>>> lpr[a3 & a4, True] = ('0.3', '0.3')
+>>> lpr[a4.complement() | a5, True] = ('0.5', '0.5')
+>>> lpr[a2 | a5, True] = ('0.6', '0.6')
+>>> lpr.get_lower(a3)
+Fraction(2, 5)
+>>> lpr.get_upper(a3)
+Fraction(4, 5)
+>>> lpr.get_lower(a4, event=a3)
+Fraction(3, 8)
+>>> lpr.get_upper(a4, event=a3)
+Fraction(3, 4)
+>>> lpr.get_lower((a1 & a2).complement(), event=(a1 & a2) | (a1.complement() & a2.complement()))
+0
 
 Another more complex example:
 

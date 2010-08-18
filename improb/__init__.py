@@ -126,36 +126,61 @@ class PSpace(collections.Set, collections.Hashable):
         """
         return pspace if isinstance(pspace, cls) else cls(pspace)
 
-    def make_event(self, event):
+    def make_event(self, *args):
         """If *event* is a :class:`Event`, then checks possibility
         space and returns *event*. Otherwise, converts *event* to a
         :class:`Event`.
 
-        :param pspace: The possibility space.
-        :type pspace: |pspacetype|
+        If you wish to construct an event on a product space, which is
+        itself composed of a product of events, specify its components
+        as separate arguments---in this case, each of the components
+        must be a sequence.
+
         :param event: The event.
         :type event: |eventtype|
         :return: A event.
         :rtype: :class:`Event`
         :raises: :exc:`~exceptions.ValueError` if possibility spaces do not match
+
+        >>> pspace = PSpace(2, 3)
+        >>> print(pspace.make_event([(1, 2), (0, 1)]))
+        (0, 0) : 0
+        (0, 1) : 1
+        (0, 2) : 0
+        (1, 0) : 0
+        (1, 1) : 0
+        (1, 2) : 1
+        >>> print(pspace.make_event((0, 1), (2,)))
+        (0, 0) : 0
+        (0, 1) : 0
+        (0, 2) : 1
+        (1, 0) : 0
+        (1, 1) : 0
+        (1, 2) : 1
         """
-        if isinstance(event, Event):
-            if self != event.pspace:
-                raise ValueError('possibility space mismatch')
-            return event
-        elif event is True:
-            return Event(self, event)
-        elif event is False:
-            return Event(self, event)
-        elif isinstance(event, Gamble):
-            if self != event.pspace:
-                raise ValueError('possibility space mismatch')
-            if not(set(event.itervalues()) <= set([0, 1])):
-                raise ValueError("not an indicator gamble")
-            return Event(self, (omega for omega, value in event.iteritems()
-                                if value == 1))
+        if not args:
+            raise ValueError('specify at least one argument')
+        elif len(args) == 1:
+            event = args[0]
+            if isinstance(event, Event):
+                if self != event.pspace:
+                    raise ValueError('possibility space mismatch')
+                return event
+            elif event is True:
+                return Event(self, event)
+            elif event is False:
+                return Event(self, event)
+            elif isinstance(event, Gamble):
+                if self != event.pspace:
+                    raise ValueError('possibility space mismatch')
+                if not(set(event.itervalues()) <= set([0, 1])):
+                    raise ValueError("not an indicator gamble")
+                return Event(self, (omega for omega, value in event.iteritems()
+                                    if value == 1))
+            else:
+                return Event(self, event)
         else:
-            return Event(self, event)
+            return Event(self, itertools.product(*args))
 
     def __len__(self):
         return len(self._data)
