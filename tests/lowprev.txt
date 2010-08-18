@@ -500,6 +500,5 @@ The next example is effectively the Monty Hall problem.
 
 .. [#walley1999]
 
-    Peter Walley, Renato Pelessoni, and Paolo Vicig. Direct Algorithms
-    for Checking Coherence and Making Inferences from Conditional
-    Probability Assessments. 1999.
+    Peter Walley, Renato Pelessoni, and Paolo Vicig. Journal of
+    Statistical Planning and Inference, 126(1):119-151, November 2004.
