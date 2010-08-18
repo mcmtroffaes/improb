@@ -180,6 +180,18 @@ This example incurs sure loss because the maximum of the sum of the gambles
 >>> lpr.is_avoiding_sure_loss()
 False
 
+A few simple examples:
+
+>>> lpr = LowPoly(pspace='xyz', number_type='fraction')
+>>> lpr.is_avoiding_sure_loss()
+True
+
+>>> lpr = LowPoly(pspace='xyz', lprob=['0.1', '0.2', '0.15'], number_type='fraction')
+>>> lpr[{'x':1}, 'x'] = (1, None)
+>>> lpr[{'x':0}, 'x'] = (0, None)
+>>> lpr.is_avoiding_sure_loss()
+True
+
 See if we can handle zero probabilities:
 
 >>> lpr = LowPoly(pspace='abcd', number_type='fraction')

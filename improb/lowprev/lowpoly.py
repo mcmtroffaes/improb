@@ -264,6 +264,9 @@ class LowPoly(LowPrev):
         # start with all items
         if items is None:
             items = set(self.iteritems())
+        if not items:
+            # special case: no items!
+            return []
         compl_event = self.pspace.make_event(event).complement()
         # construct set of all conditioning events
         # (we need a variable tau_i for each of these)
@@ -304,9 +307,9 @@ class LowPoly(LowPrev):
             #  - lambda_j (uprev_j - gamble_j[omega]) >= 0
             [([0]
               + [-1 if (omega in ev) else 0 for ev in evs]
-              + [lprev - gamble[omega]
+              + [(lprev - gamble[omega]) if omega in ev else 0
                  for (gamble, ev), (lprev, uprev) in low_items]
-              + [gamble[omega] - uprev
+              + [(gamble[omega] - uprev) if omega in ev else 0
                  for (gamble, ev), (lprev, uprev) in upp_items]
               )
               for omega in compl_event],
