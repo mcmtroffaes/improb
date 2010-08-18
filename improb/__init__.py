@@ -579,6 +579,21 @@ class Event(collections.Set, collections.Hashable):
                 omega, maxlen_pspace, 1 if omega in self else 0)
             for omega in self.pspace)
 
+    def complement(self):
+        """Calculate the complement of the event.
+
+        >>> print(Event(pspace='abcde', data='bde').complement())
+        a : 1
+        b : 0
+        c : 1
+        d : 0
+        e : 0
+
+        :return: Complement.
+        :rtype: :class:`Event`
+        """
+        return Event(self.pspace, True) - self
+
     def indicator(self, number_type=None):
         """Return indicator gamble for the event.
 
