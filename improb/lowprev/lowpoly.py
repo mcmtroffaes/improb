@@ -259,6 +259,111 @@ class LowPoly(LowPrev):
             self._matrix = self._make_matrix()
             return self._matrix
 
+    def _get_relevant_items(self, event=True, items=None):
+        """Helper function for get_relevant_items."""
+        # start with all items
+        if items is None:
+            items = set(self.iteritems())
+        compl_event = self.pspace.make_event(event).complement()
+        # construct set of all conditioning events
+        # (we need a variable tau_i for each of these)
+        evs = set(ev for (gamble, ev), (lprev, uprev) in items)
+        num_evs = len(evs)
+        # construct lists of lower and upper assessments
+        # (we need a variable lambda_i for each of these)
+        low_items = [((gamble, ev), (lprev, uprev))
+                     for (gamble, ev), (lprev, uprev) in items
+                     if lprev is not None]
+        upp_items = [((gamble, ev), (lprev, uprev))
+                     for (gamble, ev), (lprev, uprev) in items
+                     if uprev is not None]
+        num_items = len(low_items + upp_items)
+        # construct the linear program
+        matrix = cdd.Matrix(
+            # tau_i >= 0
+            [([0]
+              + [(1 if i == j else 0) for i in xrange(num_evs)]
+              + [0 for i in xrange(num_items)])
+             for j in xrange(num_evs)]
+            +
+            # tau_i <= 1
+            [([1]
+              + [(-1 if i == j else 0) for i in xrange(num_evs)]
+              + [0 for i in xrange(num_items)])
+             for j in xrange(num_evs)]
+            +
+            # lambda_i >= 0
+            [([0]
+              + [0 for i in xrange(num_evs)]
+              + [(1 if i == j else 0) for i in xrange(num_items)])
+             for j in xrange(num_items)]
+            +
+            # sum_{i,j,k}
+            #  - tau_k ev_k[omega]
+            #  - lambda_i (gamble_i[omega] - lprev_i)
+            #  - lambda_j (uprev_j - gamble_j[omega]) >= 0
+            [([0]
+              + [-1 if (omega in ev) else 0 for ev in evs]
+              + [lprev - gamble[omega]
+                 for (gamble, ev), (lprev, uprev) in low_items]
+              + [gamble[omega] - uprev
+                 for (gamble, ev), (lprev, uprev) in upp_items]
+              )
+              for omega in compl_event],
+            number_type=self.number_type)
+        matrix.rep_type = cdd.RepType.INEQUALITY
+        matrix.obj_type = cdd.LPObjType.MAX
+        # sum over all tau_i
+        matrix.obj_func = [0] + [1] * num_evs + [0] * num_items
+        #print(matrix) # DEBUG
+        linprog = cdd.LinProg(matrix)
+        linprog.solve()
+        #print(linprog.primal_solution) # DEBUG
+        if linprog.status != cdd.LPStatusType.OPTIMAL:
+            raise RuntimeError("BUG: unexpected status (%i)" % linprog.status)
+        # calculate set of events for which tau is 1
+        new_evs = set()
+        for tau, ev in itertools.izip(
+            linprog.primal_solution[:num_evs], evs):
+            if self.number_cmp(tau, 1) == 0:
+                new_evs.add(ev)
+            elif self.number_cmp(tau) != 0:
+                raise RuntimeError("unexpected solution for tau: {0}".format(tau))
+        # derive new set of items
+        new_items = set(
+            ((gamble, ev), (lprev, uprev))
+            for (gamble, ev), (lprev, uprev) in items
+            if ev in new_evs)
+        if items == new_items:
+            # if all tau were 1, we are done
+            return items
+        else:
+            # otherwise, reiterate the algorithm with the reduced set
+            # of items
+            return self._get_relevant_items(event=event, items=new_items)
+
+    def get_relevant_items(self, event=True):
+        """Calculate the relevant items for calculating the natural
+        extension conditional on an event.
+
+        This is part (a) (b) (c) of Algorithm 4 of Walley, Pelessoni,
+        and Vicig (2004). Also see their Algorithm 2, which is a
+        special case of Algorithm 4 but with event equal to the empty
+        set.
+        """
+        # implementation detail: this is cached; delete
+        # _relevant_items whenever cache needs to be cleared
+        event = self.pspace.make_event(event)
+        try:
+            return self._relevant_items[event]
+        except AttributeError:
+            self._relevant_items = {}
+        except KeyError:
+            pass
+        relevant_items = self._get_relevant_items(event=event)
+        self._relevant_items[event] = relevant_items
+        return relevant_items
+
     def _make_key(self, key):
         """Helper function to construct a key for the internal
         mapping. This implementation returns a gamble/event pair.
@@ -324,6 +429,10 @@ class LowPoly(LowPrev):
         # clear matrix cache
         try:
             del self._matrix
+        except AttributeError:
+            pass
+        try:
+            del self._relevant_items
         except AttributeError:
             pass
 
@@ -562,11 +671,13 @@ class LowPoly(LowPrev):
             self[gamble, event] = lprev, uprev
 
     def is_avoiding_sure_loss(self, algorithm='linprog'):
-        try:
-            self.get_lower([0] * len(self.pspace), algorithm=algorithm)
-        except ValueError:
-            return False
-        return True
+        """Check avoiding sure loss by linear programming.
+
+        This is Algorithm 2 of Walley, Pelessoni, and Vicig (2004).
+        """
+        # if there are no relevant items for conditioning on the empty
+        # set, then we avoids sure loss
+        return not self.get_relevant_items(event=False)
 
     def is_coherent(self, algorithm='linprog'):
         # first check if we are avoiding sure loss

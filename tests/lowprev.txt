@@ -180,24 +180,6 @@ This example incurs sure loss because the maximum of the sum of the gambles
 >>> lpr.is_avoiding_sure_loss()
 False
 
-This is the Example 6 from [#walley1999]_.
-
->>> pspace = PSpace(6)
->>> lpr = LowPoly(pspace=pspace, number_type='fraction')
->>> a = Event(pspace, (0,))
->>> b = Event(pspace, (0,1))
->>> c = Event(pspace, (0,1,2))
->>> d = Event(pspace, (0,1,2,3))
->>> f = Event(pspace, (0,1,2,3,4))
->>> lpr.set_lower(a, '1/16')
->>> lpr.set_lower(c.complement() & d, '0.01')
->>> lpr.set_upper(f, '0.51')
->>> lpr.set_upper(a, '0.49', event=b)
->>> lpr.set_upper(b, '0.51', event=c)
->>> lpr.set_upper(d, '0.51', event=f)
->>> lpr.is_avoiding_sure_loss()
-False
-
 See if we can handle zero probabilities:
 
 >>> lpr = LowPoly(pspace='abcd', number_type='fraction')
