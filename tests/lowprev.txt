@@ -198,6 +198,42 @@ This is the Example 6 from [#walley1999]_.
 >>> lpr.is_avoiding_sure_loss()
 False
 
+See if we can handle zero probabilities:
+
+>>> lpr = LowPoly(pspace='abcd', number_type='fraction')
+>>> lpr[{'a': 1}, True] = (1, None)
+>>> print(lpr)
+a b c d
+1 0 0 0 | a b c d : [1,  ]
+>>> lpr.is_avoiding_sure_loss()
+True
+
+Slightly more complicated:
+
+>>> lpr = LowPoly(pspace='abcd', number_type='fraction')
+>>> lpr[{'a': 1}, True] = (1, None)
+>>> lpr[{'b': 1}, 'bcd'] = (2, None) # obviously incurs sure loss!
+>>> print(lpr)
+a b c d
+1 0 0 0 | a b c d : [1,  ]
+0 1 0 0 |   b c d : [2,  ]
+>>> lpr.is_avoiding_sure_loss()
+False
+
+And even slightly more complicated:
+
+>>> lpr = LowPoly(pspace='abcd', number_type='fraction')
+>>> lpr[{'a': 1}, True] = (1, None)
+>>> lpr[{'b': 1}, 'bcd'] = ('2/3', None)
+>>> lpr[{'c': 1}, 'bcd'] = ('2/3', None) # sum larger than one on this layer
+>>> print(lpr)
+a b c d
+1 0 0 0 | a b c d : [1  ,    ]
+0 0 1 0 |   b c d : [2/3,    ]
+0 1 0 0 |   b c d : [2/3,    ]
+>>> lpr.is_avoiding_sure_loss()
+False
+
 Another more complex example:
 
 >>> lpr_s_t = LowPoly(pspace=9, number_type='float')
