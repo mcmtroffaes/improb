@@ -248,16 +248,29 @@ class LowPoly(LowPrev):
                           + tuple(x for x in val[0][0].values()))))
         return result
 
-    @property
-    def matrix(self):
-        """Matrix representing all the constraints of this lower prevision."""
+    def get_matrix(self, gamble=None, event=True):
+        """Matrix representing the constraints of this lower prevision
+        conditional on the given event.
+        """
         # implementation detail: this is cached; delete _matrix whenever
         # cache needs to be cleared
+        event = self.pspace.make_event(event)
         try:
-            return self._matrix
+            matrix = self._matrix[event]
         except AttributeError:
-            self._matrix = self._make_matrix()
-            return self._matrix
+            self._matrix = {}
+            matrix = self._get_matrix(event)
+            self._matrix[event] = matrix
+        except KeyError:
+            matrix = self._get_matrix(event)
+            self._matrix[event] = matrix
+        # set objective function, and return it
+        if gamble is None:
+            gamble = {}
+        gamble = self.make_gamble(gamble)
+        matrix.obj_func = [0] + [gamble[omega] if omega in event else 0
+                                 for omega in self.pspace]
+        return matrix
 
     def _get_relevant_items(self, event=True, items=None):
         """Helper function for get_relevant_items."""
@@ -350,9 +363,9 @@ class LowPoly(LowPrev):
         extension conditional on an event.
 
         This is part (a) (b) (c) of Algorithm 4 of Walley, Pelessoni,
-        and Vicig (2004). Also see their Algorithm 2, which is a
-        special case of Algorithm 4 but with event equal to the empty
-        set.
+        and Vicig (2004) [#walley2004]_. Also see their Algorithm 2,
+        which is a special case of Algorithm 4 but with event equal to
+        the empty set.
         """
         # implementation detail: this is cached; delete
         # _relevant_items whenever cache needs to be cleared
@@ -385,8 +398,9 @@ class LowPoly(LowPrev):
             self.make_number(lprev) if lprev is not None else None,
             self.make_number(uprev) if uprev is not None else None)
 
-    def _make_matrix(self):
+    def _get_matrix(self, event=True):
         """Construct cdd matrix representation."""
+        event = self.pspace.make_event(event)
         constraints = []
         lin_set = set()
 
@@ -395,37 +409,39 @@ class LowPoly(LowPrev):
                 lin_set.add(len(constraints))
             constraints.append(constraint)
 
-        # probabilities sum to one
-        add_constraint([+1] + [-1] * len(self.pspace), linear=True)
+        # probabilities sum to one over the event
+        add_constraint(
+            [+1] + [(-1 if omega in event else 0) for omega in self.pspace],
+            linear=True)
         # probabilities are positive
         for j in self.pspace:
             add_constraint([0] + [1 if i == j else 0 for i in self.pspace])
         # add constraints on conditional expectation
-        for gamble, event in self:
-            lprev, uprev = self[gamble, event]
+        for (gamble, ev), (lprev, uprev) in self.get_relevant_items(event=event):
             if lprev is None and uprev is None:
                 # nothing assigned
                 continue
             elif lprev == uprev:
                 # precise assignment
                 add_constraint(
-                    [0] + [value - lprev if omega in event else 0
+                    [0] + [value - lprev if omega in ev else 0
                            for omega, value in gamble.iteritems()],
                     linear=True)
             else:
                 # interval assignment
                 if lprev is not None:
                     add_constraint(
-                        [0] + [value - lprev if omega in event else 0
+                        [0] + [value - lprev if omega in ev else 0
                                for omega, value in gamble.iteritems()])
                 if uprev is not None:
                     add_constraint(
-                        [0] + [uprev - value if omega in event else 0
+                        [0] + [uprev - value if omega in ev else 0
                                for omega, value in gamble.iteritems()])
         # create matrix
         matrix = cdd.Matrix(constraints, number_type=self.number_type)
         matrix.lin_set = lin_set
         matrix.rep_type = cdd.RepType.INEQUALITY
+        matrix.obj_type = cdd.LPObjType.MIN
         return matrix
 
     def _clear_cache(self):
@@ -526,62 +542,27 @@ class LowPoly(LowPrev):
         # check algorithm
         if algorithm != 'linprog':
             raise ValueError("invalid algorithm '{0}'".format(algorithm))
-        # calculate lower expectation
-        gamble = self.make_gamble(gamble)
-        event = self.pspace.make_event(event)
-        if event == self.pspace.make_event(True):
-            matrix = self.matrix
-            matrix.obj_type = cdd.LPObjType.MIN
-            matrix.obj_func = [0] + gamble.values()
-            #print(matrix) # DEBUG
-            linprog = cdd.LinProg(matrix)
-            linprog.solve()
-            #print(linprog) # DEBUG
-            if linprog.status == cdd.LPStatusType.OPTIMAL:
-                return linprog.obj_value
-            elif linprog.status == cdd.LPStatusType.INCONSISTENT:
-                raise ValueError("lower prevision incurs sure loss")
-            else:
-                raise RuntimeError("BUG: unexpected status (%i)" % linprog.status)
-        else:
-            a = min(gamble[omega] for omega in event)
-            b = max(gamble[omega] for omega in event)
-            if a == b:
-                # constant gamble, can only have this conditional prevision
-                # (also, scipy.optimize.brentq raises an exception if a == b)
-                return a
-            lowprev_event = self.get_lower(event.indicator(self.number_type),
-                                           algorithm=algorithm)
-            if lowprev_event == 0:
-                raise ZeroDivisionError(
-                    "cannot condition on event with zero lower probability")
-            try:
-                result = scipy.optimize.brentq(
-                    f=lambda mu: float(self.get_lower((gamble - mu) * event,
-                                                      algorithm=algorithm)),
-                    a=float(a), b=float(b))
-            except ValueError as exc:
-                # re-raise with more detail
-                raise ValueError("{0}\n{1}\n{2}\n{3} {4}".format(
-                    exc,
-                    gamble, event,
-                    self.get_lower((gamble - a) * event, algorithm=algorithm), 
-                    self.get_lower((gamble - b) * event, algorithm=algorithm)))
-            # see if we can get the exact fractional solution
-            if self.number_type == 'fraction':
-                frac_result = Fraction.from_float(result).limit_denominator()
-                if self.get_lower((gamble - frac_result) * event,
-                                  algorithm=algorithm) == 0:
-                    return frac_result
-            return result
+        # check avoiding sure loss (just in case)
+        if not self.is_avoiding_sure_loss():
+            raise ValueError(
+                "lower prevision incurs sure loss:\n{0}".format(self))
+        # get the matrix
+        matrix = self.get_matrix(gamble, event)
+        #print(matrix) # DEBUG
+        linprog = cdd.LinProg(matrix)
+        linprog.solve()
+        #print(linprog) # DEBUG
+        if linprog.status != cdd.LPStatusType.OPTIMAL:
+            raise RuntimeError("BUG: unexpected status (%i)" % linprog.status)
+        return linprog.obj_value
 
-    def get_credal_set(self):
-        """Return extreme points of the credal set.
+    def get_credal_set(self, event=True):
+        """Return extreme points of the credal set conditional on event.
 
         :return: The extreme points.
         :rtype: Yields a :class:`tuple` for each extreme point.
         """
-        poly = cdd.Polyhedron(self.matrix)
+        poly = cdd.Polyhedron(self.get_matrix({}, event))
         for vert in poly.get_generators():
             yield vert[1:]
 
@@ -676,7 +657,8 @@ class LowPoly(LowPrev):
     def is_avoiding_sure_loss(self, algorithm='linprog'):
         """Check avoiding sure loss by linear programming.
 
-        This is Algorithm 2 of Walley, Pelessoni, and Vicig (2004).
+        This is Algorithm 2 of Walley, Pelessoni, and Vicig (2004)
+        [#walley2004]_.
         """
         # if there are no relevant items for conditioning on the empty
         # set, then we avoids sure loss
