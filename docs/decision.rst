@@ -1,24 +1,17 @@
 .. testsetup::
 
    from improb import PSpace, Gamble, Event
-   from improb.decision import Tree, Reward, Decision, Chance
+   from improb.decision import filter_maximal, dominates_pointwise
 
 .. module:: improb.decision
 
 Decision Making
 ===============
 
-.. autoclass:: Tree
-   :members:
+.. toctree::
+   :maxdepth: 1
 
-.. autoclass:: Reward
-   :show-inheritance:
-   :members:
+   decision/tree
 
-.. autoclass:: Decision
-   :show-inheritance:
-   :members:
-
-.. autoclass:: Chance
-   :show-inheritance:
-   :members:
+.. autofunction:: filter_maximal
+.. autofunction:: dominates_pointwise
