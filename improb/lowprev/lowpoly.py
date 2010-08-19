@@ -283,15 +283,15 @@ class LowPoly(LowPrev):
         compl_event = self.pspace.make_event(event).complement()
         # construct set of all conditioning events
         # (we need a variable tau_i for each of these)
-        evs = set(ev for (gamble, ev), (lprev, uprev) in items)
+        evs = set(ev for (ga, ev), (lprev, uprev) in items)
         num_evs = len(evs)
         # construct lists of lower and upper assessments
         # (we need a variable lambda_i for each of these)
-        low_items = [((gamble, ev), (lprev, uprev))
-                     for (gamble, ev), (lprev, uprev) in items
+        low_items = [((ga, ev), (lprev, uprev))
+                     for (ga, ev), (lprev, uprev) in items
                      if lprev is not None]
-        upp_items = [((gamble, ev), (lprev, uprev))
-                     for (gamble, ev), (lprev, uprev) in items
+        upp_items = [((ga, ev), (lprev, uprev))
+                     for (ga, ev), (lprev, uprev) in items
                      if uprev is not None]
         num_items = len(low_items + upp_items)
         # construct the linear program
@@ -316,14 +316,14 @@ class LowPoly(LowPrev):
             +
             # sum_{i,j,k}
             #  - tau_k ev_k[omega]
-            #  - lambda_i (gamble_i[omega] - lprev_i)
-            #  - lambda_j (uprev_j - gamble_j[omega]) >= 0
+            #  - lambda_i (ga_i[omega] - lprev_i)
+            #  - lambda_j (uprev_j - ga_j[omega]) >= 0
             [([0]
               + [-1 if (omega in ev) else 0 for ev in evs]
-              + [(lprev - gamble[omega]) if omega in ev else 0
-                 for (gamble, ev), (lprev, uprev) in low_items]
-              + [(gamble[omega] - uprev) if omega in ev else 0
-                 for (gamble, ev), (lprev, uprev) in upp_items]
+              + [(lprev - ga[omega]) if omega in ev else 0
+                 for (ga, ev), (lprev, uprev) in low_items]
+              + [(ga[omega] - uprev) if omega in ev else 0
+                 for (ga, ev), (lprev, uprev) in upp_items]
               )
               for omega in compl_event],
             number_type=self.number_type)
@@ -347,8 +347,8 @@ class LowPoly(LowPrev):
                 raise RuntimeError("unexpected solution for tau: {0}".format(tau))
         # derive new set of items
         new_items = set(
-            ((gamble, ev), (lprev, uprev))
-            for (gamble, ev), (lprev, uprev) in items
+            ((ga, ev), (lprev, uprev))
+            for (ga, ev), (lprev, uprev) in items
             if ev in new_evs)
         if items == new_items:
             # if all tau were 1, we are done
@@ -417,7 +417,7 @@ class LowPoly(LowPrev):
         for j in self.pspace:
             add_constraint([0] + [1 if i == j else 0 for i in self.pspace])
         # add constraints on conditional expectation
-        for (gamble, ev), (lprev, uprev) in self.get_relevant_items(event=event):
+        for (ga, ev), (lprev, uprev) in self.get_relevant_items(event=event):
             if lprev is None and uprev is None:
                 # nothing assigned
                 continue
@@ -425,18 +425,18 @@ class LowPoly(LowPrev):
                 # precise assignment
                 add_constraint(
                     [0] + [value - lprev if omega in ev else 0
-                           for omega, value in gamble.iteritems()],
+                           for omega, value in ga.iteritems()],
                     linear=True)
             else:
                 # interval assignment
                 if lprev is not None:
                     add_constraint(
                         [0] + [value - lprev if omega in ev else 0
-                               for omega, value in gamble.iteritems()])
+                               for omega, value in ga.iteritems()])
                 if uprev is not None:
                     add_constraint(
                         [0] + [uprev - value if omega in ev else 0
-                               for omega, value in gamble.iteritems()])
+                               for omega, value in ga.iteritems()])
         # create matrix
         matrix = cdd.Matrix(constraints, number_type=self.number_type)
         matrix.lin_set = lin_set
