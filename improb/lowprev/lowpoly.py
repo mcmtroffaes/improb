@@ -281,6 +281,9 @@ class LowPoly(LowPrev):
             # special case: no items!
             return []
         compl_event = self.pspace.make_event(event).complement()
+        if compl_event.is_false():
+            # special case: unconditional, no need to check further
+            return items
         # construct set of all conditioning events
         # (we need a variable tau_i for each of these)
         evs = set(ev for (ga, ev), (lprev, uprev) in items)
