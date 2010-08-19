@@ -23,7 +23,6 @@ import cdd
 import collections
 from fractions import Fraction
 import itertools
-import scipy.optimize
 
 from improb import PSpace, Gamble, Event
 from improb.lowprev import LowPrev
