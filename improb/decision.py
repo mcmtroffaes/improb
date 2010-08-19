@@ -75,8 +75,8 @@ class Tree(collections.MutableMapping):
     None
     >>> print(t)
     5.0
-    >>> list(t.get_normal_form_gambles())
-    [5.0]
+    >>> list(t.get_normal_form())
+    [(5.0, Reward(5.0, number_type='float'))]
     >>> t = Chance(pspace=(0, 1), data={(0,): Reward(5, number_type='float'), (1,): Reward(6, number_type='float')})
     >>> t.pspace
     PSpace(2)
@@ -86,7 +86,7 @@ class Tree(collections.MutableMapping):
     O--(0)--5.0
        |
        (1)--6.0
-    >>> list(t.get_normal_form_gambles())
+    >>> list(gamble for gamble, normal_tree in t.get_normal_form())
     [Gamble(pspace=PSpace(2), mapping={0: 5.0, 1: 6.0})]
     >>> t = Decision({"d1": Reward(5, number_type='float'),
     ...               "d2": Reward(6, number_type='float')})
@@ -96,8 +96,14 @@ class Tree(collections.MutableMapping):
     #--d2--6.0
        |
        d1--5.0
-    >>> list(sorted(t.get_normal_form_gambles()))
-    [5.0, 6.0]
+    >>> for gamble, normal_tree in sorted(t.get_normal_form()):
+    ...     print(gamble)
+    5.0
+    6.0
+    >>> for gamble, normal_tree in sorted(t.get_normal_form()):
+    ...     print(normal_tree)
+    #--d1--5.0
+    #--d2--6.0
     >>> pspace = PSpace(4)
     >>> t1 = Chance(pspace)
     >>> t1[(0,1)] = Reward(1, number_type='fraction')
@@ -128,16 +134,38 @@ class Tree(collections.MutableMapping):
                  (2,3)--9
     >>> t.pspace
     PSpace(4)
-    >>> print("\n-----\n".join(str(gamble) for gamble in t.get_normal_form_gambles()))
+    >>> for gamble, normal_tree in sorted(t.get_normal_form()):
+    ...     print(gamble)
+    ...     print('')
     0 : 1
     1 : 8
     2 : 2
     3 : 9
-    -----
+    <BLANKLINE>
     0 : 5
     1 : 8
     2 : 6
     3 : 9
+    <BLANKLINE>
+    >>> for gamble, normal_tree in sorted(t.get_normal_form()):
+    ...     print(normal_tree)
+    ...     print('')
+    O--(0,2)--#--d2--O--(0,1)--5
+       |                |
+       |                (2,3)--6
+       |
+       (1,3)--O--(0,1)--8
+                 |
+                 (2,3)--9
+    <BLANKLINE>
+    O--(0,2)--#--d1--O--(0,1)--1
+       |                |
+       |                (2,3)--2
+       |
+       (1,3)--O--(0,1)--8
+                 |
+                 (2,3)--9
+    <BLANKLINE>
     """
     __metaclass__ = ABCMeta
 
@@ -195,8 +223,10 @@ class Tree(collections.MutableMapping):
         return "\n".join(children)
 
     @abstractmethod
-    def get_normal_form_gambles(self):
-        """Yield all normal form gambles."""
+    def get_normal_form(self):
+        """Yield normal form as (gamble, tree) pairs, where the tree
+        represents the normal form decision corresponding to the gamble.
+        """
         raise NotImplementedError
 
 class Reward(Tree, cdd.NumberTypeable):
@@ -213,9 +243,8 @@ class Reward(Tree, cdd.NumberTypeable):
     def get_number_type(self):
         return self.number_type
 
-    def get_normal_form_gambles(self):
-        """Yield all normal form gambles."""
-        yield self.reward
+    def get_normal_form(self):
+        yield self.reward, self
 
     def __contains__(self, key):
         return False
@@ -236,8 +265,12 @@ class Reward(Tree, cdd.NumberTypeable):
         raise ValueError('reward node has no children')
 
     def __str__(self):
-        """Return string representation of tree."""
-        return str(self.reward)
+        return self.number_str(self.reward)
+
+    def __repr__(self):
+        return "Reward({0}, number_type='{1}')".format(
+            self.number_repr(self.reward),
+            self.number_type)
 
 class Decision(Tree):
     """A decision tree rooted at a decision node.
@@ -265,11 +298,10 @@ class Decision(Tree):
         # no chance node children, so return None
         return None
 
-    def get_normal_form_gambles(self):
-        """Yield all normal form gambles."""
-        for subtree in self.itervalues():
-            for gamble in subtree.get_normal_form_gambles():
-                yield gamble
+    def get_normal_form(self):
+        for decision, subtree in self.iteritems():
+            for gamble, normal_subtree in subtree.get_normal_form():
+                yield gamble, Decision(data={decision: normal_subtree})
 
     def __contains__(self, key):
         return key in self._data
@@ -291,6 +323,14 @@ class Decision(Tree):
 
     def __str__(self):
         return "#--" + "\n   ".join(Tree.__str__(self).split("\n"))
+
+    def __repr__(self):
+        return (
+            "Decision({"
+            + ", ".join("{0}: {1}".format(repr(key), repr(value))
+                      for key, value in self.iteritems())
+            + "})"
+            )
 
 class Chance(Tree):
     """A decision tree rooted at a chance node.
@@ -342,18 +382,20 @@ class Chance(Tree):
     def pspace(self):
         return self._pspace
 
-    def get_normal_form_gambles(self):
+    def get_normal_form(self):
         """Yield all normal form gambles."""
         number_type = self.get_number_type()
         # note: this implementation depends on the fact that
         # iterating self.itervalues() and
         # self.iterkeys() correspond to each other
-        all_gambles = itertools.product(
-            *[tuple(subtree.get_normal_form_gambles())
+        all_normal_forms = itertools.product(
+            *[tuple(subtree.get_normal_form())
               for subtree in self.itervalues()])
-        for gambles in all_gambles:
+        for normal_forms in all_normal_forms:
             data = {}
-            for event, gamble in itertools.izip(self.iterkeys(), gambles):
+            tree = OrderedDict()
+            for event, (gamble, normal_subtree) in itertools.izip(
+                self.iterkeys(), normal_forms):
                 for omega in event:
                     if isinstance(gamble, numbers.Real):
                         data[omega] = gamble
@@ -361,8 +403,13 @@ class Chance(Tree):
                         data[omega] = gamble[omega]
                     else:
                         raise RuntimeError(
-                            "expected int, long, float, or dict")
-            yield Gamble(pspace=self.pspace, data=data, number_type=number_type)
+                            "expected int, long, float, or Gamble")
+                tree[event] = normal_subtree
+            yield (Gamble(pspace=self.pspace,
+                          data=data,
+                          number_type=number_type),
+                   Chance(pspace=self.pspace,
+                          data=tree))
 
     def __contains__(self, key):
         return self.pspace.make_event(key) in self._data
@@ -384,3 +431,13 @@ class Chance(Tree):
 
     def __str__(self):
         return "O--" + "\n   ".join(Tree.__str__(self).split("\n"))
+
+    def __repr__(self):
+        return (
+            "Chance("
+            + "pspace={0}".format(repr(self.pspace))
+            + ", data={"
+            + ", ".join("{0}: {1}".format(repr(key), repr(value))
+                      for key, value in self.iteritems())
+            + "})"
+            )
