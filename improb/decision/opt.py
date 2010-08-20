@@ -168,7 +168,7 @@ class OptLowPrevMaxMax(OptLowPrevMaxMin):
     def get_value(self, gamble, event=True):
         return self._lowprev.get_upper(gamble, event=event)
 
-class OptLowPrevHurwicz(OptLowPrevMaxMin):
+class OptLowPrevMaxHurwicz(OptLowPrevMaxMin):
     """Hurwicz with respect to a lower prevision."""
     def __init__(self, lowprev, alpha):
         OptLowPrevMaxMin.__init__(self, lowprev)

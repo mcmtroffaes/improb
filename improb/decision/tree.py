@@ -181,10 +181,51 @@ class Tree(collections.MutableMapping):
         
         return "\n".join(children)
 
-    @abstractmethod
     def get_normal_form(self):
         """Yield normal form as (gamble, tree) pairs, where the tree
         represents the normal form decision corresponding to the gamble.
+        """
+        # get_norm_back_opt without optimality operator gives exactly all
+        # normal form gambles!
+        return self._get_norm_back_opt()
+
+    def get_norm_opt(self, opt=None, event=True):
+        """Normal form optimality with respect to a given optimality
+        operator, conditional on the given event.
+        """
+        if opt is None:
+            for gamble, normal_tree in self._get_norm_back_opt():
+                yield gamble, normal_tree
+        elif not isinstance(opt, Opt):
+            raise TypeError("expected a subclass of Opt")
+        normal_form = list(self._get_norm_back_opt())
+        opt_gambles = set(
+            opt((gamble for gamble, tree in normal_form), event))
+        for gamble, normal_tree in normal_form:
+            if gamble in opt_gambles:
+                yield gamble, normal_tree
+
+    def get_norm_back_opt(self, opt=None, event=True):
+        """Yield optimal solution by normal form backward induction,
+        as (gamble, tree) pairs, where the tree represents the normal
+        form decision corresponding to the gamble.
+        """
+        if opt is None:
+            for gamble, normal_tree in self._get_norm_back_opt():
+                yield gamble, normal_tree
+        elif not isinstance(opt, Opt):
+            raise TypeError("expected a subclass of Opt")
+        _norm_back_opt = list(self._get_norm_back_opt(opt, event))
+        opt_gambles = set(
+            opt((gamble for gamble, tree in _norm_back_opt), event))
+        for gamble, normal_tree in _norm_back_opt:
+            if gamble in opt_gambles:
+                yield gamble, tree
+
+    @abstractmethod
+    def _get_norm_back_opt(self, opt=None, event=True):
+        """This is the core implementation of get_norm_back_opt: it is
+        get_norm_back_opt but without applying opt at the root of the tree.
         """
         raise NotImplementedError
 
@@ -202,7 +243,7 @@ class Reward(Tree, cdd.NumberTypeable):
     def get_number_type(self):
         return self.number_type
 
-    def get_normal_form(self):
+    def _get_norm_back_opt(self, opt=None, event=True):
         yield self.reward, self
 
     def __contains__(self, key):
@@ -257,9 +298,9 @@ class Decision(Tree):
         # no chance node children, so return None
         return None
 
-    def get_normal_form(self):
+    def _get_norm_back_opt(self, opt=None, event=True):
         for decision, subtree in self.iteritems():
-            for gamble, normal_subtree in subtree.get_normal_form():
+            for gamble, normal_subtree in subtree.get_norm_back_opt(opt, event):
                 yield gamble, Decision(data={decision: normal_subtree})
 
     def __contains__(self, key):
@@ -341,14 +382,13 @@ class Chance(Tree):
     def pspace(self):
         return self._pspace
 
-    def get_normal_form(self):
-        """Yield all normal form gambles."""
+    def _get_norm_back_opt(self, opt=None, event=True):
         number_type = self.get_number_type()
         # note: this implementation depends on the fact that
         # iterating self.itervalues() and
         # self.iterkeys() correspond to each other
         all_normal_forms = itertools.product(
-            *[tuple(subtree.get_normal_form())
+            *[tuple(subtree.get_norm_back_opt())
               for subtree in self.itervalues()])
         for normal_forms in all_normal_forms:
             data = {}
