@@ -3,14 +3,14 @@
    from improb.lowprev.lowpoly import LowPoly
    from improb.lowprev.lowprob import LowProb
    from improb.lowprev.prob import Prob
-   from improb.decision import filter_maximal
+   from improb.decision.opt import OptLowPrevMax
 
 The following examples presume:
 
 >>> from improb.lowprev.lowpoly import LowPoly
 >>> from improb.lowprev.lowprob import LowProb
 >>> from improb.lowprev.prob import Prob
->>> from improb.decision import filter_maximal
+>>> from improb.decision.opt import OptLowPrevMax
 
 Natural Extension
 ~~~~~~~~~~~~~~~~~
@@ -66,9 +66,10 @@ False
 0 1 2 3
 4 1 2 0 | 0 1 2 3 : [ , 3]
 4 2 1 0 | 0 1 2 3 : [3,  ]
->>> list(filter_maximal([[1,0,0,0], [0,1,0,0], [0,0,1,0], [0,0,0,1]], lpr.dominates))
+>>> opt = OptLowPrevMax(lpr)
+>>> list(opt([[1,0,0,0], [0,1,0,0], [0,0,1,0], [0,0,0,1]]))
 [[1, 0, 0, 0], [0, 1, 0, 0]]
->>> list(filter_maximal([[0,0,0,0], [0,1,0,0], [0,0,1,0], [0,0,0,1]], lpr.dominates))
+>>> list(opt([[0,0,0,0], [0,1,0,0], [0,0,1,0], [0,0,0,1]]))
 [[0, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
 
 Another example, involving zero probabilities (see Example 9 and 11 in
@@ -459,12 +460,15 @@ False
 >>> # maximality
 >>> # XXX hackish way to check for dominance in this case
 >>> # XXX because lpr.dominates is broken due to other hacks above
->>> def dominates(gamble, other_gamble, tolerance=1e-6):
-...     return (lpr.get_lower(
-...             [[x - y for x, y in zip(xx, yy)]
-...              for xx, yy in zip(gamble, other_gamble)])
-...             > tolerance)
->>> list(filter_maximal([
+>>> class MyOpt(OptLowPrevMax):
+...     def is_strictly_larger(self, gamble, other_gamble, event=True):
+...         return (
+...             self._lowprev.get_lower(
+...                 [[x - y for x, y in zip(xx, yy)]
+...                  for xx, yy in zip(gamble, other_gamble)])
+...                 > 1e-6)
+>>> opt = MyOpt(lpr)
+>>> list(opt([
 ...     [[-1,-1,-1],[-1,-1,-1],[-1,-1,-1]],
 ...     [[-8, 4,19],[-1,-1,-1],[-1,-1,-1]],
 ...     [[-1,-1,-1],[-8, 4,19],[-1,-1,-1]],
@@ -475,8 +479,7 @@ False
 ...     [[-8, 4,19],[-8, 4,19],[-8, 4,19]],
 ...     [[ 0, 0, 0],[ 0, 0, 0],[ 0, 0, 0]],
 ...     [[-7, 5,20],[-7, 5,20],[-7, 5,20]],
-...     ],
-...     dominates))
+...     ]))
 [[[-7, 5, 20], [-7, 5, 20], [-7, 5, 20]]]
 
 Generalized Bayes Rule

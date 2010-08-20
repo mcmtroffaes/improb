@@ -5,7 +5,7 @@ A Simple Subtree Imperfect Decision Tree
 >>> import itertools
 >>> import random
 >>> from improb.lowprev.linvac import LinVac
->>> from improb.decision import filter_maximal
+>>> from improb.decision.opt import OptLowPrevMax
 >>> random.seed(40)
 >>> n1 = 2
 >>> n2 = 2
@@ -16,6 +16,7 @@ A Simple Subtree Imperfect Decision Tree
 ...     # construct a linear vacuous mixture
 ...     lprob = [Fraction('0.8') / len(pspace) for omega in pspace]
 ...     lpr = LinVac(pspace, lprob=lprob, number_type='float') # no need for randomness
+...     opt = OptLowPrevMax(lpr)
 ...     # construct gambles:
 ...     # gambles[w1][d][w2] gives the gain of the w1-d-w2 path
 ...     gambles = [[[random.randint(0, 2) + 0.01 * d + w1 * 0.005
@@ -47,7 +48,7 @@ A Simple Subtree Imperfect Decision Tree
 ...     local = {}
 ...     for w1 in range(n1):
 ...         event = set(w for w in pspace if w[0] == w1)
-...         local[w1] = list(filter_maximal([extgambles[w1][d] for d in range(ndec)], lpr.dominates, event))
+...         local[w1] = list(opt([extgambles[w1][d] for d in range(ndec)], event))
 ...         #print(w1, event)
 ...         #print(local[w1])
 ...     # calculate full solution by combining all local solutions
@@ -57,7 +58,7 @@ A Simple Subtree Imperfect Decision Tree
 ...         normlocal.add(tuple(sum(localgamble[w] for localgamble in localgambles) for w in pspace))
 ...     #print(normlocal)
 ...     # calculate full normal form solution
-...     norm = filter_maximal([normgambles[strat] for strat in strats], lpr.dominates)
+...     norm = opt([normgambles[strat] for strat in strats])
 ...     norm = set(tuple(normgamble[w] for w in pspace) for normgamble in norm)
 ...     #print(norm)
 ...     # calculate corresponding strategies
@@ -108,7 +109,7 @@ into an extensive form?
 >>> import itertools
 >>> import random
 >>> from improb.lowprev.lowprob import LowProb
->>> from improb.decision import filter_maximal
+>>> from improb.decision.opt import OptLowPrevMax
 >>> random.seed(10)
 >>> n1 = 2
 >>> n2 = 3
@@ -148,7 +149,7 @@ into an extensive form?
 ...     local = {}
 ...     for w1 in range(n1):
 ...         event = set(w for w in pspace if w[0] == w1)
-...         local[w1] = list(filter_maximal([extgambles[w1][d] for d in range(ndec)], lpr.dominates, event))
+...         local[w1] = list(opt([extgambles[w1][d] for d in range(ndec)], event))
 ...         #print(w1, event)
 ...         #print(local[w1])
 ...     # calculate full solution by combining all local solutions
@@ -158,7 +159,7 @@ into an extensive form?
 ...         normlocal.add(tuple(sum(localgamble[w] for localgamble in localgambles) for w in pspace))
 ...     #print(normlocal)
 ...     # calculate full normal form solution
-...     norm = filter_maximal([normgambles[strat] for strat in strats], lpr.dominates)
+...     norm = opt([normgambles[strat] for strat in strats])
 ...     norm = set(tuple(normgamble[w] for w in pspace) for normgamble in norm)
 ...     #print(norm)
 ...     # calculate corresponding strategies

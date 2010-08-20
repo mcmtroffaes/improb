@@ -22,15 +22,91 @@ from abc import ABCMeta, abstractproperty, abstractmethod
 import cdd
 
 from improb import PSpace, Gamble, Event
-from improb.decision import filter_maximal
 from improb.lowprev import LowPrev
 
 class Opt:
+    """Abstract base class for optimality operators."""
+    __metaclass__ = ABCMeta
+
     def __call__(self, gambles, event=True):
         """Yields optimal gambles from the given set of gambles."""
         raise NotImplementedError
 
-class OptAdmissible(Opt, cdd.NumberTypeable):
+class OptPartialPreorder:
+    """Abstract base class for optimality operators that use a
+    maximality criterion with respect to a partial preordering.
+    """
+    __metaclass__ = ABCMeta
+
+    @abstractmethod
+    def is_strictly_larger(self, gamble, other_gamble, event=True):
+        """Defines the partial ordering."""
+        raise NotImplementedError
+
+    def __call__(self, gambles, event=True):
+        """Yields optimal gambles from the given set of gambles."""
+        # keep track of maximal gambles
+        maximal_gambles = []
+        # make a stack of all possibly maximal gambles
+        # (this also makes a copy so we don't modify the original)
+        gambles = list(gambles)
+        while gambles:
+            # pop a candidate maximal gamble from the stack
+            gamble = gambles.pop(0)
+            # compare gamble against other maximal gambles
+            for other_gamble in maximal_gambles:
+                if self.is_strictly_larger(other_gamble, gamble, event):
+                    # not maximal
+                    break
+            else:
+                # compare gamble against remaining possibly maximal gambles
+                for other_gamble in gambles:
+                    if self.is_strictly_larger(other_gamble, gamble, event):
+                        # not maximal
+                        break
+                else:
+                    # we found a maximal one!
+                    yield gamble
+                    maximal_gambles.append(gamble)
+
+class OptTotalPreorder(cdd.NumberTypeable):
+    """Abstract base class for optimality operators that use a
+    maximality criterion with respect to a total preordering, which is
+    assumed to be represented via real numbers.
+    """
+    __metaclass__ = ABCMeta
+
+    @abstractmethod
+    def get_value(self, gamble, event=True):
+        """Defines the total order.
+
+        :return: The value of the gamble.
+        :rtype: |numbertype|
+        """
+        raise NotImplementedError
+
+    def __call__(self, gambles, event=True):
+        """Yields optimal gambles from the given set of gambles."""
+        # keep track of currently maximal gambles and value
+        maximal_gambles = []
+        maximal_value = None
+        for gamble in gambles:
+            # compare gamble against currently maximal gambles
+            value = self.get_value(gamble, event)
+            diff = (self.number_cmp(maximal_value, value)
+                    if maximal_gambles else 1)
+            if diff > 0:
+                # found a better one!
+                maximal_gambles = [gamble]
+                maximal_value = value
+            elif diff == 0:
+                # gamble is equally good, so also register it
+                maximal_gambles.append(gamble)
+        # return result
+        for gamble in maximal_gambles:
+            yield gamble
+
+class OptAdmissible(OptPartialPreorder, cdd.NumberTypeable):
     """Optimality by pointwise dominance."""
     def __init__(self, pspace, number_type=None):
         self._pspace = PSpace.make(pspace)
@@ -39,21 +115,21 @@ class OptAdmissible(Opt, cdd.NumberTypeable):
     def pspace(self):
         return self._pspace
 
-    def dominates(self, gamble, other_gamble, event=True):
+    def is_strictly_larger(self, gamble, other_gamble, event=True):
         """Check for pointwise dominance.
 
         >>> opt = OptAdmissible('abc', number_type='fraction')
-        >>> opt.dominates([1, 2, 3], [1, 2, 3])
+        >>> opt.is_strictly_larger([1, 2, 3], [1, 2, 3])
         False
-        >>> opt.dominates([1, 2, 3], [1, 1, 4])
+        >>> opt.is_strictly_larger([1, 2, 3], [1, 1, 4])
         False
-        >>> opt.dominates([1, 2, 3], [0, 1, 2])
+        >>> opt.is_strictly_larger([1, 2, 3], [0, 1, 2])
         True
-        >>> opt.dominates([1, 2, 3], [2, 3, 4])
+        >>> opt.is_strictly_larger([1, 2, 3], [2, 3, 4])
         False
-        >>> opt.dominates([1, 2, 3], [1, 2, '8/3'])
+        >>> opt.is_strictly_larger([1, 2, 3], [1, 2, '8/3'])
         True
-        >>> opt.dominates([1, 2, 3], [1, 5, 2], event='ac')
+        >>> opt.is_strictly_larger([1, 2, 3], [1, 5, 2], event='ac')
         True
         """
         gamble = self.pspace.make_gamble(gamble, self.number_type)
@@ -65,14 +141,39 @@ class OptAdmissible(Opt, cdd.NumberTypeable):
         return (all(diff >= 0 for diff in diffs)
                 and
                 any(diff > 0 for diff in diffs))
-    
 
-class OptLowPrevMax(Opt):
+class OptLowPrevMax(OptPartialPreorder):
     """Maximality with respect to a lower prevision."""
     def __init__(self, lowprev):
         if not isinstance(lowprev, LowPrev):
             raise TypeError("expected a lower prevision as first argument")
         self._lowprev = lowprev
 
-    def __call__(self, gambles, event=True):
-        return filter_maximal(gambles, self._lowprev.dominates, event)
+    def is_strictly_larger(self, gamble, other_gamble, event=True):
+        return self._lowprev.dominates(gamble, other_gamble, event=event)
+
+class OptLowPrevMaxMin(OptTotalPreorder):
+    """Gamma-maximin with respect to a lower prevision."""
+    def __init__(self, lowprev):
+        if not isinstance(lowprev, LowPrev):
+            raise TypeError("expected a lower prevision as first argument")
+        self._lowprev = lowprev
+
+    def get_value(self, gamble, event=True):
+        return self._lowprev.get_lower(gamble, event=event)
+
+class OptLowPrevMaxMax(OptLowPrevMaxMin):
+    """Gamma-maximin with respect to a lower prevision."""
+
+    def get_value(self, gamble, event=True):
+        return self._lowprev.get_upper(gamble, event=event)
+
+class OptLowPrevHurwicz(OptLowPrevMaxMin):
+    """Hurwicz with respect to a lower prevision."""
+    def __init__(self, lowprev, alpha):
+        OptLowPrevMaxMin.__init__(self, lowprev)
+        self.alpha = self.make_number(alpha)
+
+    def get_value(self, gamble, event=True):
+        return (self.alpha * self._lowprev.get_upper(gamble, event=event)
+                + (1 - self.alpha) * self._lowprev.get_lower(gamble, event=event))
