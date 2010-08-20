@@ -469,6 +469,14 @@ The next example is effectively the Monty Hall problem.
 
 .. rubric:: Footnotes
 
+.. [#kikuti2005]
+
+    Kikuti, D., Cozman, F., de Campos, C.: Partially ordered preferences
+    in decision trees: Computing strategies with imprecision in
+    probabilities. In: R. Brafman, U. Junker (eds.) IJCAI-05
+    Multidisciplinary Workshop on Advances in Preference Handling,
+    pp. 118–123, 2005.
+
 .. [#walley2004]
 
     Peter Walley, Renato Pelessoni, and Paolo Vicig. Journal of

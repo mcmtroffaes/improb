@@ -84,12 +84,12 @@ Solving the decision tree for the oil catter example in
    |                                        dry---:-8.0
    |
    no sounding--#--not drill--:0.0
-		   |
-		   drill------O--soak--:20.0
-				 |
-				 wet---:5.0
-				 |
-				 dry---:-7.0
+                   |
+                   drill------O--soak--:20.0
+                                 |
+                                 wet---:5.0
+                                 |
+                                 dry---:-7.0
 >>> lpr = LowPoly(pspace, number_type='float')
 >>> lpr[N, True] = (0.183, 0.222)
 >>> lpr[O, True] = (0.333, 0.363)
@@ -107,18 +107,18 @@ Solving the decision tree for the oil catter example in
 >>> for gamble, normal_tree in u.get_norm_back_opt(opt):
 ...     print(normal_tree)
 #--no sounding--#--drill--O--soak--:20.0
-			     |
-			     wet---:5.0
-			     |
-			     dry---:-7.0
+                             |
+                             wet---:5.0
+                             |
+                             dry---:-7.0
 >>> # note: backopt should be normopt for maximality!! let's check...
 >>> for gamble, normal_tree in u.get_norm_opt(opt):
 ...     print(normal_tree)
 #--no sounding--#--drill--O--soak--:20.0
-			     |
-			     wet---:5.0
-			     |
-			     dry---:-7.0
+                             |
+                             wet---:5.0
+                             |
+                             dry---:-7.0
 
 .. rubric:: Footnotes
 
