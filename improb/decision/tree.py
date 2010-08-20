@@ -198,12 +198,13 @@ class Tree(collections.MutableMapping):
                 yield gamble, normal_tree
         elif not isinstance(opt, Opt):
             raise TypeError("expected a subclass of Opt")
-        normal_form = list(self._get_norm_back_opt())
-        opt_gambles = set(
-            opt((gamble for gamble, tree in normal_form), event))
-        for gamble, normal_tree in normal_form:
-            if gamble in opt_gambles:
-                yield gamble, normal_tree
+        else:
+            normal_form = list(self._get_norm_back_opt())
+            opt_gambles = set(
+                opt((gamble for gamble, tree in normal_form), event))
+            for gamble, normal_tree in normal_form:
+                if gamble in opt_gambles:
+                    yield gamble, normal_tree
 
     def get_norm_back_opt(self, opt=None, event=True):
         """Yield optimal solution by normal form backward induction,
@@ -215,12 +216,13 @@ class Tree(collections.MutableMapping):
                 yield gamble, normal_tree
         elif not isinstance(opt, Opt):
             raise TypeError("expected a subclass of Opt")
-        _norm_back_opt = list(self._get_norm_back_opt(opt, event))
-        opt_gambles = set(
-            opt((gamble for gamble, tree in _norm_back_opt), event))
-        for gamble, normal_tree in _norm_back_opt:
-            if gamble in opt_gambles:
-                yield gamble, tree
+        else:
+            _norm_back_opt = list(self._get_norm_back_opt(opt, event))
+            opt_gambles = set(
+                opt((gamble for gamble, tree in _norm_back_opt), event))
+            for gamble, normal_tree in _norm_back_opt:
+                if gamble in opt_gambles:
+                    yield gamble, tree
 
     @abstractmethod
     def _get_norm_back_opt(self, opt=None, event=True):

@@ -11,6 +11,8 @@ Decision Trees
 .. autoclass:: Tree
    :members:
 
+   .. automethod:: _get_norm_back_opt
+
 .. autoclass:: Reward
    :show-inheritance:
    :members:
