@@ -120,6 +120,108 @@ Solving the decision tree for the oil catter example in
                              |
                              dry---:-7.0
 
+Solving the lake district example:
+
+>>> c = 1 # cost of newspaper
+>>> pspace = PSpace('rs','RS')
+>>> R_ = pspace.make_event('r', 'RS', name='predict rain')
+>>> S_ = pspace.make_event('s', 'RS', name='predict sunshine')
+>>> R = pspace.make_event('rs', 'R', name='rain')
+>>> S = pspace.make_event('rs', 'S', name='sunshine')
+>>> t0 = Chance(pspace)
+>>> t0[R] = Reward(10, number_type='float')
+>>> t0[S] = Reward(15, number_type='float')
+>>> t1 = Chance(pspace)
+>>> t1[R] = Reward(5, number_type='float')
+>>> t1[S] = Reward(20, number_type='float')
+>>> t = Decision()
+>>> t["take waterproof"] = t0
+>>> t["no waterproof"] = t1
+>>> s = Chance(pspace)
+>>> s[R_] = t
+>>> s[S_] = t
+>>> u = Decision()
+>>> u["buy newspaper"] = s - c
+>>> u["do not buy"] = t
+>>> print(u)
+#--buy newspaper--O--predict rain------#--take waterproof--O--rain------:9.0
+   |                 |                    |                   |
+   |                 |                    |                   sunshine--:14.0
+   |                 |                    |
+   |                 |                    no waterproof----O--rain------:4.0
+   |                 |                                        |
+   |                 |                                        sunshine--:19.0
+   |                 |
+   |                 predict sunshine--#--take waterproof--O--rain------:9.0
+   |                                      |                   |
+   |                                      |                   sunshine--:14.0
+   |                                      |
+   |                                      no waterproof----O--rain------:4.0
+   |                                                          |
+   |                                                          sunshine--:19.0
+   |
+   do not buy-----#--take waterproof--O--rain------:10.0
+		     |                   |
+		     |                   sunshine--:15.0
+		     |
+		     no waterproof----O--rain------:5.0
+					 |
+					 sunshine--:20.0
+>>> lpr = LowPoly(pspace, number_type='float')
+>>> lpr[R_ & R, True] = (0.42 * 0.9, None)
+>>> lpr[R_ & S, True] = (0.18 * 0.9, None)
+>>> lpr[S_ & R, True] = (0.08 * 0.9, None)
+>>> lpr[S_ & S, True] = (0.32 * 0.9, None)
+>>> for c in [0.579, 0.581, 1.579, 1.581]:
+...     print("newspaper cost = {0}".format(c))
+...     u["buy newspaper"] = s - c
+...     opt = OptLowPrevMax(lpr)
+...     for gamble, normal_tree in u.get_norm_back_opt(opt):
+...         print(normal_tree)
+newspaper cost = 0.579
+#--buy newspaper--O--predict rain------#--take waterproof--O--rain------:9.421
+		     |                                        |
+		     |                                        sunshine--:14.421
+		     |
+		     predict sunshine--#--no waterproof--O--rain------:4.421
+							    |
+							    sunshine--:19.421
+newspaper cost = 0.581
+#--buy newspaper--O--predict rain------#--take waterproof--O--rain------:9.419
+		     |                                        |
+		     |                                        sunshine--:14.419
+		     |
+		     predict sunshine--#--no waterproof--O--rain------:4.419
+							    |
+							    sunshine--:19.419
+#--do not buy--#--take waterproof--O--rain------:10.0
+				      |
+				      sunshine--:15.0
+#--do not buy--#--no waterproof--O--rain------:5.0
+				    |
+				    sunshine--:20.0
+newspaper cost = 1.579
+#--buy newspaper--O--predict rain------#--take waterproof--O--rain------:8.421
+		     |                                        |
+		     |                                        sunshine--:13.421
+		     |
+		     predict sunshine--#--no waterproof--O--rain------:3.421
+							    |
+							    sunshine--:18.421
+#--do not buy--#--take waterproof--O--rain------:10.0
+				      |
+				      sunshine--:15.0
+#--do not buy--#--no waterproof--O--rain------:5.0
+				    |
+				    sunshine--:20.0
+newspaper cost = 1.581
+#--do not buy--#--take waterproof--O--rain------:10.0
+				      |
+				      sunshine--:15.0
+#--do not buy--#--no waterproof--O--rain------:5.0
+				    |
+				    sunshine--:20.0
+
 .. rubric:: Footnotes
 
 .. [#kikuti2005]
