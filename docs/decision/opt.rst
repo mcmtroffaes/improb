@@ -10,8 +10,22 @@
 Optimality Operators
 ====================
 
+Abstract Operators
+------------------
+
 .. autoclass:: Opt
    :members:
+
+.. autoclass:: OptPartialPreorder
+   :show-inheritance:
+   :members:
+
+.. autoclass:: OptTotalPreorder
+   :show-inheritance:
+   :members:
+
+Concrete Operators
+------------------
 
 .. autoclass:: OptAdmissible
    :show-inheritance:

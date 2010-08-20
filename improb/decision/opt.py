@@ -28,11 +28,12 @@ class Opt:
     """Abstract base class for optimality operators."""
     __metaclass__ = ABCMeta
 
+    @abstractmethod
     def __call__(self, gambles, event=True):
         """Yields optimal gambles from the given set of gambles."""
         raise NotImplementedError
 
-class OptPartialPreorder:
+class OptPartialPreorder(Opt):
     """Abstract base class for optimality operators that use a
     maximality criterion with respect to a partial preordering.
     """
@@ -69,7 +70,7 @@ class OptPartialPreorder:
                     yield gamble
                     maximal_gambles.append(gamble)
 
-class OptTotalPreorder(cdd.NumberTypeable):
+class OptTotalPreorder(Opt, cdd.NumberTypeable):
     """Abstract base class for optimality operators that use a
     maximality criterion with respect to a total preordering, which is
     assumed to be represented via real numbers.
