@@ -1,7 +1,7 @@
 #!/bin/sh
 pushd .
 (
-git clean -xfd &&
+(([ "$1" == "clean" ] && git clean -xfd) || true) &&
 python setup.py build &&
 python setup.py install --user &&
 pushd docs &&

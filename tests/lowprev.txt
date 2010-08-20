@@ -479,26 +479,6 @@ False
 ...     dominates))
 [[[-7, 5, 20], [-7, 5, 20], [-7, 5, 20]]]
 
-Maximality
-~~~~~~~~~~
-
-Example taken from [#troffaes2007]_:
-
->>> lpr = LowPoly(pspace=2, number_type='float')
->>> lpr.set_lower([1, 0], '0.28')
->>> lpr.set_upper([1, 0], '0.70')
->>> list(filter_maximal([[4, 0], [0, 4], [3, 2], [0.5, 3], [2.35, 2.35], [4.1, -0.3]], lpr.dominates)) == [[4, 0], [0, 4], [3, 2], [2.35, 2.35]]
-True
-
-Another example:
-
->>> lpr = Prob(pspace=4, prob=['0.42', '0.08', '0.18', '0.32'], number_type='float').get_linvac(0.1)
->>> for c in range(3):
-...     list(filter_maximal([[10-c,10-c,15-c,15-c],[10-c,5-c,15-c,20-c],[5-c,10-c,20-c,15-c],[5-c,5-c,20-c,20-c],[10,10,15,15],[5,5,20,20]], lpr.dominates))
-[[10, 5, 15, 20]]
-[[9, 4, 14, 19], [10, 10, 15, 15], [5, 5, 20, 20]]
-[[10, 10, 15, 15], [5, 5, 20, 20]]
-
 Generalized Bayes Rule
 ~~~~~~~~~~~~~~~~~~~~~~
 
@@ -514,12 +494,6 @@ The next example is effectively the Monty Hall problem.
 1/2
 
 .. rubric:: Footnotes
-
-.. [#troffaes2007]
-
-    Matthias C. M. Troffaes. Decision making under uncertainty using
-    imprecise probabilities. International Journal of Approximate
-    Reasoning, 45(1):17-29, May 2007.
 
 .. [#walley2004]
 

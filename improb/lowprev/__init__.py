@@ -72,81 +72,7 @@ class LowPrev(collections.MutableMapping, NumberTypeable):
         return -self.get_lower(gamble=-gamble, event=event, algorithm=algorithm)
 
     def make_gamble(self, gamble):
-        """If *gamble* is
-
-        * a :class:`Gamble`, then checks possibility space and number
-          type and returns *gamble*,
-
-        * an :class:`Event`, then checks possibility space and returns
-          the indicator of *gamble* with the correct number type,
-
-        * anything else, then construct a :class:`Gamble` using
-          *gamble* as data.
-
-        :param gamble: The gamble.
-        :type gamble: |gambletype|
-        :return: A gamble.
-        :rtype: :class:`Gamble`
-        :raises: :exc:`~exceptions.ValueError` if possibility spaces
-            or number types do not match
-
-        >>> from improb import PSpace, Event, Gamble
-        >>> from improb.lowprev.lowpoly import LowPoly
-        >>> lpr = LowPoly(pspace='abc', number_type='fraction')
-        >>> event = Event('abc', 'ac')
-        >>> gamble = event.indicator('fraction')
-        >>> fgamble = event.indicator('float')
-        >>> pevent = Event('ab', False)
-        >>> pgamble = Gamble('ab', [2, 5], number_type='fraction')
-        >>> print(lpr.make_gamble({'b': 1}))
-        a : 0
-        b : 1
-        c : 0
-        >>> print(lpr.make_gamble(event))
-        a : 1
-        b : 0
-        c : 1
-        >>> print(lpr.make_gamble(gamble))
-        a : 1
-        b : 0
-        c : 1
-        >>> print(lpr.make_gamble(fgamble)) # doctest: +ELLIPSIS
-        Traceback (most recent call last):
-            ...
-        ValueError: ...
-        >>> print(lpr.make_gamble(pevent)) # doctest: +ELLIPSIS
-        Traceback (most recent call last):
-            ...
-        ValueError: ...
-        >>> print(lpr.make_gamble(pgamble)) # doctest: +ELLIPSIS
-        Traceback (most recent call last):
-            ...
-        ValueError: ...
-        >>> print(lpr.make_gamble({'a': 1, 'b': 0, 'c': 8}))
-        a : 1
-        b : 0
-        c : 8
-        >>> print(lpr.make_gamble(range(2, 9, 3)))
-        a : 2
-        b : 5
-        c : 8
-        """
-        if isinstance(gamble, Gamble):
-            if self.pspace != gamble.pspace:
-                raise ValueError('possibility space mismatch')
-            if self.number_type != gamble.number_type:
-                raise ValueError('number type mismatch')
-            return gamble
-        elif isinstance(gamble, Event):
-            if self.pspace != gamble.pspace:
-                raise ValueError('possibility space mismatch')
-            return gamble.indicator(number_type=self.number_type)
-        else:
-            return Gamble(self.pspace, gamble, number_type=self.number_type)
-
-    #def getcredalset(self):
-    #    """Find credal set corresponding to this lower prevision."""
-    #    raise NotImplementedError
+        return self.pspace.make_gamble(gamble, self.number_type)
 
     @abstractmethod
     def is_avoiding_sure_loss(self, algorithm=None):
@@ -202,4 +128,4 @@ class LowPrev(collections.MutableMapping, NumberTypeable):
         gamble = self.make_gamble(gamble)
         other_gamble = self.make_gamble(other_gamble)
         return self.number_cmp(
-            self.get_lower(gamble - other_gamble, event, algorithm), 0) == 1
+            self.get_lower(gamble - other_gamble, event, algorithm)) == 1

@@ -17,6 +17,8 @@
 
 """A module with utility functions for decision making."""
 
+from __future__ import division, absolute_import, print_function
+
 from improb import PSpace, Event, Gamble
 
 def filter_maximal(set_, dominates, *args):
@@ -59,4 +61,3 @@ def dominates_pointwise(gamble, other_gamble, event=True, tolerance=1e-6):
     return (all(x >= y for  x, y in zip(gamble, other_gamble))
             and any(x > y + tolerance
                     for x, y in zip(gamble, other_gamble)))
-        

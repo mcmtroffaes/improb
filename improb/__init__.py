@@ -182,6 +182,80 @@ class PSpace(collections.Set, collections.Hashable):
         else:
             return Event(self, itertools.product(*args))
 
+    def make_gamble(self, gamble, number_type):
+        """If *gamble* is
+
+        * a :class:`Gamble`, then checks possibility space and number
+          type and returns *gamble*,
+
+        * an :class:`Event`, then checks possibility space and returns
+          the indicator of *gamble* with the correct number type,
+
+        * anything else, then construct a :class:`Gamble` using
+          *gamble* as data.
+
+        :param gamble: The gamble.
+        :type gamble: |gambletype|
+        :param number_type: The type to use for numbers: ``'float'`` or ``'fraction'``.
+        :type number_type: :class:`str`
+        :return: A gamble.
+        :rtype: :class:`Gamble`
+        :raises: :exc:`~exceptions.ValueError` if possibility spaces
+            or number types do not match
+
+        >>> from improb import PSpace, Event, Gamble
+        >>> pspace = PSpace('abc')
+        >>> event = Event(pspace, 'ac')
+        >>> gamble = event.indicator('fraction')
+        >>> fgamble = event.indicator('float')
+        >>> pevent = Event('ab', False)
+        >>> pgamble = Gamble('ab', [2, 5], number_type='fraction')
+        >>> print(pspace.make_gamble({'b': 1}, 'fraction'))
+        a : 0
+        b : 1
+        c : 0
+        >>> print(pspace.make_gamble(event, 'fraction'))
+        a : 1
+        b : 0
+        c : 1
+        >>> print(pspace.make_gamble(gamble, 'fraction'))
+        a : 1
+        b : 0
+        c : 1
+        >>> print(pspace.make_gamble(fgamble, 'fraction')) # doctest: +ELLIPSIS
+        Traceback (most recent call last):
+            ...
+        ValueError: ...
+        >>> print(pspace.make_gamble(pevent, 'fraction')) # doctest: +ELLIPSIS
+        Traceback (most recent call last):
+            ...
+        ValueError: ...
+        >>> print(pspace.make_gamble(pgamble, 'fraction')) # doctest: +ELLIPSIS
+        Traceback (most recent call last):
+            ...
+        ValueError: ...
+        >>> print(pspace.make_gamble({'a': 1, 'b': 0, 'c': 8}, 'fraction'))
+        a : 1
+        b : 0
+        c : 8
+        >>> print(pspace.make_gamble(range(2, 9, 3), 'fraction'))
+        a : 2
+        b : 5
+        c : 8
+        """
+        if isinstance(gamble, Gamble):
+            if self != gamble.pspace:
+                raise ValueError('possibility space mismatch')
+            if number_type != gamble.number_type:
+                raise ValueError('number type mismatch')
+            return gamble
+        elif isinstance(gamble, Event):
+            if self != gamble.pspace:
+                raise ValueError('possibility space mismatch')
+            return gamble.indicator(number_type=number_type)
+        else:
+            return Gamble(self, gamble, number_type=number_type)
+
     def __len__(self):
         return len(self._data)
 
@@ -505,6 +579,7 @@ class Gamble(collections.Mapping, collections.Hashable, NumberTypeable):
     def __neg__(self):
         return Gamble(self.pspace, [-value for value in self.itervalues()],
                       number_type=self.number_type)
+
 
 class Event(collections.Set, collections.Hashable):
     """An immutable event.
