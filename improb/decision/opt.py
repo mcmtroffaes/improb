@@ -94,8 +94,8 @@ class OptTotalPreorder(cdd.NumberTypeable):
             # compare gamble against currently maximal gambles
             value = self.get_value(gamble, event)
             diff = (self.number_cmp(maximal_value, value)
-                    if maximal_gambles else 1)
-            if diff > 0:
+                    if maximal_gambles else -1)
+            if diff < 0:
                 # found a better one!
                 maximal_gambles = [gamble]
                 maximal_value = value
