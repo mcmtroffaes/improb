@@ -1,7 +1,7 @@
 Welcome to improb's documentation!
 ==================================
 
-:Release: |version|
+:Release: |release|
 :Date:    |today|
 
 .. toctree::
