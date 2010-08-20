@@ -1,0 +1,438 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>More Examples &mdash; improb v0.1.0 (beta) documentation</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1.0 (beta)',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="improb v0.1.0 (beta) documentation" href="../index.html" />
+    <link rel="up" title="Lower Previsions" href="../lowprev.html" />
+    <link rel="next" title="Set Functions" href="../setfunction.html" />
+    <link rel="prev" title="Probability Measures" href="prob.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../setfunction.html" title="Set Functions"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="prob.html" title="Probability Measures"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">improb v0.1.0 (beta) documentation</a> &raquo;</li>
+          <li><a href="../lowprev.html" accesskey="U">Lower Previsions</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="more-examples">
+<h1>More Examples<a class="headerlink" href="#more-examples" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="mobius-transform-and-natural-extension">
+<h2>Mobius Transform and Natural Extension<a class="headerlink" href="#mobius-transform-and-natural-extension" title="Permalink to this headline">¶</a></h2>
+<p>This example shows that, in general, the Mobius transform of a
+coherent lower probability cannot be used to calculate its natural
+extension.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">itertools</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">random</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">improb.lowprev.lowprob</span> <span class="kn">import</span> <span class="n">LowProb</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">improb.lowprev.belfunc</span> <span class="kn">import</span> <span class="n">BelFunc</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">n</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">events</span> <span class="o">=</span> <span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">event</span><span class="p">)</span> <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">repeat</span><span class="o">=</span><span class="n">n</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gambles</span> <span class="o">=</span> <span class="p">[[</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">)]</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">20</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">20</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="c"># construct belief function from lower probability</span>
+<span class="gp">... </span>    <span class="n">lpr</span> <span class="o">=</span> <span class="n">LowProb</span><span class="o">.</span><span class="n">make_random</span><span class="p">(</span><span class="n">pspace</span><span class="o">=</span><span class="n">n</span><span class="p">,</span> <span class="n">division</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">lpr</span><span class="o">.</span><span class="n">extend</span><span class="p">()</span>
+<span class="gp">... </span>    <span class="n">bel</span> <span class="o">=</span> <span class="n">BelFunc</span><span class="p">(</span><span class="n">lpr</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="c"># check for incoherence</span>
+<span class="gp">... </span>    <span class="k">for</span> <span class="n">gamble</span> <span class="ow">in</span> <span class="n">gambles</span><span class="p">:</span>
+<span class="gp">... </span>        <span class="k">if</span> <span class="n">lpr</span><span class="o">.</span><span class="n">number_cmp</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">get_lower</span><span class="p">(</span><span class="n">gamble</span><span class="p">),</span> <span class="n">bel</span><span class="o">.</span><span class="n">get_lower</span><span class="p">(</span><span class="n">gamble</span><span class="p">))</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+<span class="gp">... </span>            <span class="k">print</span><span class="p">(</span><span class="s">&#39;lpr (lower probability):&#39;</span><span class="p">)</span>
+<span class="gp">... </span>            <span class="k">print</span><span class="p">(</span><span class="n">lpr</span><span class="p">)</span>
+<span class="gp">... </span>            <span class="k">print</span><span class="p">(</span><span class="s">&#39;bel.mobius (basic belief assignment):&#39;</span><span class="p">)</span>
+<span class="gp">... </span>            <span class="k">print</span><span class="p">(</span><span class="n">bel</span><span class="o">.</span><span class="n">mobius</span><span class="p">)</span>
+<span class="gp">... </span>            <span class="k">print</span><span class="p">(</span><span class="s">&quot;lpr.get_lower({0})={1}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">gamble</span><span class="p">,</span> <span class="n">lpr</span><span class="o">.</span><span class="n">get_lower</span><span class="p">(</span><span class="n">gamble</span><span class="p">)))</span>
+<span class="gp">... </span>            <span class="k">print</span><span class="p">(</span><span class="s">&quot;bel.get_lower({0})={1}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">gamble</span><span class="p">,</span> <span class="n">bel</span><span class="o">.</span><span class="n">get_lower</span><span class="p">(</span><span class="n">gamble</span><span class="p">)))</span>
+<span class="gp">... </span>            <span class="k">break</span>
+<span class="gp">... </span>    <span class="k">else</span><span class="p">:</span>
+<span class="gp">... </span>        <span class="c"># no incoherence found! try another one</span>
+<span class="gp">... </span>        <span class="k">continue</span>
+<span class="gp">... </span>    <span class="k">break</span>
+<span class="gp">... </span><span class="k">else</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s">&quot;no counterexample found&quot;</span><span class="p">)</span>
+<span class="go">lpr (lower probability):</span>
+<span class="go">        : 0</span>
+<span class="go">0       : 0</span>
+<span class="go">  1     : 0</span>
+<span class="go">    2   : 0</span>
+<span class="go">      3 : 0</span>
+<span class="go">0 1     : 0</span>
+<span class="go">0   2   : 1/2</span>
+<span class="go">0     3 : 1/2</span>
+<span class="go">  1 2   : 1/2</span>
+<span class="go">  1   3 : 1/2</span>
+<span class="go">    2 3 : 0</span>
+<span class="go">0 1 2   : 1/2</span>
+<span class="go">0 1   3 : 1/2</span>
+<span class="go">0   2 3 : 1/2</span>
+<span class="go">  1 2 3 : 1/2</span>
+<span class="go">0 1 2 3 : 1</span>
+<span class="go">bel.mobius (basic belief assignment):</span>
+<span class="go">        : 0</span>
+<span class="go">0       : 0</span>
+<span class="go">  1     : 0</span>
+<span class="go">    2   : 0</span>
+<span class="go">      3 : 0</span>
+<span class="go">0 1     : 0</span>
+<span class="go">0   2   : 1/2</span>
+<span class="go">0     3 : 1/2</span>
+<span class="go">  1 2   : 1/2</span>
+<span class="go">  1   3 : 1/2</span>
+<span class="go">    2 3 : 0</span>
+<span class="go">0 1 2   : -1/2</span>
+<span class="go">0 1   3 : -1/2</span>
+<span class="go">0   2 3 : -1/2</span>
+<span class="go">  1 2 3 : -1/2</span>
+<span class="go">0 1 2 3 : 1</span>
+<span class="go">lpr.get_lower([2, 0, 1, 1])=1</span>
+<span class="go">bel.get_lower([2, 0, 1, 1])=1/2</span>
+</pre></div>
+</div>
+<p>Quick check:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">lpr</span><span class="o">.</span><span class="n">get_lower</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span> <span class="o">&gt;=</span> <span class="n">lpr</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span><span class="o">+</span><span class="n">lpr</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span><span class="o">=</span><span class="mi">1</span>
+<span class="n">bel</span><span class="o">.</span><span class="n">get_lower</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span> <span class="o">=</span> <span class="mf">0.5</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="mi">1</span><span class="o">+</span><span class="mi">0</span><span class="o">+</span><span class="mi">0</span><span class="o">+</span><span class="mi">0</span><span class="o">+</span><span class="mi">0</span><span class="o">-</span><span class="mi">1</span><span class="o">+</span><span class="mi">0</span><span class="o">+</span><span class="mi">0</span><span class="p">)</span><span class="o">=</span><span class="mf">0.5</span>
+</pre></div>
+</div>
+<p>However, it seems that the Mobius transform of a 2-monotone lower
+probability <em>can</em> be used to calculate its natural extension. The
+following simulation seems to confirm this for a space of size 3 (all
+coherent lower probabilities on such space are 2-monotone).</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">itertools</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">random</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">improb.lowprev.lowprob</span> <span class="kn">import</span> <span class="n">LowProb</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">improb.lowprev.belfunc</span> <span class="kn">import</span> <span class="n">BelFunc</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">n</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gambles</span> <span class="o">=</span> <span class="p">[[</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">5</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">)]</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">20</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">20</span><span class="p">):</span> <span class="c"># increase at will...</span>
+<span class="gp">... </span>    <span class="c"># construct a coherent lower probability</span>
+<span class="gp">... </span>    <span class="n">lpr</span> <span class="o">=</span> <span class="n">LowProb</span><span class="o">.</span><span class="n">make_random</span><span class="p">(</span><span class="n">pspace</span><span class="o">=</span><span class="n">n</span><span class="p">,</span> <span class="n">division</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">lpr</span><span class="o">.</span><span class="n">extend</span><span class="p">()</span>
+<span class="gp">... </span>    <span class="n">bel</span> <span class="o">=</span> <span class="n">BelFunc</span><span class="p">(</span><span class="n">lpr</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="c"># check for incoherence</span>
+<span class="gp">... </span>    <span class="k">for</span> <span class="n">gamble</span> <span class="ow">in</span> <span class="n">gambles</span><span class="p">:</span>
+<span class="gp">... </span>        <span class="k">if</span> <span class="n">lpr</span><span class="o">.</span><span class="n">number_cmp</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">get_lower</span><span class="p">(</span><span class="n">gamble</span><span class="p">),</span> <span class="n">bel</span><span class="o">.</span><span class="n">get_lower</span><span class="p">(</span><span class="n">gamble</span><span class="p">))</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+<span class="gp">... </span>            <span class="k">print</span><span class="p">(</span><span class="s">&#39;lpr (lower probability):&#39;</span><span class="p">)</span>
+<span class="gp">... </span>            <span class="k">print</span><span class="p">(</span><span class="n">lpr</span><span class="p">)</span>
+<span class="gp">... </span>            <span class="k">print</span><span class="p">(</span><span class="s">&#39;bel.mobius (basic belief assignment):&#39;</span><span class="p">)</span>
+<span class="gp">... </span>            <span class="k">print</span><span class="p">(</span><span class="n">bel</span><span class="o">.</span><span class="n">mobius</span><span class="p">)</span>
+<span class="gp">... </span>            <span class="k">print</span><span class="p">(</span><span class="s">&quot;lpr.get_lower({0})={1}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">gamble</span><span class="p">,</span> <span class="n">lpr</span><span class="o">.</span><span class="n">get_lower</span><span class="p">(</span><span class="n">gamble</span><span class="p">)))</span>
+<span class="gp">... </span>            <span class="k">print</span><span class="p">(</span><span class="s">&quot;bel.get_lower({0})={1}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">gamble</span><span class="p">,</span> <span class="n">bel</span><span class="o">.</span><span class="n">get_lower</span><span class="p">(</span><span class="n">gamble</span><span class="p">)))</span>
+<span class="gp">... </span>            <span class="k">break</span>
+<span class="gp">... </span>    <span class="k">else</span><span class="p">:</span>
+<span class="gp">... </span>        <span class="c"># no incoherence found! try another one</span>
+<span class="gp">... </span>        <span class="k">continue</span>
+<span class="gp">... </span>    <span class="k">break</span>
+<span class="gp">... </span><span class="k">else</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s">&quot;no counterexample found&quot;</span><span class="p">)</span> 
+<span class="gt">Traceback (most recent call last):</span>
+    <span class="o">...</span>
+<span class="nc">RuntimeError</span>: <span class="n-Identifier">no counterexample found</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="a-simple-subtree-imperfect-decision-tree">
+<h2>A Simple Subtree Imperfect Decision Tree<a class="headerlink" href="#a-simple-subtree-imperfect-decision-tree" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">fractions</span> <span class="kn">import</span> <span class="n">Fraction</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">itertools</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">random</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">improb.lowprev.linvac</span> <span class="kn">import</span> <span class="n">LinVac</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">improb.decision.opt</span> <span class="kn">import</span> <span class="n">OptLowPrevMax</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">40</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">n1</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">n2</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ndec</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pspace</span> <span class="o">=</span> <span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">omega</span><span class="p">)</span>
+<span class="gp">... </span>          <span class="k">for</span> <span class="n">omega</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n1</span><span class="p">)),</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n2</span><span class="p">)))]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">20</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="c"># construct a linear vacuous mixture</span>
+<span class="gp">... </span>    <span class="n">lprob</span> <span class="o">=</span> <span class="p">[</span><span class="n">Fraction</span><span class="p">(</span><span class="s">&#39;0.8&#39;</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">pspace</span><span class="p">)</span> <span class="k">for</span> <span class="n">omega</span> <span class="ow">in</span> <span class="n">pspace</span><span class="p">]</span>
+<span class="gp">... </span>    <span class="n">lpr</span> <span class="o">=</span> <span class="n">LinVac</span><span class="p">(</span><span class="n">pspace</span><span class="p">,</span> <span class="n">lprob</span><span class="o">=</span><span class="n">lprob</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">)</span> <span class="c"># no need for randomness</span>
+<span class="gp">... </span>    <span class="n">opt</span> <span class="o">=</span> <span class="n">OptLowPrevMax</span><span class="p">(</span><span class="n">lpr</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="c"># construct gambles:</span>
+<span class="gp">... </span>    <span class="c"># gambles[w1][d][w2] gives the gain of the w1-d-w2 path</span>
+<span class="gp">... </span>    <span class="n">gambles</span> <span class="o">=</span> <span class="p">[[[</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.01</span> <span class="o">*</span> <span class="n">d</span> <span class="o">+</span> <span class="n">w1</span> <span class="o">*</span> <span class="mf">0.005</span>
+<span class="gp">... </span>                 <span class="k">for</span> <span class="n">w2</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n2</span><span class="p">)]</span>
+<span class="gp">... </span>                <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndec</span><span class="p">)]</span>
+<span class="gp">... </span>               <span class="k">for</span> <span class="n">w1</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n1</span><span class="p">)]</span>
+<span class="gp">... </span>    <span class="c"># construct strategies:</span>
+<span class="gp">... </span>    <span class="c"># strats[i][w1] gives decision of i&#39;th strategy, after observing w1</span>
+<span class="gp">... </span>    <span class="n">strats</span> <span class="o">=</span> <span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">strat</span><span class="p">)</span>
+<span class="gp">... </span>              <span class="k">for</span> <span class="n">strat</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">ndec</span><span class="p">)),</span> <span class="n">repeat</span><span class="o">=</span><span class="n">n1</span><span class="p">)]</span>
+<span class="gp">... </span>    <span class="c"># construct normal form gambles:</span>
+<span class="gp">... </span>    <span class="c"># normgambles[strat][omega] gives the gain of the i&#39;th strategy</span>
+<span class="gp">... </span>    <span class="n">normgambles</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="p">(</span><span class="n">strat</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span>
+<span class="gp">... </span>            <span class="p">(</span><span class="n">omega</span><span class="p">,</span> <span class="n">gambles</span><span class="p">[</span><span class="n">omega</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="n">strat</span><span class="p">[</span><span class="n">omega</span><span class="p">[</span><span class="mi">0</span><span class="p">]]][</span><span class="n">omega</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
+<span class="gp">... </span>            <span class="k">for</span> <span class="n">omega</span> <span class="ow">in</span> <span class="n">pspace</span><span class="p">))</span>
+<span class="gp">... </span>        <span class="k">for</span> <span class="n">strat</span> <span class="ow">in</span> <span class="n">strats</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="c"># construct extensive form gambles:</span>
+<span class="gp">... </span>    <span class="c"># extgambles[w1][d][omega] gives the gain of decision d after observing w1, as a function of omega</span>
+<span class="gp">... </span>    <span class="n">extgambles</span> <span class="o">=</span> <span class="p">[[</span><span class="nb">dict</span><span class="p">((</span><span class="n">omega</span><span class="p">,</span> <span class="n">gambles</span><span class="p">[</span><span class="n">w1</span><span class="p">][</span><span class="n">d</span><span class="p">][</span><span class="n">omega</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="k">if</span> <span class="n">omega</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">w1</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span>
+<span class="gp">... </span>                        <span class="k">for</span> <span class="n">omega</span> <span class="ow">in</span> <span class="n">pspace</span><span class="p">)</span>
+<span class="gp">... </span>                   <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndec</span><span class="p">)]</span>
+<span class="gp">... </span>                  <span class="k">for</span> <span class="n">w1</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n1</span><span class="p">)]</span>
+<span class="gp">... </span>    <span class="c">#print(gambles)</span>
+<span class="gp">... </span>    <span class="c">#print(strats)</span>
+<span class="gp">... </span>    <span class="c">#print([[normgambles[strat][omega] for omega in pspace] for strat in strats])</span>
+<span class="gp">... </span>    <span class="c">#print([[[extgambles[w1][d][omega] for omega in pspace] for d in range(ndec)] for w1 in range(n1)])</span>
+<span class="gp">... </span>    <span class="c"># calculate normal form solution of subtrees after observing w1</span>
+<span class="gp">... </span>    <span class="n">local</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="gp">... </span>    <span class="k">for</span> <span class="n">w1</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n1</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="n">event</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">w</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">pspace</span> <span class="k">if</span> <span class="n">w</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">w1</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="n">local</span><span class="p">[</span><span class="n">w1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">opt</span><span class="p">([</span><span class="n">extgambles</span><span class="p">[</span><span class="n">w1</span><span class="p">][</span><span class="n">d</span><span class="p">]</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndec</span><span class="p">)],</span> <span class="n">event</span><span class="p">))</span>
+<span class="gp">... </span>        <span class="c">#print(w1, event)</span>
+<span class="gp">... </span>        <span class="c">#print(local[w1])</span>
+<span class="gp">... </span>    <span class="c"># calculate full solution by combining all local solutions</span>
+<span class="gp">... </span>    <span class="n">normlocal</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+<span class="gp">... </span>    <span class="k">for</span> <span class="n">localgambles</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="n">local</span><span class="p">[</span><span class="n">w1</span><span class="p">]</span> <span class="k">for</span> <span class="n">w1</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n1</span><span class="p">)]):</span>
+<span class="gp">... </span>        <span class="c">#print localgambles</span>
+<span class="gp">... </span>        <span class="n">normlocal</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">localgamble</span><span class="p">[</span><span class="n">w</span><span class="p">]</span> <span class="k">for</span> <span class="n">localgamble</span> <span class="ow">in</span> <span class="n">localgambles</span><span class="p">)</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">pspace</span><span class="p">))</span>
+<span class="gp">... </span>    <span class="c">#print(normlocal)</span>
+<span class="gp">... </span>    <span class="c"># calculate full normal form solution</span>
+<span class="gp">... </span>    <span class="n">norm</span> <span class="o">=</span> <span class="n">opt</span><span class="p">([</span><span class="n">normgambles</span><span class="p">[</span><span class="n">strat</span><span class="p">]</span> <span class="k">for</span> <span class="n">strat</span> <span class="ow">in</span> <span class="n">strats</span><span class="p">])</span>
+<span class="gp">... </span>    <span class="n">norm</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">normgamble</span><span class="p">[</span><span class="n">w</span><span class="p">]</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">pspace</span><span class="p">)</span> <span class="k">for</span> <span class="n">normgamble</span> <span class="ow">in</span> <span class="n">norm</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="c">#print(norm)</span>
+<span class="gp">... </span>    <span class="c"># calculate corresponding strategies</span>
+<span class="gp">... </span>    <span class="n">localstrats</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+<span class="gp">... </span>    <span class="n">normstrats</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+<span class="gp">... </span>    <span class="k">for</span> <span class="n">strat</span> <span class="ow">in</span> <span class="n">strats</span><span class="p">:</span>
+<span class="gp">... </span>        <span class="n">normgamble</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">normgambles</span><span class="p">[</span><span class="n">strat</span><span class="p">][</span><span class="n">omega</span><span class="p">]</span> <span class="k">for</span> <span class="n">omega</span> <span class="ow">in</span> <span class="n">pspace</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="k">if</span> <span class="n">normgamble</span> <span class="ow">in</span> <span class="n">norm</span><span class="p">:</span>
+<span class="gp">... </span>            <span class="n">normstrats</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">strat</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="k">if</span> <span class="n">normgamble</span> <span class="ow">in</span> <span class="n">normlocal</span><span class="p">:</span>
+<span class="gp">... </span>            <span class="n">localstrats</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">strat</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="c"># convert normal form to extensive form</span>
+<span class="gp">... </span>    <span class="n">normstrats2</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="nb">set</span><span class="p">(</span><span class="n">strat</span><span class="p">[</span><span class="n">w1</span><span class="p">]</span> <span class="k">for</span> <span class="n">strat</span> <span class="ow">in</span> <span class="n">normstrats</span><span class="p">)</span> <span class="k">for</span> <span class="n">w1</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n1</span><span class="p">)]))</span>
+<span class="gp">... </span>    <span class="c"># check if solutions differ</span>
+<span class="gp">... </span>    <span class="k">if</span> <span class="n">localstrats</span> <span class="o">!=</span> <span class="n">normstrats</span><span class="p">:</span>
+<span class="gp">... </span>        <span class="k">for</span> <span class="n">w1</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n1</span><span class="p">):</span>
+<span class="gp">... </span>            <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndec</span><span class="p">):</span>
+<span class="gp">... </span>                <span class="k">print</span><span class="p">(</span>
+<span class="gp">... </span>                    <span class="s">&quot;w1={0}, d={1}: &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">w1</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
+<span class="gp">... </span>                    <span class="o">+</span> <span class="s">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s">&quot;{0:.3f}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">gambles</span><span class="p">[</span><span class="n">w1</span><span class="p">][</span><span class="n">d</span><span class="p">]))</span>
+<span class="gp">... </span>        <span class="k">print</span><span class="p">(</span><span class="s">&quot;lpr=&quot;</span> <span class="o">+</span> <span class="s">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">lprob</span><span class="p">))</span>
+<span class="gp">... </span>        <span class="k">print</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">normstrats</span><span class="p">))</span>
+<span class="gp">... </span>        <span class="k">print</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">localstrats</span><span class="p">))</span>
+<span class="gp">... </span>        <span class="c">#print(sorted(localstrats - normstrats))</span>
+<span class="gp">... </span>        <span class="c">#print(sorted(normstrats - localstrats)) # should be empty!</span>
+<span class="gp">... </span>        <span class="c">#print(sorted(normstrats2))</span>
+<span class="gp">... </span>        <span class="k">break</span>
+<span class="gp">... </span>    <span class="c"># stronger violation... never occurs??</span>
+<span class="gp">... </span>    <span class="c">#if localstrats != normstrats2:</span>
+<span class="gp">... </span><span class="k">else</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s">&quot;no counterexample found&quot;</span><span class="p">)</span>
+<span class="go">w1=0, d=0: 1.000 2.000</span>
+<span class="go">w1=0, d=1: 0.010 0.010</span>
+<span class="go">w1=0, d=2: 2.020 1.020</span>
+<span class="go">w1=1, d=0: 0.005 1.005</span>
+<span class="go">w1=1, d=1: 2.015 1.015</span>
+<span class="go">w1=1, d=2: 0.025 2.025</span>
+<span class="go">lpr=1/5 1/5 1/5 1/5</span>
+<span class="go">[(0, 1), (2, 1), (2, 2)]</span>
+<span class="go">[(0, 1), (0, 2), (2, 1), (2, 2)]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="stronger-violation-of-subtree-perfectness">
+<h2>Stronger Violation of Subtree Perfectness<a class="headerlink" href="#stronger-violation-of-subtree-perfectness" title="Permalink to this headline">¶</a></h2>
+<p>Does subtree imperfectness persists after converting the normal form
+into an extensive form?</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">itertools</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">random</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">improb.lowprev.lowprob</span> <span class="kn">import</span> <span class="n">LowProb</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">improb.decision.opt</span> <span class="kn">import</span> <span class="n">OptLowPrevMax</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">n1</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">n2</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ndec</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pspace</span> <span class="o">=</span> <span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">omega</span><span class="p">)</span>
+<span class="gp">... </span>          <span class="k">for</span> <span class="n">omega</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n1</span><span class="p">)),</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n2</span><span class="p">)))]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">20</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="c"># construct a lower prevision</span>
+<span class="gp">... </span>    <span class="n">lpr</span> <span class="o">=</span> <span class="n">LowProb</span><span class="o">.</span><span class="n">make_random</span><span class="p">(</span><span class="n">pspace</span><span class="o">=</span><span class="n">pspace</span><span class="p">,</span> <span class="n">zero</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="c"># construct gambles:</span>
+<span class="gp">... </span>    <span class="c"># gambles[w1][d][w2] gives the gain of the w1-d-w2 path</span>
+<span class="gp">... </span>    <span class="n">gambles</span> <span class="o">=</span> <span class="p">[[[</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span> <span class="k">for</span> <span class="n">w2</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n2</span><span class="p">)]</span>
+<span class="gp">... </span>                <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndec</span><span class="p">)]</span>
+<span class="gp">... </span>               <span class="k">for</span> <span class="n">w1</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n1</span><span class="p">)]</span>
+<span class="gp">... </span>    <span class="c"># construct strategies:</span>
+<span class="gp">... </span>    <span class="c"># strats[i][w1] gives decision of i&#39;th strategy, after observing w1</span>
+<span class="gp">... </span>    <span class="n">strats</span> <span class="o">=</span> <span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">strat</span><span class="p">)</span>
+<span class="gp">... </span>              <span class="k">for</span> <span class="n">strat</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">ndec</span><span class="p">)),</span> <span class="n">repeat</span><span class="o">=</span><span class="n">n1</span><span class="p">)]</span>
+<span class="gp">... </span>    <span class="c"># construct normal form gambles:</span>
+<span class="gp">... </span>    <span class="c"># normgambles[strat][omega] gives the gain of the i&#39;th strategy</span>
+<span class="gp">... </span>    <span class="n">normgambles</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="p">(</span><span class="n">strat</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span>
+<span class="gp">... </span>            <span class="p">(</span><span class="n">omega</span><span class="p">,</span> <span class="n">gambles</span><span class="p">[</span><span class="n">omega</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="n">strat</span><span class="p">[</span><span class="n">omega</span><span class="p">[</span><span class="mi">0</span><span class="p">]]][</span><span class="n">omega</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
+<span class="gp">... </span>            <span class="k">for</span> <span class="n">omega</span> <span class="ow">in</span> <span class="n">pspace</span><span class="p">))</span>
+<span class="gp">... </span>        <span class="k">for</span> <span class="n">strat</span> <span class="ow">in</span> <span class="n">strats</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="c"># construct extensive form gambles:</span>
+<span class="gp">... </span>    <span class="c"># extgambles[w1][d][omega] gives the gain of decision d after observing w1, as a function of omega</span>
+<span class="gp">... </span>    <span class="n">extgambles</span> <span class="o">=</span> <span class="p">[[</span><span class="nb">dict</span><span class="p">((</span><span class="n">omega</span><span class="p">,</span> <span class="n">gambles</span><span class="p">[</span><span class="n">w1</span><span class="p">][</span><span class="n">d</span><span class="p">][</span><span class="n">omega</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="k">if</span> <span class="n">omega</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">w1</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span>
+<span class="gp">... </span>                        <span class="k">for</span> <span class="n">omega</span> <span class="ow">in</span> <span class="n">pspace</span><span class="p">)</span>
+<span class="gp">... </span>                   <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndec</span><span class="p">)]</span>
+<span class="gp">... </span>                  <span class="k">for</span> <span class="n">w1</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n1</span><span class="p">)]</span>
+<span class="gp">... </span>    <span class="c">#print(gambles)</span>
+<span class="gp">... </span>    <span class="c">#print(strats)</span>
+<span class="gp">... </span>    <span class="c">#print([[normgambles[strat][omega] for omega in pspace] for strat in strats])</span>
+<span class="gp">... </span>    <span class="c">#print([[[extgambles[w1][d][omega] for omega in pspace] for d in range(ndec)] for w1 in range(n1)])</span>
+<span class="gp">... </span>    <span class="c"># calculate normal form solution of subtrees after observing w1</span>
+<span class="gp">... </span>    <span class="n">local</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="gp">... </span>    <span class="k">for</span> <span class="n">w1</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n1</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="n">event</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">w</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">pspace</span> <span class="k">if</span> <span class="n">w</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">w1</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="n">local</span><span class="p">[</span><span class="n">w1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">opt</span><span class="p">([</span><span class="n">extgambles</span><span class="p">[</span><span class="n">w1</span><span class="p">][</span><span class="n">d</span><span class="p">]</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndec</span><span class="p">)],</span> <span class="n">event</span><span class="p">))</span>
+<span class="gp">... </span>        <span class="c">#print(w1, event)</span>
+<span class="gp">... </span>        <span class="c">#print(local[w1])</span>
+<span class="gp">... </span>    <span class="c"># calculate full solution by combining all local solutions</span>
+<span class="gp">... </span>    <span class="n">normlocal</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+<span class="gp">... </span>    <span class="k">for</span> <span class="n">localgambles</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="n">local</span><span class="p">[</span><span class="n">w1</span><span class="p">]</span> <span class="k">for</span> <span class="n">w1</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n1</span><span class="p">)]):</span>
+<span class="gp">... </span>        <span class="c">#print localgambles</span>
+<span class="gp">... </span>        <span class="n">normlocal</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">localgamble</span><span class="p">[</span><span class="n">w</span><span class="p">]</span> <span class="k">for</span> <span class="n">localgamble</span> <span class="ow">in</span> <span class="n">localgambles</span><span class="p">)</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">pspace</span><span class="p">))</span>
+<span class="gp">... </span>    <span class="c">#print(normlocal)</span>
+<span class="gp">... </span>    <span class="c"># calculate full normal form solution</span>
+<span class="gp">... </span>    <span class="n">norm</span> <span class="o">=</span> <span class="n">opt</span><span class="p">([</span><span class="n">normgambles</span><span class="p">[</span><span class="n">strat</span><span class="p">]</span> <span class="k">for</span> <span class="n">strat</span> <span class="ow">in</span> <span class="n">strats</span><span class="p">])</span>
+<span class="gp">... </span>    <span class="n">norm</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">normgamble</span><span class="p">[</span><span class="n">w</span><span class="p">]</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">pspace</span><span class="p">)</span> <span class="k">for</span> <span class="n">normgamble</span> <span class="ow">in</span> <span class="n">norm</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="c">#print(norm)</span>
+<span class="gp">... </span>    <span class="c"># calculate corresponding strategies</span>
+<span class="gp">... </span>    <span class="n">localstrats</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+<span class="gp">... </span>    <span class="n">normstrats</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+<span class="gp">... </span>    <span class="k">for</span> <span class="n">strat</span> <span class="ow">in</span> <span class="n">strats</span><span class="p">:</span>
+<span class="gp">... </span>        <span class="n">normgamble</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">normgambles</span><span class="p">[</span><span class="n">strat</span><span class="p">][</span><span class="n">omega</span><span class="p">]</span> <span class="k">for</span> <span class="n">omega</span> <span class="ow">in</span> <span class="n">pspace</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="k">if</span> <span class="n">normgamble</span> <span class="ow">in</span> <span class="n">norm</span><span class="p">:</span>
+<span class="gp">... </span>            <span class="n">normstrats</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">strat</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="k">if</span> <span class="n">normgamble</span> <span class="ow">in</span> <span class="n">normlocal</span><span class="p">:</span>
+<span class="gp">... </span>            <span class="n">localstrats</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">strat</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="c"># convert normal form to extensive form</span>
+<span class="gp">... </span>    <span class="n">normstrats2</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="nb">set</span><span class="p">(</span><span class="n">strat</span><span class="p">[</span><span class="n">w1</span><span class="p">]</span> <span class="k">for</span> <span class="n">strat</span> <span class="ow">in</span> <span class="n">normstrats</span><span class="p">)</span> <span class="k">for</span> <span class="n">w1</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n1</span><span class="p">)]))</span>
+<span class="gp">... </span>    <span class="c"># check if solutions differ</span>
+<span class="gp">... </span>    <span class="c"># stronger violation!!</span>
+<span class="gp">... </span>    <span class="k">if</span> <span class="n">localstrats</span> <span class="o">!=</span> <span class="n">normstrats2</span><span class="p">:</span>
+<span class="gp">... </span>        <span class="k">for</span> <span class="n">w1</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n1</span><span class="p">):</span>
+<span class="gp">... </span>            <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndec</span><span class="p">):</span>
+<span class="gp">... </span>                <span class="k">print</span><span class="p">(</span>
+<span class="gp">... </span>                    <span class="s">&quot;w1={0}, d={1}: &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">w1</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
+<span class="gp">... </span>                    <span class="o">+</span> <span class="s">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s">&quot;{0:.2f}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">gambles</span><span class="p">[</span><span class="n">w1</span><span class="p">][</span><span class="n">d</span><span class="p">]))</span>
+<span class="gp">... </span>        <span class="k">for</span> <span class="p">(</span><span class="n">gamble</span><span class="p">,</span> <span class="n">event</span><span class="p">),</span> <span class="p">(</span><span class="n">lprev</span><span class="p">,</span> <span class="n">uprev</span><span class="p">)</span> <span class="ow">in</span> <span class="n">lpr</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+<span class="gp">... </span>            <span class="k">print</span><span class="p">(</span><span class="s">&quot;lpr({0})={1:.2f}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">gamble</span><span class="p">,</span> <span class="n">lprev</span><span class="p">))</span>
+<span class="gp">... </span>        <span class="k">print</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">normstrats2</span><span class="p">))</span>
+<span class="gp">... </span>        <span class="k">print</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">localstrats</span><span class="p">))</span>
+<span class="gp">... </span>        <span class="k">break</span>
+<span class="gp">... </span><span class="k">else</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s">&quot;no counterexample found&quot;</span><span class="p">)</span> 
+<span class="gt">Traceback (most recent call last):</span>
+    <span class="o">...</span>
+<span class="nc">RuntimeError</span>: <span class="n-Identifier">no counterexample found</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">More Examples</a><ul>
+<li><a class="reference internal" href="#mobius-transform-and-natural-extension">Mobius Transform and Natural Extension</a></li>
+<li><a class="reference internal" href="#a-simple-subtree-imperfect-decision-tree">A Simple Subtree Imperfect Decision Tree</a></li>
+<li><a class="reference internal" href="#stronger-violation-of-subtree-perfectness">Stronger Violation of Subtree Perfectness</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="prob.html"
+                        title="previous chapter">Probability Measures</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../setfunction.html"
+                        title="next chapter">Set Functions</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/lowprev/examples.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../setfunction.html" title="Set Functions"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="prob.html" title="Probability Measures"
+             >previous</a> |</li>
+        <li><a href="../index.html">improb v0.1.0 (beta) documentation</a> &raquo;</li>
+          <li><a href="../lowprev.html" >Lower Previsions</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010, Matthias C. M. Troffaes.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,908 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Polyhedral Lower Previsions &mdash; improb v0.1.0 (beta) documentation</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1.0 (beta)',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="improb v0.1.0 (beta) documentation" href="../index.html" />
+    <link rel="up" title="Lower Previsions" href="../lowprev.html" />
+    <link rel="next" title="Lower Probabilities" href="lowprob.html" />
+    <link rel="prev" title="Lower Previsions" href="../lowprev.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="lowprob.html" title="Lower Probabilities"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../lowprev.html" title="Lower Previsions"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">improb v0.1.0 (beta) documentation</a> &raquo;</li>
+          <li><a href="../lowprev.html" accesskey="U">Lower Previsions</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="module-improb.lowprev.lowpoly"></span><div class="section" id="polyhedral-lower-previsions">
+<h1>Polyhedral Lower Previsions<a class="headerlink" href="#polyhedral-lower-previsions" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="improb.lowprev.lowpoly.LowPoly">
+<em class="property">class </em><tt class="descclassname">improb.lowprev.lowpoly.</tt><tt class="descname">LowPoly</tt><big>(</big><em>pspace=None</em>, <em>mapping=None</em>, <em>lprev=None</em>, <em>uprev=None</em>, <em>prev=None</em>, <em>lprob=None</em>, <em>uprob=None</em>, <em>prob=None</em>, <em>bba=None</em>, <em>number_type=None</em><big>)</big><a class="headerlink" href="#improb.lowprev.lowpoly.LowPoly" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../lowprev.html#improb.lowprev.LowPrev" title="improb.lowprev.LowPrev"><tt class="xref py py-class docutils literal"><span class="pre">improb.lowprev.LowPrev</span></tt></a></p>
+<p>An arbitrary finitely generated lower prevision, that is, a
+finite intersection of half-spaces, each of which constrains the
+set of probability mass functions.</p>
+<p>This class is derived from <tt class="xref py py-class docutils literal"><span class="pre">collections.MutableMapping</span></tt>:
+keys are (gamble, event) pairs, values are (lprev, uprev) pairs:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span> <span class="o">=</span> <span class="n">LowPoly</span><span class="p">(</span><span class="n">pspace</span><span class="o">=</span><span class="s">&#39;abcd&#39;</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="p">[{</span><span class="s">&#39;a&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">},</span> <span class="s">&#39;abcd&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;1.5&#39;</span><span class="p">,</span> <span class="s">&#39;1.9&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="p">[{</span><span class="s">&#39;c&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&#39;d&#39;</span><span class="p">:</span> <span class="mi">8</span><span class="p">},</span> <span class="s">&#39;cd&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;1.2&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr</span><span class="p">)</span> 
+<span class="go">a b c d</span>
+<span class="go">2 3 0 0 | a b c d : [3/2  , 19/10]</span>
+<span class="go">0 0 1 8 |     c d : [6/5  ,      ]</span>
+</pre></div>
+</div>
+<p>Instead of working on the mapping directly, you can use the
+convenience methods <a class="reference internal" href="#improb.lowprev.lowpoly.LowPoly.set_lower" title="improb.lowprev.lowpoly.LowPoly.set_lower"><tt class="xref py py-meth docutils literal"><span class="pre">set_lower()</span></tt></a>, <a class="reference internal" href="#improb.lowprev.lowpoly.LowPoly.set_upper" title="improb.lowprev.lowpoly.LowPoly.set_upper"><tt class="xref py py-meth docutils literal"><span class="pre">set_upper()</span></tt></a>, and
+<a class="reference internal" href="#improb.lowprev.lowpoly.LowPoly.set_precise" title="improb.lowprev.lowpoly.LowPoly.set_precise"><tt class="xref py py-meth docutils literal"><span class="pre">set_precise()</span></tt></a>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span> <span class="o">=</span> <span class="n">LowPoly</span><span class="p">(</span><span class="n">pspace</span><span class="o">=</span><span class="s">&#39;abcd&#39;</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">set_lower</span><span class="p">({</span><span class="s">&#39;a&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">},</span> <span class="s">&#39;1.5&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">set_upper</span><span class="p">({</span><span class="s">&#39;a&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">},</span> <span class="s">&#39;1.9&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">set_lower</span><span class="p">({</span><span class="s">&#39;c&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&#39;d&#39;</span><span class="p">:</span> <span class="mi">8</span><span class="p">},</span> <span class="s">&#39;1.2&#39;</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="s">&#39;cd&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr</span><span class="p">)</span> 
+<span class="go">a b c d</span>
+<span class="go">2 3 0 0 | a b c d : [3/2  , 19/10]</span>
+<span class="go">0 0 1 8 |     c d : [6/5  ,      ]</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="improb.lowprev.lowpoly.LowPoly.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>pspace=None</em>, <em>mapping=None</em>, <em>lprev=None</em>, <em>uprev=None</em>, <em>prev=None</em>, <em>lprob=None</em>, <em>uprob=None</em>, <em>prob=None</em>, <em>bba=None</em>, <em>number_type=None</em><big>)</big><a class="headerlink" href="#improb.lowprev.lowpoly.LowPoly.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct a polyhedral lower prevision on <em>pspace</em>.</p>
+<p>Generally, you can pass a <a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><tt class="docutils literal"><span class="pre">dict</span></tt></a> as a keyword argument
+in order to initialize the lower and upper previsions and/or
+probabilities:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">LowPoly</span><span class="p">(</span><span class="n">pspace</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">mapping</span><span class="o">=</span><span class="p">{</span>
+<span class="gp">... </span>    <span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="bp">True</span><span class="p">):</span> <span class="p">(</span><span class="s">&#39;1.5&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)):</span> <span class="p">(</span><span class="s">&#39;0.25&#39;</span><span class="p">,</span> <span class="s">&#39;0.3&#39;</span><span class="p">)},</span>
+<span class="gp">... </span>    <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">))</span> 
+<span class="go"> 0    1   2</span>
+<span class="go">3.0  1.0 2.0  | 0 1 2 : [1.5 ,     ]</span>
+<span class="go">1.0  0.0 -1.0 |   1 2 : [0.25, 0.3 ]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">LowPoly</span><span class="p">(</span><span class="n">pspace</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">lprev</span><span class="o">=</span><span class="p">{(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span> <span class="s">&#39;1.5&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span> <span class="s">&#39;1&#39;</span><span class="p">},</span>
+<span class="gp">... </span>    <span class="n">uprev</span><span class="o">=</span><span class="p">{(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span> <span class="s">&#39;1.9&#39;</span><span class="p">},</span>
+<span class="gp">... </span>    <span class="n">prev</span><span class="o">=</span><span class="p">{(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">20</span><span class="p">):</span> <span class="s">&#39;15&#39;</span><span class="p">},</span>
+<span class="gp">... </span>    <span class="n">lprob</span><span class="o">=</span><span class="p">{(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span> <span class="s">&#39;0.2&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,):</span> <span class="s">&#39;0.1&#39;</span><span class="p">},</span>
+<span class="gp">... </span>    <span class="n">uprob</span><span class="o">=</span><span class="p">{(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span> <span class="s">&#39;0.3&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,):</span> <span class="s">&#39;0.9&#39;</span><span class="p">},</span>
+<span class="gp">... </span>    <span class="n">prob</span><span class="o">=</span><span class="p">{(</span><span class="mi">2</span><span class="p">,):</span> <span class="s">&#39;0.3&#39;</span><span class="p">},</span>
+<span class="gp">... </span>    <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">))</span> 
+<span class="go">  0    1   2</span>
+<span class="go"> 0.0  0.0 1.0  | 0 1 2 : [0.3 , 0.3 ]</span>
+<span class="go"> 0.0  1.0 0.0  | 0 1 2 : [0.1 ,     ]</span>
+<span class="go"> 0.0  1.0 1.0  | 0 1 2 : [0.2 , 0.3 ]</span>
+<span class="go"> 1.0  0.0 0.0  | 0 1 2 : [    , 0.9 ]</span>
+<span class="go"> 1.0  3.0 2.0  | 0 1 2 : [1.5 ,     ]</span>
+<span class="go"> 2.0  0.0 -1.0 | 0 1 2 : [1.0 , 1.9 ]</span>
+<span class="go"> 9.0  8.0 20.0 | 0 1 2 : [15.0, 15.0]</span>
+</pre></div>
+</div>
+<p>As a special case, for lower/upper/precise probabilities, if
+you need to set values on singletons, you can use a list
+instead of a dictionary:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">LowPoly</span><span class="p">(</span><span class="n">pspace</span><span class="o">=</span><span class="s">&#39;abc&#39;</span><span class="p">,</span> <span class="n">lprob</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;0.1&#39;</span><span class="p">,</span> <span class="s">&#39;0.2&#39;</span><span class="p">,</span> <span class="s">&#39;0.3&#39;</span><span class="p">],</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">))</span> 
+<span class="go">a b c</span>
+<span class="go">0 0 1 | a b c : [3/10, ]</span>
+<span class="go">0 1 0 | a b c : [1/5 , ]</span>
+<span class="go">1 0 0 | a b c : [1/10, ]</span>
+</pre></div>
+</div>
+<p>If the first argument is a <a class="reference internal" href="#improb.lowprev.lowpoly.LowPoly" title="improb.lowprev.lowpoly.LowPoly"><tt class="xref py py-class docutils literal"><span class="pre">LowPoly</span></tt></a> instance, then it
+is copied. For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">improb.lowprev.lowprob</span> <span class="kn">import</span> <span class="n">LowProb</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span> <span class="o">=</span> <span class="n">LowPoly</span><span class="p">(</span><span class="n">pspace</span><span class="o">=</span><span class="s">&#39;abc&#39;</span><span class="p">,</span> <span class="n">lprob</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;0.1&#39;</span><span class="p">,</span> <span class="s">&#39;0.1&#39;</span><span class="p">,</span> <span class="s">&#39;0.1&#39;</span><span class="p">],</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr</span><span class="p">)</span>
+<span class="go">a b c</span>
+<span class="go">0 0 1 | a b c : [1/10,     ]</span>
+<span class="go">0 1 0 | a b c : [1/10,     ]</span>
+<span class="go">1 0 0 | a b c : [1/10,     ]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lprob</span> <span class="o">=</span> <span class="n">LowProb</span><span class="p">(</span><span class="n">lpr</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lprob</span><span class="p">)</span>
+<span class="go">a     : 1/10</span>
+<span class="go">  b   : 1/10</span>
+<span class="go">    c : 1/10</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>pspace</strong> (<tt class="xref py py-class docutils literal"><span class="pre">list</span></tt> or similar; see <a class="reference internal" href="../introduction.html#possibility-spaces"><em>Possibility Spaces</em></a>) &#8211; The possibility space.</li>
+<li><strong>mapping</strong> (<tt class="xref py py-class docutils literal"><span class="pre">collections.Mapping</span></tt>) &#8211; Mapping from (gamble, event) to (lower prevision, upper prevision).</li>
+<li><strong>lprev</strong> (<tt class="xref py py-class docutils literal"><span class="pre">collections.Mapping</span></tt>) &#8211; Mapping from gamble to lower prevision.</li>
+<li><strong>uprev</strong> (<tt class="xref py py-class docutils literal"><span class="pre">collections.Mapping</span></tt>) &#8211; Mapping from gamble to upper prevision.</li>
+<li><strong>prev</strong> (<tt class="xref py py-class docutils literal"><span class="pre">collections.Mapping</span></tt>) &#8211; Mapping from gamble to precise prevision.</li>
+<li><strong>lprob</strong> (<tt class="xref py py-class docutils literal"><span class="pre">collections.Mapping</span></tt> or <tt class="xref py py-class docutils literal"><span class="pre">collections.Sequence</span></tt>) &#8211; Mapping from event to lower probability.</li>
+<li><strong>uprob</strong> (<tt class="xref py py-class docutils literal"><span class="pre">collections.Mapping</span></tt> or <tt class="xref py py-class docutils literal"><span class="pre">collections.Sequence</span></tt>) &#8211; Mapping from event to upper probability.</li>
+<li><strong>prob</strong> (<tt class="xref py py-class docutils literal"><span class="pre">collections.Mapping</span></tt> or <tt class="xref py py-class docutils literal"><span class="pre">collections.Sequence</span></tt>) &#8211; Mapping from event to precise probability.</li>
+<li><strong>bba</strong> (<tt class="xref py py-class docutils literal"><span class="pre">collections.Mapping</span></tt>) &#8211; Mapping from event to basic belief assignment (useful for constructing belief functions).</li>
+<li><strong>number_type</strong> (<tt class="xref py py-class docutils literal"><span class="pre">str</span></tt>) &#8211; The number type.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="improb.lowprev.lowpoly.LowPoly.__iter__">
+<tt class="descname">__iter__</tt><big>(</big><big>)</big><a class="headerlink" href="#improb.lowprev.lowpoly.LowPoly.__iter__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="improb.lowprev.lowpoly.LowPoly.extend">
+<tt class="descname">extend</tt><big>(</big><em>keys=None</em>, <em>lower=True</em>, <em>upper=True</em>, <em>algorithm='linprog'</em><big>)</big><a class="headerlink" href="#improb.lowprev.lowpoly.LowPoly.extend" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate coherent extension to the given keys
+(gamble/event pairs), using linear programming.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>keys</strong> (<tt class="xref py py-class docutils literal"><span class="pre">collections.Iterable</span></tt>) &#8211; The gamble/event pairs to extend. If <tt class="xref py py-const xref docutils literal"><span class="pre">None</span></tt>, then
+extends to the full domain (for
+<a class="reference internal" href="#improb.lowprev.lowpoly.LowPoly" title="improb.lowprev.lowpoly.LowPoly"><tt class="xref py py-class docutils literal"><span class="pre">LowPoly</span></tt></a> this raises a
+<a class="reference external" href="http://docs.python.org/library/exceptions.html#exceptions.ValueError" title="(in Python v2.7)"><tt class="docutils literal"><span class="pre">exceptions.ValueError</span></tt></a>, however some derived
+classes implement this if they have a finite domain).</li>
+<li><strong>lower</strong> (<tt class="xref py py-class docutils literal"><span class="pre">bool</span></tt>) &#8211; Whether to extend the lower bounds.</li>
+<li><strong>upper</strong> (<tt class="xref py py-class docutils literal"><span class="pre">bool</span></tt>) &#8211; Whether to extend the upper bounds.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pspace</span> <span class="o">=</span> <span class="n">PSpace</span><span class="p">(</span><span class="s">&#39;xyz&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span> <span class="o">=</span> <span class="n">LowPoly</span><span class="p">(</span><span class="n">pspace</span><span class="o">=</span><span class="n">pspace</span><span class="p">,</span> <span class="n">lprob</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;0.1&#39;</span><span class="p">,</span> <span class="s">&#39;0.2&#39;</span><span class="p">,</span> <span class="s">&#39;0.15&#39;</span><span class="p">],</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr</span><span class="p">)</span>
+<span class="go">x y z</span>
+<span class="go">0 0 1 | x y z : [3/20,     ]</span>
+<span class="go">0 1 0 | x y z : [1/5 ,     ]</span>
+<span class="go">1 0 0 | x y z : [1/10,     ]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">pspace</span><span class="o">.</span><span class="n">subsets</span><span class="p">(</span><span class="n">empty</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">lpr</span><span class="o">.</span><span class="n">extend</span><span class="p">((</span><span class="n">subevent</span><span class="p">,</span> <span class="n">event</span><span class="p">)</span> <span class="k">for</span> <span class="n">subevent</span> <span class="ow">in</span> <span class="n">pspace</span><span class="o">.</span><span class="n">subsets</span><span class="p">(</span><span class="n">event</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr</span><span class="p">)</span>
+<span class="go">x y z</span>
+<span class="go">0 0 0 | x y z : [0    , 0    ]</span>
+<span class="go">0 0 1 | x y z : [3/20 , 7/10 ]</span>
+<span class="go">0 1 0 | x y z : [1/5  , 3/4  ]</span>
+<span class="go">0 1 1 | x y z : [7/20 , 9/10 ]</span>
+<span class="go">1 0 0 | x y z : [1/10 , 13/20]</span>
+<span class="go">1 0 1 | x y z : [1/4  , 4/5  ]</span>
+<span class="go">1 1 0 | x y z : [3/10 , 17/20]</span>
+<span class="go">1 1 1 | x y z : [1    , 1    ]</span>
+<span class="go">0 0 0 | x y   : [0    , 0    ]</span>
+<span class="go">0 1 0 | x y   : [4/17 , 15/17]</span>
+<span class="go">1 0 0 | x y   : [2/17 , 13/17]</span>
+<span class="go">1 1 0 | x y   : [1    , 1    ]</span>
+<span class="go">0 0 0 | x   z : [0    , 0    ]</span>
+<span class="go">0 0 1 | x   z : [3/16 , 7/8  ]</span>
+<span class="go">1 0 0 | x   z : [1/8  , 13/16]</span>
+<span class="go">1 0 1 | x   z : [1    , 1    ]</span>
+<span class="go">0 0 0 | x     : [0    , 0    ]</span>
+<span class="go">1 0 0 | x     : [1    , 1    ]</span>
+<span class="go">0 0 0 |   y z : [0    , 0    ]</span>
+<span class="go">0 0 1 |   y z : [1/6  , 7/9  ]</span>
+<span class="go">0 1 0 |   y z : [2/9  , 5/6  ]</span>
+<span class="go">0 1 1 |   y z : [1    , 1    ]</span>
+<span class="go">0 0 0 |   y   : [0    , 0    ]</span>
+<span class="go">0 1 0 |   y   : [1    , 1    ]</span>
+<span class="go">0 0 0 |     z : [0    , 0    ]</span>
+<span class="go">0 0 1 |     z : [1    , 1    ]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="improb.lowprev.lowpoly.LowPoly.get_coherent">
+<tt class="descname">get_coherent</tt><big>(</big><em>algorithm='linprog'</em><big>)</big><a class="headerlink" href="#improb.lowprev.lowpoly.LowPoly.get_coherent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a coherent version, using linear programming.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="improb.lowprev.lowpoly.LowPoly.get_credal_set">
+<tt class="descname">get_credal_set</tt><big>(</big><em>event=True</em><big>)</big><a class="headerlink" href="#improb.lowprev.lowpoly.LowPoly.get_credal_set" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return extreme points of the credal set conditional on event.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body">The extreme points.</td>
+</tr>
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body">Yields a <tt class="xref py py-class docutils literal"><span class="pre">tuple</span></tt> for each extreme point.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="improb.lowprev.lowpoly.LowPoly.get_lower">
+<tt class="descname">get_lower</tt><big>(</big><em>gamble</em>, <em>event=True</em>, <em>algorithm='linprog'</em><big>)</big><a class="headerlink" href="#improb.lowprev.lowpoly.LowPoly.get_lower" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate lower expectation, using linear programming.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="improb.lowprev.lowpoly.LowPoly.get_matrix">
+<tt class="descname">get_matrix</tt><big>(</big><em>gamble=None</em>, <em>event=True</em><big>)</big><a class="headerlink" href="#improb.lowprev.lowpoly.LowPoly.get_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Matrix representing the constraints of this lower prevision
+conditional on the given event.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="improb.lowprev.lowpoly.LowPoly.get_relevant_items">
+<tt class="descname">get_relevant_items</tt><big>(</big><em>event=True</em><big>)</big><a class="headerlink" href="#improb.lowprev.lowpoly.LowPoly.get_relevant_items" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the relevant items for calculating the natural
+extension conditional on an event.</p>
+<p>This is part (a) (b) (c) of Algorithm 4 of Walley, Pelessoni,
+and Vicig (2004) <a class="footnote-reference" href="#walley2004" id="id1">[2]</a>. Also see their Algorithm 2,
+which is a special case of Algorithm 4 but with event equal to
+the empty set.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="improb.lowprev.lowpoly.LowPoly.is_avoiding_sure_loss">
+<tt class="descname">is_avoiding_sure_loss</tt><big>(</big><em>algorithm='linprog'</em><big>)</big><a class="headerlink" href="#improb.lowprev.lowpoly.LowPoly.is_avoiding_sure_loss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check avoiding sure loss by linear programming.</p>
+<p>This is Algorithm 2 of Walley, Pelessoni, and Vicig (2004)
+<a class="footnote-reference" href="#walley2004" id="id2">[2]</a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="improb.lowprev.lowpoly.LowPoly.set_lower">
+<tt class="descname">set_lower</tt><big>(</big><em>gamble</em>, <em>lprev</em>, <em>event=True</em><big>)</big><a class="headerlink" href="#improb.lowprev.lowpoly.LowPoly.set_lower" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constrain the expectation of <em>gamble</em> to be at least <em>lprev</em>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>gamble</strong> (<a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><tt class="docutils literal"><span class="pre">dict</span></tt></a> or similar; see <a class="reference internal" href="../introduction.html#gambles"><em>Gambles</em></a>) &#8211; The gamble whose expectation to bound.</li>
+<li><strong>lprev</strong> (<tt class="xref py py-class docutils literal"><span class="pre">float</span></tt> or similar; see <a class="reference internal" href="../introduction.html#values"><em>Values</em></a>) &#8211; The lower bound for this expectation.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="improb.lowprev.lowpoly.LowPoly.set_precise">
+<tt class="descname">set_precise</tt><big>(</big><em>gamble</em>, <em>prev</em>, <em>event=True</em><big>)</big><a class="headerlink" href="#improb.lowprev.lowpoly.LowPoly.set_precise" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constrain the expectation of <em>gamble</em> to be exactly <em>prev</em>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>gamble</strong> (<a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><tt class="docutils literal"><span class="pre">dict</span></tt></a> or similar; see <a class="reference internal" href="../introduction.html#gambles"><em>Gambles</em></a>) &#8211; The gamble whose expectation to bound.</li>
+<li><strong>prev</strong> (<tt class="xref py py-class docutils literal"><span class="pre">float</span></tt> or similar; see <a class="reference internal" href="../introduction.html#values"><em>Values</em></a>) &#8211; The precise bound for this expectation.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="improb.lowprev.lowpoly.LowPoly.set_upper">
+<tt class="descname">set_upper</tt><big>(</big><em>gamble</em>, <em>uprev</em>, <em>event=True</em><big>)</big><a class="headerlink" href="#improb.lowprev.lowpoly.LowPoly.set_upper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constrain the expectation of <em>gamble</em> to be at most <em>uprev</em>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>gamble</strong> (<a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><tt class="docutils literal"><span class="pre">dict</span></tt></a> or similar; see <a class="reference internal" href="../introduction.html#gambles"><em>Gambles</em></a>) &#8211; The gamble whose expectation to bound.</li>
+<li><strong>uprev</strong> (<tt class="xref py py-class docutils literal"><span class="pre">float</span></tt> or similar; see <a class="reference internal" href="../introduction.html#values"><em>Values</em></a>) &#8211; The upper bound for this expectation.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<p>The following examples presume:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">improb.lowprev.lowpoly</span> <span class="kn">import</span> <span class="n">LowPoly</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">improb.lowprev.lowprob</span> <span class="kn">import</span> <span class="n">LowProb</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">improb.lowprev.prob</span> <span class="kn">import</span> <span class="n">Prob</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">improb.decision.opt</span> <span class="kn">import</span> <span class="n">OptLowPrevMax</span>
+</pre></div>
+</div>
+<div class="section" id="natural-extension">
+<h2>Natural Extension<a class="headerlink" href="#natural-extension" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span> <span class="o">=</span> <span class="n">LowPoly</span><span class="p">(</span><span class="n">pspace</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="s">&quot;</span><span class="si">%.6f</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">lpr</span><span class="o">.</span><span class="n">get_lower</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
+<span class="go">1.000000</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="s">&quot;</span><span class="si">%.6f</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">lpr</span><span class="o">.</span><span class="n">get_upper</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
+<span class="go">3.000000</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">set_lower</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span> <span class="mf">1.5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">set_upper</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span> <span class="mf">2.5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">get_matrix</span><span class="p">())</span>
+<span class="go">H-representation</span>
+<span class="go">linearity 1  1</span>
+<span class="go">begin</span>
+<span class="go"> 6 4 rational</span>
+<span class="go"> 1 -1 -1 -1</span>
+<span class="go"> 0 1 0 0</span>
+<span class="go"> 0 0 1 0</span>
+<span class="go"> 0 0 0 1</span>
+<span class="go"> 0 -1/2 1/2 3/2</span>
+<span class="go"> 0 3/2 1/2 -1/2</span>
+<span class="go">end</span>
+<span class="go">minimize</span>
+<span class="go"> 0 0 0 0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">get_lower</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">]))</span>
+<span class="go">3/2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">get_upper</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">]))</span>
+<span class="go">5/2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">prob</span><span class="p">)</span> <span class="k">for</span> <span class="n">prob</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">get_credal_set</span><span class="p">())))</span>
+<span class="go">0 1/2 1/2</span>
+<span class="go">0 1 0</span>
+<span class="go">1/4 0 3/4</span>
+<span class="go">1/2 1/2 0</span>
+<span class="go">3/4 0 1/4</span>
+</pre></div>
+</div>
+<p>Another example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span> <span class="o">=</span> <span class="n">LowPoly</span><span class="p">(</span><span class="n">pspace</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">set_lower</span><span class="p">([</span><span class="mi">4</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">set_upper</span><span class="p">([</span><span class="mi">4</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">is_avoiding_sure_loss</span><span class="p">()</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">is_coherent</span><span class="p">()</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">is_linear</span><span class="p">()</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">get_lower</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]))</span>
+<span class="go">1/2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">get_upper</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]))</span>
+<span class="go">3/4</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr</span><span class="p">)</span> 
+<span class="go">0 1 2 3</span>
+<span class="go">4 1 2 0 | 0 1 2 3 : [ , 3]</span>
+<span class="go">4 2 1 0 | 0 1 2 3 : [3,  ]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">opt</span> <span class="o">=</span> <span class="n">OptLowPrevMax</span><span class="p">(</span><span class="n">lpr</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">opt</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]]))</span>
+<span class="go">[[1, 0, 0, 0], [0, 1, 0, 0]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">opt</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]]))</span>
+<span class="go">[[0, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]</span>
+</pre></div>
+</div>
+<p>Another example, involving zero probabilities (see Example 9 and 11 in
+<a class="footnote-reference" href="#walley2004" id="id3">[2]</a>):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pspace</span> <span class="o">=</span> <span class="n">PSpace</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a1</span> <span class="o">=</span> <span class="n">pspace</span><span class="o">.</span><span class="n">make_event</span><span class="p">((</span><span class="mi">0</span><span class="p">,),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a2</span> <span class="o">=</span> <span class="n">pspace</span><span class="o">.</span><span class="n">make_event</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a3</span> <span class="o">=</span> <span class="n">pspace</span><span class="o">.</span><span class="n">make_event</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a4</span> <span class="o">=</span> <span class="n">pspace</span><span class="o">.</span><span class="n">make_event</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a5</span> <span class="o">=</span> <span class="n">pspace</span><span class="o">.</span><span class="n">make_event</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span> <span class="o">=</span> <span class="n">LowPoly</span><span class="p">(</span><span class="n">pspace</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="p">[</span><span class="n">a1</span><span class="p">,</span> <span class="bp">True</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;0.6&#39;</span><span class="p">,</span> <span class="s">&#39;0.6&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="p">[</span><span class="n">a1</span><span class="o">.</span><span class="n">complement</span><span class="p">()</span> <span class="o">|</span> <span class="n">a2</span><span class="p">,</span> <span class="bp">True</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;0.4&#39;</span><span class="p">,</span> <span class="s">&#39;0.4&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="p">[</span><span class="n">a2</span> <span class="o">|</span> <span class="n">a3</span><span class="p">,</span> <span class="bp">True</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;0.8&#39;</span><span class="p">,</span> <span class="s">&#39;0.8&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="p">[</span><span class="n">a3</span> <span class="o">&amp;</span> <span class="n">a4</span><span class="p">,</span> <span class="bp">True</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;0.3&#39;</span><span class="p">,</span> <span class="s">&#39;0.3&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="p">[</span><span class="n">a4</span><span class="o">.</span><span class="n">complement</span><span class="p">()</span> <span class="o">|</span> <span class="n">a5</span><span class="p">,</span> <span class="bp">True</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;0.5&#39;</span><span class="p">,</span> <span class="s">&#39;0.5&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="p">[</span><span class="n">a2</span> <span class="o">|</span> <span class="n">a5</span><span class="p">,</span> <span class="bp">True</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;0.6&#39;</span><span class="p">,</span> <span class="s">&#39;0.6&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">get_lower</span><span class="p">(</span><span class="n">a3</span><span class="p">)</span>
+<span class="go">Fraction(2, 5)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">get_upper</span><span class="p">(</span><span class="n">a3</span><span class="p">)</span>
+<span class="go">Fraction(4, 5)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">get_lower</span><span class="p">(</span><span class="n">a4</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="n">a3</span><span class="p">)</span>
+<span class="go">Fraction(3, 8)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">get_upper</span><span class="p">(</span><span class="n">a4</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="n">a3</span><span class="p">)</span>
+<span class="go">Fraction(3, 4)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">get_lower</span><span class="p">((</span><span class="n">a1</span> <span class="o">&amp;</span> <span class="n">a2</span><span class="p">)</span><span class="o">.</span><span class="n">complement</span><span class="p">(),</span> <span class="n">event</span><span class="o">=</span><span class="p">(</span><span class="n">a1</span> <span class="o">&amp;</span> <span class="n">a2</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">a1</span><span class="o">.</span><span class="n">complement</span><span class="p">()</span> <span class="o">&amp;</span> <span class="n">a2</span><span class="o">.</span><span class="n">complement</span><span class="p">()))</span>
+<span class="go">0</span>
+</pre></div>
+</div>
+<p>Another more complex example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_s</span> <span class="o">=</span> <span class="n">LowPoly</span><span class="p">(</span><span class="n">pspace</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_s</span><span class="o">.</span><span class="n">set_lower</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;0.4&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_s</span><span class="o">.</span><span class="n">set_upper</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;0.5&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_s</span><span class="o">.</span><span class="n">set_lower</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;0.3&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_s</span><span class="o">.</span><span class="n">set_upper</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;0.4&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_s</span><span class="o">.</span><span class="n">set_lower</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="s">&#39;0.2&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_s</span><span class="o">.</span><span class="n">set_upper</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="s">&#39;0.2&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_s</span><span class="o">.</span><span class="n">is_coherent</span><span class="p">()</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr_s</span><span class="o">.</span><span class="n">get_lower</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]))</span>
+<span class="go">2/5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr_s</span><span class="o">.</span><span class="n">get_upper</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]))</span>
+<span class="go">1/2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr_s</span><span class="o">.</span><span class="n">get_lower</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">]))</span>
+<span class="go">3/10</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr_s</span><span class="o">.</span><span class="n">get_upper</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">]))</span>
+<span class="go">2/5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr_s</span><span class="o">.</span><span class="n">get_lower</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]))</span>
+<span class="go">1/5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr_s</span><span class="o">.</span><span class="n">get_upper</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]))</span>
+<span class="go">1/5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr_s</span><span class="o">.</span><span class="n">get_lower</span><span class="p">([</span><span class="o">-</span><span class="mi">7</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">20</span><span class="p">]))</span>
+<span class="go">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr_s</span><span class="o">.</span><span class="n">get_upper</span><span class="p">([</span><span class="o">-</span><span class="mi">7</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">20</span><span class="p">]))</span>
+<span class="go">16/5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_t_s</span> <span class="o">=</span> <span class="p">[</span><span class="n">LowPoly</span><span class="p">(</span><span class="n">pspace</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">3</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_t_s</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_precise</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;0.6&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_t_s</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_precise</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;0.3&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_t_s</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_precise</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="s">&#39;0.1&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_t_s</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">is_coherent</span><span class="p">()</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_t_s</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_precise</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;0.3&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_t_s</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_precise</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;0.4&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_t_s</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_precise</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="s">&#39;0.3&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_t_s</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">is_coherent</span><span class="p">()</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_t_s</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_precise</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;0.1&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_t_s</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_precise</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;0.4&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_t_s</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_precise</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="s">&#39;0.5&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_t_s</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">is_coherent</span><span class="p">()</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c"># a gamble which is a function of s and t; s comes as first</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c"># argument (in order to match lpr_t_s): gamble_t_s[s][t]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gamble_t_s</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]]</span> <span class="c"># event t=0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c"># calculate its lower prevision by marginal extension</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr_s</span><span class="o">.</span><span class="n">get_lower</span><span class="p">([</span><span class="n">lpr_t</span><span class="o">.</span><span class="n">get_lower</span><span class="p">(</span><span class="n">gamble_t</span><span class="p">)</span>
+<span class="gp">... </span>                       <span class="k">for</span> <span class="n">lpr_t</span><span class="p">,</span> <span class="n">gamble_t</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">lpr_t_s</span><span class="p">,</span> <span class="n">gamble_t_s</span><span class="p">)]))</span>
+<span class="go">19/50</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr_s</span><span class="o">.</span><span class="n">get_upper</span><span class="p">([</span><span class="n">lpr_t</span><span class="o">.</span><span class="n">get_upper</span><span class="p">(</span><span class="n">gamble_t</span><span class="p">)</span>
+<span class="gp">... </span>                       <span class="k">for</span> <span class="n">lpr_t</span><span class="p">,</span> <span class="n">gamble_t</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">lpr_t_s</span><span class="p">,</span> <span class="n">gamble_t_s</span><span class="p">)]))</span>
+<span class="go">41/100</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gamble_t_s</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">]]</span> <span class="c"># event t=1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr_s</span><span class="o">.</span><span class="n">get_lower</span><span class="p">([</span><span class="n">lpr_t</span><span class="o">.</span><span class="n">get_lower</span><span class="p">(</span><span class="n">gamble_t</span><span class="p">)</span>
+<span class="gp">... </span>                       <span class="k">for</span> <span class="n">lpr_t</span><span class="p">,</span> <span class="n">gamble_t</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">lpr_t_s</span><span class="p">,</span> <span class="n">gamble_t_s</span><span class="p">)]))</span>
+<span class="go">7/20</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr_s</span><span class="o">.</span><span class="n">get_upper</span><span class="p">([</span><span class="n">lpr_t</span><span class="o">.</span><span class="n">get_upper</span><span class="p">(</span><span class="n">gamble_t</span><span class="p">)</span>
+<span class="gp">... </span>                       <span class="k">for</span> <span class="n">lpr_t</span><span class="p">,</span> <span class="n">gamble_t</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">lpr_t_s</span><span class="p">,</span> <span class="n">gamble_t_s</span><span class="p">)]))</span>
+<span class="go">9/25</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gamble_t_s</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]]</span> <span class="c"># event t=2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr_s</span><span class="o">.</span><span class="n">get_lower</span><span class="p">([</span><span class="n">lpr_t</span><span class="o">.</span><span class="n">get_lower</span><span class="p">(</span><span class="n">gamble_t</span><span class="p">)</span>
+<span class="gp">... </span>                       <span class="k">for</span> <span class="n">lpr_t</span><span class="p">,</span> <span class="n">gamble_t</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">lpr_t_s</span><span class="p">,</span> <span class="n">gamble_t_s</span><span class="p">)]))</span>
+<span class="go">6/25</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr_s</span><span class="o">.</span><span class="n">get_upper</span><span class="p">([</span><span class="n">lpr_t</span><span class="o">.</span><span class="n">get_upper</span><span class="p">(</span><span class="n">gamble_t</span><span class="p">)</span>
+<span class="gp">... </span>                       <span class="k">for</span> <span class="n">lpr_t</span><span class="p">,</span> <span class="n">gamble_t</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">lpr_t_s</span><span class="p">,</span> <span class="n">gamble_t_s</span><span class="p">)]))</span>
+<span class="go">13/50</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="mobius-transform">
+<h2>Mobius Transform<a class="headerlink" href="#mobius-transform" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span> <span class="o">=</span> <span class="n">LowProb</span><span class="p">(</span><span class="n">pspace</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">set_lower</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">set_lower</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="mf">0.3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">set_lower</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="mf">0.2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">set_lower</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">mobius</span><span class="p">)</span>
+<span class="go">    : 0.0</span>
+<span class="go">0   : 0.3</span>
+<span class="go">  1 : 0.2</span>
+<span class="go">0 1 : 0.5</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="frechet-bounds">
+<h2>Frechet Bounds<a class="headerlink" href="#frechet-bounds" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span> <span class="o">=</span> <span class="n">LowPoly</span><span class="p">(</span><span class="n">pspace</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">set_precise</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;0.6&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">set_precise</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;0.7&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">get_lower</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]))</span> <span class="c"># max(0.6+0.7-1,0)</span>
+<span class="go">3/10</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">get_upper</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]))</span> <span class="c"># min(0.6,0.7)</span>
+<span class="go">3/5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">is_linear</span><span class="p">()</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">vert</span> <span class="ow">in</span> <span class="n">lpr</span><span class="o">.</span><span class="n">get_credal_set</span><span class="p">():</span>
+<span class="gp">... </span>    <span class="k">print</span><span class="p">(</span><span class="s">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%.2f</span><span class="s">&quot;</span> <span class="o">%</span> <span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">vert</span><span class="p">))</span>
+<span class="go">0.30 0.30 0.40 0.00</span>
+<span class="go">0.00 0.60 0.10 0.30</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="avoiding-sure-loss">
+<h2>Avoiding Sure Loss<a class="headerlink" href="#avoiding-sure-loss" title="Permalink to this headline">¶</a></h2>
+<p>This example incurs sure loss because the maximum of the sum of the gambles
+[1,2,3,0] and [3,2,1,0] is 4, however 2.5 + 2.5 is strictly larger than 4.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span> <span class="o">=</span> <span class="n">LowPoly</span><span class="p">(</span><span class="n">pspace</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">set_lower</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;2.5&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">set_lower</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;2.5&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">is_avoiding_sure_loss</span><span class="p">()</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+<p>A few simple examples:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span> <span class="o">=</span> <span class="n">LowPoly</span><span class="p">(</span><span class="n">pspace</span><span class="o">=</span><span class="s">&#39;xyz&#39;</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">is_avoiding_sure_loss</span><span class="p">()</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span> <span class="o">=</span> <span class="n">LowPoly</span><span class="p">(</span><span class="n">pspace</span><span class="o">=</span><span class="s">&#39;xyz&#39;</span><span class="p">,</span> <span class="n">lprob</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;0.1&#39;</span><span class="p">,</span> <span class="s">&#39;0.2&#39;</span><span class="p">,</span> <span class="s">&#39;0.15&#39;</span><span class="p">],</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="p">[{</span><span class="s">&#39;x&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">},</span> <span class="s">&#39;x&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="p">[{</span><span class="s">&#39;x&#39;</span><span class="p">:</span><span class="mi">0</span><span class="p">},</span> <span class="s">&#39;x&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">is_avoiding_sure_loss</span><span class="p">()</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>See if we can handle zero probabilities:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span> <span class="o">=</span> <span class="n">LowPoly</span><span class="p">(</span><span class="n">pspace</span><span class="o">=</span><span class="s">&#39;abcd&#39;</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="p">[{</span><span class="s">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span> <span class="bp">True</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr</span><span class="p">)</span>
+<span class="go">a b c d</span>
+<span class="go">1 0 0 0 | a b c d : [1,  ]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">is_avoiding_sure_loss</span><span class="p">()</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>Slightly more complicated:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span> <span class="o">=</span> <span class="n">LowPoly</span><span class="p">(</span><span class="n">pspace</span><span class="o">=</span><span class="s">&#39;abcd&#39;</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="p">[{</span><span class="s">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span> <span class="bp">True</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="p">[{</span><span class="s">&#39;b&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span> <span class="s">&#39;bcd&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span> <span class="c"># obviously incurs sure loss!</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr</span><span class="p">)</span>
+<span class="go">a b c d</span>
+<span class="go">1 0 0 0 | a b c d : [1,  ]</span>
+<span class="go">0 1 0 0 |   b c d : [2,  ]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">is_avoiding_sure_loss</span><span class="p">()</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+<p>And even slightly more complicated:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span> <span class="o">=</span> <span class="n">LowPoly</span><span class="p">(</span><span class="n">pspace</span><span class="o">=</span><span class="s">&#39;abcd&#39;</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="p">[{</span><span class="s">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span> <span class="bp">True</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="p">[{</span><span class="s">&#39;b&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span> <span class="s">&#39;bcd&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;2/3&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="p">[{</span><span class="s">&#39;c&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span> <span class="s">&#39;bcd&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;2/3&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span> <span class="c"># sum larger than one on this layer</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr</span><span class="p">)</span>
+<span class="go">a b c d</span>
+<span class="go">1 0 0 0 | a b c d : [1  ,    ]</span>
+<span class="go">0 0 1 0 |   b c d : [2/3,    ]</span>
+<span class="go">0 1 0 0 |   b c d : [2/3,    ]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">is_avoiding_sure_loss</span><span class="p">()</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+<p>Another more complex example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_s_t</span> <span class="o">=</span> <span class="n">LowPoly</span><span class="p">(</span><span class="n">pspace</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_s_t</span><span class="o">.</span><span class="n">set_lower</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;0.500&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_s_t</span><span class="o">.</span><span class="n">set_upper</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;0.666&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_s_t</span><span class="o">.</span><span class="n">set_lower</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;0.222&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_s_t</span><span class="o">.</span><span class="n">set_upper</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;0.272&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_s_t</span><span class="o">.</span><span class="n">set_lower</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;0.125&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_s_t</span><span class="o">.</span><span class="n">set_upper</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;0.181&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_s_t</span><span class="o">.</span><span class="n">set_lower</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;0.222&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_s_t</span><span class="o">.</span><span class="n">set_upper</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;0.333&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_s_t</span><span class="o">.</span><span class="n">set_lower</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;0.363&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_s_t</span><span class="o">.</span><span class="n">set_upper</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;0.444&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_s_t</span><span class="o">.</span><span class="n">set_lower</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;0.250&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_s_t</span><span class="o">.</span><span class="n">set_upper</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;0.363&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_s_t</span><span class="o">.</span><span class="n">set_lower</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;0.111&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_s_t</span><span class="o">.</span><span class="n">set_upper</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;0.166&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_s_t</span><span class="o">.</span><span class="n">set_lower</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;0.333&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_s_t</span><span class="o">.</span><span class="n">set_upper</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;0.363&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_s_t</span><span class="o">.</span><span class="n">set_lower</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="s">&#39;0.454&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_s_t</span><span class="o">.</span><span class="n">set_upper</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="s">&#39;0.625&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_s_t</span><span class="o">.</span><span class="n">is_avoiding_sure_loss</span><span class="p">()</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="coherence">
+<h2>Coherence<a class="headerlink" href="#coherence" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span> <span class="o">=</span> <span class="n">LowPoly</span><span class="p">(</span><span class="n">pspace</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">set_lower</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;2.5&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">is_coherent</span><span class="p">()</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">set_upper</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;3&#39;</span><span class="p">)</span> <span class="c"># coherence requires at least 5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">is_coherent</span><span class="p">()</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="linearity">
+<h2>Linearity<a class="headerlink" href="#linearity" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span> <span class="o">=</span> <span class="n">LowPoly</span><span class="p">(</span><span class="n">pspace</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">set_lower</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;2.5&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">is_linear</span><span class="p">()</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">set_upper</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;5&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">is_linear</span><span class="p">()</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="marginal-extension">
+<h2>Marginal Extension<a class="headerlink" href="#marginal-extension" title="Permalink to this headline">¶</a></h2>
+<p>Finding coherent lower and upper bounds for the oil catter example in
+<a class="footnote-reference" href="#kikuti2005" id="id4">[1]</a>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="c"># lower previsions over s, given t</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_s_t</span> <span class="o">=</span> <span class="p">[</span><span class="n">LowPoly</span><span class="p">(</span><span class="n">pspace</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">),</span>
+<span class="gp">... </span>           <span class="n">LowPoly</span><span class="p">(</span><span class="n">pspace</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">),</span>
+<span class="gp">... </span>           <span class="n">LowPoly</span><span class="p">(</span><span class="n">pspace</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c"># lower prevision over t</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_t</span> <span class="o">=</span> <span class="n">LowPoly</span><span class="p">(</span><span class="n">pspace</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_s_t</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_lower</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;0.5&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_s_t</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_upper</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;0.666&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_s_t</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_lower</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;0.222&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_s_t</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_upper</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;0.272&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_s_t</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_lower</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="s">&#39;0.125&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_s_t</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_upper</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="s">&#39;0.181&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_s_t</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">is_coherent</span><span class="p">()</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lpr_s_t</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_lower</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])))</span> <span class="c"># not coherent!</span>
+<span class="go">0.547</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lpr_s_t</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_upper</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])))</span> <span class="c"># not coherent!</span>
+<span class="go">0.653</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lpr_s_t</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_lower</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">])))</span>
+<span class="go">0.222</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lpr_s_t</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_upper</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">])))</span>
+<span class="go">0.272</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lpr_s_t</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_lower</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">])))</span>
+<span class="go">0.125</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lpr_s_t</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_upper</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">])))</span>
+<span class="go">0.181</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_s_t</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">LowPoly</span><span class="p">(</span><span class="n">pspace</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_s_t</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_lower</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;0.222&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_s_t</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_upper</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;0.333&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_s_t</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_lower</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;0.363&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_s_t</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_upper</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;0.444&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_s_t</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_lower</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="s">&#39;0.250&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_s_t</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_upper</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="s">&#39;0.363&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_s_t</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">is_coherent</span><span class="p">()</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lpr_s_t</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">get_lower</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])))</span>
+<span class="go">0.222</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lpr_s_t</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">get_upper</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])))</span>
+<span class="go">0.333</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lpr_s_t</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">get_lower</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">])))</span>
+<span class="go">0.363</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lpr_s_t</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">get_upper</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">])))</span>
+<span class="go">0.444</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lpr_s_t</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">get_lower</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">])))</span>
+<span class="go">0.25</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lpr_s_t</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">get_upper</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">])))</span>
+<span class="go">0.363</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_s_t</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">LowPoly</span><span class="p">(</span><span class="n">pspace</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_s_t</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_lower</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;0.111&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_s_t</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_upper</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;0.166&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_s_t</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_lower</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;0.333&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_s_t</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_upper</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;0.363&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_s_t</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_lower</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="s">&#39;0.454&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_s_t</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_upper</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="s">&#39;0.625&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_s_t</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">is_coherent</span><span class="p">()</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lpr_s_t</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">get_lower</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])))</span>
+<span class="go">0.111</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lpr_s_t</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">get_upper</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])))</span>
+<span class="go">0.166</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lpr_s_t</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">get_lower</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">])))</span>
+<span class="go">0.333</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lpr_s_t</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">get_upper</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">])))</span>
+<span class="go">0.363</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lpr_s_t</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">get_lower</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">])))</span> <span class="c"># not coherent!</span>
+<span class="go">0.471</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lpr_s_t</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">get_upper</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">])))</span> <span class="c"># not coherent!</span>
+<span class="go">0.556</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_t</span><span class="o">.</span><span class="n">set_lower</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;0.181&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_t</span><span class="o">.</span><span class="n">set_upper</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;0.222&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_t</span><span class="o">.</span><span class="n">set_lower</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;0.333&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_t</span><span class="o">.</span><span class="n">set_upper</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;0.363&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_t</span><span class="o">.</span><span class="n">set_lower</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="s">&#39;0.444&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_t</span><span class="o">.</span><span class="n">set_upper</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="s">&#39;0.454&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_t</span><span class="o">.</span><span class="n">is_coherent</span><span class="p">()</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lpr_t</span><span class="o">.</span><span class="n">get_lower</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])))</span> <span class="c"># not coherent!</span>
+<span class="go">0.183</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lpr_t</span><span class="o">.</span><span class="n">get_upper</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])))</span>
+<span class="go">0.222</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lpr_t</span><span class="o">.</span><span class="n">get_lower</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">])))</span>
+<span class="go">0.333</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lpr_t</span><span class="o">.</span><span class="n">get_upper</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">])))</span>
+<span class="go">0.363</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lpr_t</span><span class="o">.</span><span class="n">get_lower</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">])))</span>
+<span class="go">0.444</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lpr_t</span><span class="o">.</span><span class="n">get_upper</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">])))</span>
+<span class="go">0.454</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c"># now some calculations</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gamble_s</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">7</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">20</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">minus_gamble_s</span> <span class="o">=</span> <span class="p">[</span><span class="mi">7</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="o">-</span><span class="mi">20</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lpr_s_t</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_lower</span><span class="p">(</span><span class="n">gamble_s</span><span class="p">)))</span>
+<span class="go">-0.961</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lpr_s_t</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_lower</span><span class="p">(</span><span class="n">minus_gamble_s</span><span class="p">)))</span>
+<span class="go">-1.151</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lpr_s_t</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">get_lower</span><span class="p">(</span><span class="n">gamble_s</span><span class="p">)))</span>
+<span class="go">4.754</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lpr_s_t</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">get_lower</span><span class="p">(</span><span class="n">minus_gamble_s</span><span class="p">)))</span>
+<span class="go">-7.781</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lpr_s_t</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">get_lower</span><span class="p">(</span><span class="n">gamble_s</span><span class="p">)))</span>
+<span class="go">10.073</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lpr_s_t</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">get_lower</span><span class="p">(</span><span class="n">minus_gamble_s</span><span class="p">)))</span>
+<span class="go">-12.008</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c"># calculate its lower prevision by marginal extension</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c"># XXX currently, using this hackish way to set up the marginal extension</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c"># XXX will replace this with something better at some point...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span> <span class="o">=</span> <span class="n">LowPoly</span><span class="p">(</span><span class="n">pspace</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">get_lower</span><span class="p">(</span><span class="n">gamble_s_t</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">lpr_t</span><span class="o">.</span><span class="n">get_lower</span><span class="p">([</span><span class="n">lpr_s</span><span class="o">.</span><span class="n">get_lower</span><span class="p">(</span><span class="n">gamble_s</span><span class="p">)</span>
+<span class="gp">... </span>                            <span class="k">for</span> <span class="n">lpr_s</span><span class="p">,</span> <span class="n">gamble_s</span>
+<span class="gp">... </span>                            <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">lpr_s_t</span><span class="p">,</span> <span class="n">gamble_s_t</span><span class="p">)])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">get_upper</span><span class="p">(</span><span class="n">gamble_s_t</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">lpr_t</span><span class="o">.</span><span class="n">get_upper</span><span class="p">([</span><span class="n">lpr_s</span><span class="o">.</span><span class="n">get_upper</span><span class="p">(</span><span class="n">gamble_s</span><span class="p">)</span>
+<span class="gp">... </span>                            <span class="k">for</span> <span class="n">lpr_s</span><span class="p">,</span> <span class="n">gamble_s</span>
+<span class="gp">... </span>                            <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">lpr_s_t</span><span class="p">,</span> <span class="n">gamble_s_t</span><span class="p">)])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">get_lower</span> <span class="o">=</span> <span class="n">get_lower</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">get_upper</span> <span class="o">=</span> <span class="n">get_upper</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c"># a gamble which is a function of s and t; t comes as first</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c"># argument (in order to match lpr_s_t): gamble_s_t[t][s]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gamble_s_t</span> <span class="o">=</span> <span class="p">[[</span><span class="o">-</span><span class="mi">7</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">20</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mi">7</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">20</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mi">7</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">20</span><span class="p">]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c"># do the calculations</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">get_lower</span><span class="p">(</span><span class="n">gamble_s_t</span><span class="p">)))</span>
+<span class="go">5.846906</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">get_upper</span><span class="p">(</span><span class="n">gamble_s_t</span><span class="p">)))</span>
+<span class="go">8.486768</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c"># another gamble which is a function of s and t</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gamble_s_t</span> <span class="o">=</span> <span class="p">[[</span><span class="o">-</span><span class="mi">7</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">20</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c"># calculate its lower prevision by marginal extension</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">get_lower</span><span class="p">(</span><span class="n">gamble_s_t</span><span class="p">)))</span>
+<span class="go">-0.213342</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c"># another gamble which is a function of s and t</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gamble_s_t</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">7</span><span class="p">,</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="o">-</span><span class="mi">20</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c"># calculate its lower prevision by marginal extension</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">get_lower</span><span class="p">(</span><span class="n">gamble_s_t</span><span class="p">)))</span>
+<span class="go">-0.255522</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c"># another gamble which is a function of s and t</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gamble_s_t</span> <span class="o">=</span> <span class="p">[[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">11</span><span class="p">,</span><span class="mi">26</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">11</span><span class="p">,</span><span class="mi">26</span><span class="p">]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c"># calculate its lower prevision by marginal extension</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">get_lower</span><span class="p">(</span><span class="n">gamble_s_t</span><span class="p">)))</span>
+<span class="go">10.506248</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">get_upper</span><span class="p">(</span><span class="n">gamble_s_t</span><span class="p">)))</span>
+<span class="go">12.995135</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="generalized-bayes-rule">
+<h2>Generalized Bayes Rule<a class="headerlink" href="#generalized-bayes-rule" title="Permalink to this headline">¶</a></h2>
+<p>The next example is effectively the Monty Hall problem.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span> <span class="o">=</span> <span class="n">LowPoly</span><span class="p">(</span><span class="n">pspace</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">set_lower</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="s">&#39;1/3&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">set_lower</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="s">&#39;1/3&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">set_lower</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="s">&#39;1/3&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">get_lower</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="nb">set</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">])))</span>
+<span class="go">0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">get_lower</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="nb">set</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">])))</span>
+<span class="go">1/2</span>
+</pre></div>
+</div>
+<p class="rubric">Footnotes</p>
+<table class="docutils footnote" frame="void" id="kikuti2005" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id4">[1]</a></td><td>Kikuti, D., Cozman, F., de Campos, C.: Partially ordered preferences
+in decision trees: Computing strategies with imprecision in
+probabilities. In: R. Brafman, U. Junker (eds.) IJCAI-05
+Multidisciplinary Workshop on Advances in Preference Handling,
+pp. 118–123, 2005.</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="walley2004" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[2]</td><td><em>(<a class="fn-backref" href="#id1">1</a>, <a class="fn-backref" href="#id2">2</a>, <a class="fn-backref" href="#id3">3</a>)</em> Peter Walley, Renato Pelessoni, and Paolo Vicig. Journal of
+Statistical Planning and Inference, 126(1):119-151, November 2004.</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Polyhedral Lower Previsions</a><ul>
+<li><a class="reference internal" href="#natural-extension">Natural Extension</a></li>
+<li><a class="reference internal" href="#mobius-transform">Mobius Transform</a></li>
+<li><a class="reference internal" href="#frechet-bounds">Frechet Bounds</a></li>
+<li><a class="reference internal" href="#avoiding-sure-loss">Avoiding Sure Loss</a></li>
+<li><a class="reference internal" href="#coherence">Coherence</a></li>
+<li><a class="reference internal" href="#linearity">Linearity</a></li>
+<li><a class="reference internal" href="#marginal-extension">Marginal Extension</a></li>
+<li><a class="reference internal" href="#generalized-bayes-rule">Generalized Bayes Rule</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../lowprev.html"
+                        title="previous chapter">Lower Previsions</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="lowprob.html"
+                        title="next chapter">Lower Probabilities</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/lowprev/lowpoly.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="lowprob.html" title="Lower Probabilities"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../lowprev.html" title="Lower Previsions"
+             >previous</a> |</li>
+        <li><a href="../index.html">improb v0.1.0 (beta) documentation</a> &raquo;</li>
+          <li><a href="../lowprev.html" >Lower Previsions</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010, Matthias C. M. Troffaes.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

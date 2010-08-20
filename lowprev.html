@@ -1,0 +1,285 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Lower Previsions &mdash; improb v0.1.0 (beta) documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1.0 (beta)',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="improb v0.1.0 (beta) documentation" href="index.html" />
+    <link rel="next" title="Polyhedral Lower Previsions" href="lowprev/lowpoly.html" />
+    <link rel="prev" title="Introduction" href="introduction.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="lowprev/lowpoly.html" title="Polyhedral Lower Previsions"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="introduction.html" title="Introduction"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">improb v0.1.0 (beta) documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="module-improb.lowprev"></span><div class="section" id="lower-previsions">
+<h1>Lower Previsions<a class="headerlink" href="#lower-previsions" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="lowprev/lowpoly.html">Polyhedral Lower Previsions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lowprev/lowprob.html">Lower Probabilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lowprev/belfunc.html">Belief Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lowprev/linvac.html">Linear Vacuous Mixtures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lowprev/prob.html">Probability Measures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lowprev/examples.html">More Examples</a></li>
+</ul>
+</div>
+<dl class="class">
+<dt id="improb.lowprev.LowPrev">
+<em class="property">class </em><tt class="descclassname">improb.lowprev.</tt><tt class="descname">LowPrev</tt><a class="headerlink" href="#improb.lowprev.LowPrev" title="Permalink to this definition">¶</a></dt>
+<dd><p>Abstract base class for working with arbitrary lower previsions.</p>
+<dl class="method">
+<dt id="improb.lowprev.LowPrev.dominates">
+<tt class="descname">dominates</tt><big>(</big><em>gamble</em>, <em>other_gamble</em>, <em>event=True</em>, <em>algorithm=None</em><big>)</big><a class="headerlink" href="#improb.lowprev.LowPrev.dominates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Does <em>gamble</em> dominate <em>other_gamble</em> in lower prevision?</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>gamble</strong> (<a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><tt class="docutils literal"><span class="pre">dict</span></tt></a> or similar; see <a class="reference internal" href="introduction.html#gambles"><em>Gambles</em></a>) &#8211; The left hand side gamble.</li>
+<li><strong>other_gamble</strong> (<a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><tt class="docutils literal"><span class="pre">dict</span></tt></a> or similar; see <a class="reference internal" href="introduction.html#gambles"><em>Gambles</em></a>) &#8211; The right hand side gamble.</li>
+<li><strong>event</strong> (<tt class="xref py py-class docutils literal"><span class="pre">list</span></tt> or similar; see <a class="reference internal" href="introduction.html#events"><em>Events</em></a>) &#8211; The event to condition on.</li>
+<li><strong>algorithm</strong> (<tt class="xref py py-class docutils literal"><span class="pre">str</span></tt>) &#8211; The algorithm to use (the default value uses
+the most efficient algorithm).</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><tt class="xref py py-const xref docutils literal"><span class="pre">True</span></tt> if <em>gamble</em> dominates <em>other_gamble</em>, <tt class="xref py py-const xref docutils literal"><span class="pre">False</span></tt> otherwise.</p>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><tt class="xref py py-class docutils literal"><span class="pre">bool</span></tt></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="improb.lowprev.LowPrev.get_lower">
+<tt class="descname">get_lower</tt><big>(</big><em>gamble</em>, <em>event=True</em>, <em>algorithm=None</em><big>)</big><a class="headerlink" href="#improb.lowprev.LowPrev.get_lower" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the lower expectation for <em>gamble</em> conditional on
+<em>event</em> via natural extension.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>gamble</strong> (<a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><tt class="docutils literal"><span class="pre">dict</span></tt></a> or similar; see <a class="reference internal" href="introduction.html#gambles"><em>Gambles</em></a>) &#8211; The gamble whose upper expectation to find.</li>
+<li><strong>event</strong> (<tt class="xref py py-class docutils literal"><span class="pre">list</span></tt> or similar; see <a class="reference internal" href="introduction.html#events"><em>Events</em></a>) &#8211; The event to condition on.</li>
+<li><strong>algorithm</strong> (<tt class="xref py py-class docutils literal"><span class="pre">str</span></tt>) &#8211; The algorithm to use (the default value uses
+the most efficient algorithm).</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The lower bound for this expectation, i.e. the natural extension of the gamble.</p>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><tt class="xref py py-class docutils literal"><span class="pre">float</span></tt> or <a class="reference external" href="http://docs.python.org/library/fractions.html#fractions.Fraction" title="(in Python v2.7)"><tt class="docutils literal"><span class="pre">fractions.Fraction</span></tt></a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="improb.lowprev.LowPrev.get_upper">
+<tt class="descname">get_upper</tt><big>(</big><em>gamble</em>, <em>event=True</em>, <em>algorithm=None</em><big>)</big><a class="headerlink" href="#improb.lowprev.LowPrev.get_upper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the upper expectation for <em>gamble</em> conditional on
+<em>event</em> via natural extension.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>gamble</strong> (<a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><tt class="docutils literal"><span class="pre">dict</span></tt></a> or similar; see <a class="reference internal" href="introduction.html#gambles"><em>Gambles</em></a>) &#8211; The gamble whose upper expectation to find.</li>
+<li><strong>event</strong> (<tt class="xref py py-class docutils literal"><span class="pre">list</span></tt> or similar; see <a class="reference internal" href="introduction.html#events"><em>Events</em></a>) &#8211; The event to condition on.</li>
+<li><strong>algorithm</strong> (<tt class="xref py py-class docutils literal"><span class="pre">str</span></tt>) &#8211; The algorithm to use (<tt class="xref py py-const xref docutils literal"><span class="pre">None</span></tt> for the
+most efficient algorithm).</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The upper bound for this expectation, i.e. the natural extension of the gamble.</p>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><tt class="xref py py-class docutils literal"><span class="pre">float</span></tt> or <a class="reference external" href="http://docs.python.org/library/fractions.html#fractions.Fraction" title="(in Python v2.7)"><tt class="docutils literal"><span class="pre">fractions.Fraction</span></tt></a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="improb.lowprev.LowPrev.is_avoiding_sure_loss">
+<tt class="descname">is_avoiding_sure_loss</tt><big>(</big><em>algorithm=None</em><big>)</big><a class="headerlink" href="#improb.lowprev.LowPrev.is_avoiding_sure_loss" title="Permalink to this definition">¶</a></dt>
+<dd><p>No Dutch book? Does the lower prevision avoid sure loss?</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><tt class="xref py py-const xref docutils literal"><span class="pre">True</span></tt> if avoids sure loss, <tt class="xref py py-const xref docutils literal"><span class="pre">False</span></tt> otherwise.</td>
+</tr>
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body"><tt class="xref py py-class docutils literal"><span class="pre">bool</span></tt></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="improb.lowprev.LowPrev.is_coherent">
+<tt class="descname">is_coherent</tt><big>(</big><em>algorithm=None</em><big>)</big><a class="headerlink" href="#improb.lowprev.LowPrev.is_coherent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Do all assessments coincide with their natural extension? Is the
+lower prevision coherent?</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>algorithm</strong> (<tt class="xref py py-class docutils literal"><span class="pre">str</span></tt>) &#8211; The algorithm to use (the default value uses
+the most efficient algorithm).</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><tt class="xref py py-const xref docutils literal"><span class="pre">True</span></tt> if coherent, <tt class="xref py py-const xref docutils literal"><span class="pre">False</span></tt> otherwise.</p>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><tt class="xref py py-class docutils literal"><span class="pre">bool</span></tt></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="improb.lowprev.LowPrev.is_linear">
+<tt class="descname">is_linear</tt><big>(</big><em>algorithm=None</em><big>)</big><a class="headerlink" href="#improb.lowprev.LowPrev.is_linear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Is the lower prevision a linear prevision? More precisely,
+we check that the natural extension is linear on the linear
+span of the domain of the lower prevision.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>algorithm</strong> (<tt class="xref py py-class docutils literal"><span class="pre">str</span></tt>) &#8211; The algorithm to use (the default value uses
+the most efficient algorithm).</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><tt class="xref py py-const xref docutils literal"><span class="pre">True</span></tt> if linear, <tt class="xref py py-const xref docutils literal"><span class="pre">False</span></tt> otherwise.</p>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><tt class="xref py py-class docutils literal"><span class="pre">bool</span></tt></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="improb.lowprev.LowPrev.pspace">
+<tt class="descname">pspace</tt><a class="headerlink" href="#improb.lowprev.LowPrev.pspace" title="Permalink to this definition">¶</a></dt>
+<dd><p>An <a class="reference internal" href="introduction.html#improb.PSpace" title="improb.PSpace"><tt class="xref py py-class docutils literal"><span class="pre">PSpace</span></tt></a> representing the possibility space.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="introduction.html"
+                        title="previous chapter">Introduction</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="lowprev/lowpoly.html"
+                        title="next chapter">Polyhedral Lower Previsions</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/lowprev.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="lowprev/lowpoly.html" title="Polyhedral Lower Previsions"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="introduction.html" title="Introduction"
+             >previous</a> |</li>
+        <li><a href="index.html">improb v0.1.0 (beta) documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010, Matthias C. M. Troffaes.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

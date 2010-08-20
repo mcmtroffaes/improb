@@ -1,0 +1,496 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Lower Probabilities &mdash; improb v0.1.0 (beta) documentation</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1.0 (beta)',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="improb v0.1.0 (beta) documentation" href="../index.html" />
+    <link rel="up" title="Lower Previsions" href="../lowprev.html" />
+    <link rel="next" title="Belief Functions" href="belfunc.html" />
+    <link rel="prev" title="Polyhedral Lower Previsions" href="lowpoly.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="belfunc.html" title="Belief Functions"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="lowpoly.html" title="Polyhedral Lower Previsions"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">improb v0.1.0 (beta) documentation</a> &raquo;</li>
+          <li><a href="../lowprev.html" accesskey="U">Lower Previsions</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="module-improb.lowprev.lowprob"></span><div class="section" id="lower-probabilities">
+<h1>Lower Probabilities<a class="headerlink" href="#lower-probabilities" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="improb.lowprev.lowprob.LowProb">
+<em class="property">class </em><tt class="descclassname">improb.lowprev.lowprob.</tt><tt class="descname">LowProb</tt><big>(</big><em>pspace=None</em>, <em>mapping=None</em>, <em>lprev=None</em>, <em>uprev=None</em>, <em>prev=None</em>, <em>lprob=None</em>, <em>uprob=None</em>, <em>prob=None</em>, <em>bba=None</em>, <em>number_type=None</em><big>)</big><a class="headerlink" href="#improb.lowprev.lowprob.LowProb" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="lowpoly.html#improb.lowprev.lowpoly.LowPoly" title="improb.lowprev.lowpoly.LowPoly"><tt class="xref py py-class docutils literal"><span class="pre">improb.lowprev.lowpoly.LowPoly</span></tt></a></p>
+<p>An unconditional lower probability. This class is identical to
+<a class="reference internal" href="lowpoly.html#improb.lowprev.lowpoly.LowPoly" title="improb.lowprev.lowpoly.LowPoly"><tt class="xref py py-class docutils literal"><span class="pre">LowPoly</span></tt></a>, except that only
+unconditional assessments on events are allowed.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">LowProb</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">lprob</span><span class="o">=</span><span class="p">{(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span> <span class="s">&#39;0.1&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span> <span class="s">&#39;0.2&#39;</span><span class="p">},</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">))</span>
+<span class="go">0 1   : 0.1</span>
+<span class="go">  1 2 : 0.2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">LowProb</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">lprev</span><span class="o">=</span><span class="p">{(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">):</span> <span class="mi">1</span><span class="p">},</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">))</span> 
+<span class="gt">Traceback (most recent call last):</span>
+    <span class="o">...</span>
+<span class="nc">ValueError</span>: <span class="n-Identifier">not an indicator gamble</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">LowProb</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">uprob</span><span class="o">=</span><span class="p">{(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span> <span class="s">&#39;0.1&#39;</span><span class="p">},</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">))</span> 
+<span class="gt">Traceback (most recent call last):</span>
+    <span class="o">...</span>
+<span class="nc">ValueError</span>: <span class="n-Identifier">cannot specify upper prevision</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">LowProb</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">mapping</span><span class="o">=</span><span class="p">{((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)):</span> <span class="p">(</span><span class="s">&#39;1.4&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)},</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">))</span> 
+<span class="gt">Traceback (most recent call last):</span>
+    <span class="o">...</span>
+<span class="nc">ValueError</span>: <span class="n-Identifier">not unconditional</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span> <span class="o">=</span> <span class="n">LowProb</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">lprob</span><span class="o">=</span><span class="p">{(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span> <span class="s">&#39;0.1&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span> <span class="s">&#39;0.2&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span><span class="p">,):</span> <span class="s">&#39;0.05&#39;</span><span class="p">},</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">extend</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr</span><span class="p">)</span>
+<span class="go">      : 0</span>
+<span class="go">0     : 0</span>
+<span class="go">  1   : 0</span>
+<span class="go">    2 : 1/20</span>
+<span class="go">0 1   : 1/10</span>
+<span class="go">0   2 : 1/20</span>
+<span class="go">  1 2 : 1/5</span>
+<span class="go">0 1 2 : 1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">mobius</span><span class="p">)</span>
+<span class="go">      : 0</span>
+<span class="go">0     : 0</span>
+<span class="go">  1   : 0</span>
+<span class="go">    2 : 1/20</span>
+<span class="go">0 1   : 1/10</span>
+<span class="go">0   2 : 0</span>
+<span class="go">  1 2 : 3/20</span>
+<span class="go">0 1 2 : 7/10</span>
+</pre></div>
+</div>
+<dl class="classmethod">
+<dt id="improb.lowprev.lowprob.LowProb.get_constraints_n_monotone">
+<em class="property">classmethod </em><tt class="descname">get_constraints_n_monotone</tt><big>(</big><em>pspace</em>, <em>monotonicity=None</em><big>)</big><a class="headerlink" href="#improb.lowprev.lowprob.LowProb.get_constraints_n_monotone" title="Permalink to this definition">¶</a></dt>
+<dd><p>Yields constraints for lower probabilities with given
+monotonicity.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>pspace</strong> (<tt class="xref py py-class docutils literal"><span class="pre">list</span></tt> or similar; see <a class="reference internal" href="../introduction.html#possibility-spaces"><em>Possibility Spaces</em></a>) &#8211; The possibility space.</li>
+<li><strong>monotonicity</strong> (<tt class="xref py py-class docutils literal"><span class="pre">int</span></tt> or
+<tt class="xref py py-class docutils literal"><span class="pre">collections.Iterable</span></tt> of <tt class="xref py py-class docutils literal"><span class="pre">int</span></tt>) &#8211; Requested level of monotonicity (see
+notes below for details).</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>As described in
+<a class="reference internal" href="../setfunction.html#improb.setfunction.SetFunction.get_constraints_bba_n_monotone" title="improb.setfunction.SetFunction.get_constraints_bba_n_monotone"><tt class="xref py py-meth docutils literal"><span class="pre">get_constraints_bba_n_monotone()</span></tt></a>,
+the n-monotonicity constraints on basic belief assignment are:</p>
+<div class="math">
+<p><img src="../_images/math/41aa4770aeb46848b0f21a0dc8155d7d643ace58.png" alt="\sum_{B\colon C\subseteq B\subseteq A}m(B)\ge 0" /></p>
+</div><p>for all <img class="math" src="../_images/math/6d631b0555ae51c4b94e07a903d96765b6cfcaed.png" alt="C\subseteq A\subseteq\Omega"/>, with
+<img class="math" src="../_images/math/a66e021b70f2f54d4d738714aa1c9b79a039a14f.png" alt="1\le|C|\le n"/>.</p>
+<p>By the Mobius transform, this is equivalent to:</p>
+<div class="math">
+<p><img src="../_images/math/9f24381d82e1b354ebf6e1959c3d455123c3b5cb.png" alt="\sum_{B\colon C\subseteq B\subseteq A}
+\sum_{D\colon D\subseteq B}(-1)^{|B\setminus D|}
+\underline{P}(D)\ge 0" /></p>
+</div><p>Once noted that</p>
+<div class="math">
+<p><img src="../_images/math/a5603892bdd2df4f3dacb9afcb028a1ec71a322e.png" alt="(C\subseteq B\subseteq A\quad \&amp; \quad D\subseteq B)
+\iff
+(C\cup D\subseteq B\subseteq A\quad \&amp; \quad D\subseteq A)," /></p>
+</div><p>we can conveniently rewrite the sum as:</p>
+<div class="math">
+<p><img src="../_images/math/de0da6ac89baf8fe73668f966c3288121ee4dabe.png" alt="\sum_{D\colon D\subseteq A}
+\sum_{B\colon C\cup D\subseteq B\subseteq A}(-1)^{|B\setminus D|}
+\underline{P}(D)\ge 0" /></p>
+</div><p>This implementation iterates over all <img class="math" src="../_images/math/9997d08e2929068ee83d876ad30843daeb8ff5f2.png" alt="C\subseteq
+A\subseteq\Omega"/>, with <img class="math" src="../_images/math/1464fc52485b53540d8260aa6e1be67f72015b15.png" alt="|C|=n"/>, and yields each
+constraint as an iterable of (event, coefficient) pairs, where
+zero coefficients are omitted.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>As just mentioned, this method returns the constraints
+corresponding to the latter equation for <img class="math" src="../_images/math/3e06942089226c46c87dbe43d53706d932a84815.png" alt="|C|"/>
+equal to <em>monotonicity</em>. To get all the
+constraints for n-monotonicity, call this method with
+<em>monotonicity=xrange(1, n + 1)</em>.</p>
+<p class="last">The rationale for this approach is that, in case you
+already know that (n-1)-monotonicity is satisfied, then
+you only need the constraints for <em>monotonicity=n</em> to
+check for n-monotonicity.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The trivial constraints that the empty set must have lower
+probability zero, and that the possibility space must have
+lower probability one, are not included: so for
+<em>monotonicity=0</em> this method returns an empty iterator.</p>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pspace</span> <span class="o">=</span> <span class="n">PSpace</span><span class="p">(</span><span class="s">&quot;abc&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">mono</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">pspace</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">print</span><span class="p">(</span><span class="s">&quot;{0} monotonicity:&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mono</span><span class="p">))</span>
+<span class="gp">... </span>    <span class="k">print</span><span class="p">(</span><span class="s">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s">&quot;{0:&lt;{1}}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">event</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">pspace</span><span class="p">))</span>
+<span class="gp">... </span>                   <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">pspace</span><span class="o">.</span><span class="n">subsets</span><span class="p">()))</span>
+<span class="gp">... </span>    <span class="n">constraints</span> <span class="o">=</span> <span class="p">[</span>
+<span class="gp">... </span>        <span class="nb">dict</span><span class="p">(</span><span class="n">constraint</span><span class="p">)</span> <span class="k">for</span> <span class="n">constraint</span> <span class="ow">in</span>
+<span class="gp">... </span>        <span class="n">LowProb</span><span class="o">.</span><span class="n">get_constraints_n_monotone</span><span class="p">(</span><span class="n">pspace</span><span class="p">,</span> <span class="n">mono</span><span class="p">)]</span>
+<span class="gp">... </span>    <span class="n">constraints</span> <span class="o">=</span> <span class="p">[</span>
+<span class="gp">... </span>        <span class="p">[</span><span class="n">constraint</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">pspace</span><span class="o">.</span><span class="n">subsets</span><span class="p">()]</span>
+<span class="gp">... </span>        <span class="k">for</span> <span class="n">constraint</span> <span class="ow">in</span> <span class="n">constraints</span><span class="p">]</span>
+<span class="gp">... </span>    <span class="k">for</span> <span class="n">constraint</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">constraints</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="k">print</span><span class="p">(</span><span class="s">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s">&quot;{0:&lt;{1}}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">pspace</span><span class="p">))</span>
+<span class="gp">... </span>                       <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">constraint</span><span class="p">))</span>
+<span class="go">1 monotonicity:</span>
+<span class="go">    a   b   c   ab  ac  bc  abc</span>
+<span class="go">-1  0   0   1   0   0   0   0  </span>
+<span class="go">-1  0   1   0   0   0   0   0  </span>
+<span class="go">-1  1   0   0   0   0   0   0  </span>
+<span class="go">0   -1  0   0   0   1   0   0  </span>
+<span class="go">0   -1  0   0   1   0   0   0  </span>
+<span class="go">0   0   -1  0   0   0   1   0  </span>
+<span class="go">0   0   -1  0   1   0   0   0  </span>
+<span class="go">0   0   0   -1  0   0   1   0  </span>
+<span class="go">0   0   0   -1  0   1   0   0  </span>
+<span class="go">0   0   0   0   -1  0   0   1  </span>
+<span class="go">0   0   0   0   0   -1  0   1  </span>
+<span class="go">0   0   0   0   0   0   -1  1  </span>
+<span class="go">2 monotonicity:</span>
+<span class="go">    a   b   c   ab  ac  bc  abc</span>
+<span class="go">0   0   0   1   0   -1  -1  1  </span>
+<span class="go">0   0   1   0   -1  0   -1  1  </span>
+<span class="go">0   1   0   0   -1  -1  0   1  </span>
+<span class="go">1   -1  -1  0   1   0   0   0  </span>
+<span class="go">1   -1  0   -1  0   1   0   0  </span>
+<span class="go">1   0   -1  -1  0   0   1   0  </span>
+<span class="go">3 monotonicity:</span>
+<span class="go">    a   b   c   ab  ac  bc  abc</span>
+<span class="go">-1  1   1   1   -1  -1  -1  1  </span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="improb.lowprev.lowprob.LowProb.is_completely_monotone">
+<tt class="descname">is_completely_monotone</tt><big>(</big><big>)</big><a class="headerlink" href="#improb.lowprev.lowprob.LowProb.is_completely_monotone" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks whether the lower probability is completely monotone
+or not.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">The lower probability must be defined for all events. If
+needed, call <a class="reference internal" href="lowpoly.html#improb.lowprev.lowpoly.LowPoly.extend" title="improb.lowprev.lowpoly.LowPoly.extend"><tt class="xref py py-meth docutils literal"><span class="pre">extend()</span></tt></a>
+first.</p>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span> <span class="o">=</span> <span class="n">LowProb</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">pspace</span><span class="o">=</span><span class="s">&#39;abcd&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">lprob</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;ab&#39;</span><span class="p">:</span> <span class="s">&#39;0.2&#39;</span><span class="p">,</span> <span class="s">&#39;bc&#39;</span><span class="p">:</span> <span class="s">&#39;0.2&#39;</span><span class="p">,</span> <span class="s">&#39;abc&#39;</span><span class="p">:</span> <span class="s">&#39;0.2&#39;</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">:</span> <span class="s">&#39;0.1&#39;</span><span class="p">},</span>
+<span class="gp">... </span>    <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">extend</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr</span><span class="p">)</span>
+<span class="go">        : 0</span>
+<span class="go">a       : 0</span>
+<span class="go">  b     : 1/10</span>
+<span class="go">    c   : 0</span>
+<span class="go">      d : 0</span>
+<span class="go">a b     : 1/5</span>
+<span class="go">a   c   : 0</span>
+<span class="go">a     d : 0</span>
+<span class="go">  b c   : 1/5</span>
+<span class="go">  b   d : 1/10</span>
+<span class="go">    c d : 0</span>
+<span class="go">a b c   : 1/5</span>
+<span class="go">a b   d : 1/5</span>
+<span class="go">a   c d : 0</span>
+<span class="go">  b c d : 1/5</span>
+<span class="go">a b c d : 1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">mobius</span><span class="p">)</span>
+<span class="go">        : 0</span>
+<span class="go">a       : 0</span>
+<span class="go">  b     : 1/10</span>
+<span class="go">    c   : 0</span>
+<span class="go">      d : 0</span>
+<span class="go">a b     : 1/10</span>
+<span class="go">a   c   : 0</span>
+<span class="go">a     d : 0</span>
+<span class="go">  b c   : 1/10</span>
+<span class="go">  b   d : 0</span>
+<span class="go">    c d : 0</span>
+<span class="go">a b c   : -1/10</span>
+<span class="go">a b   d : 0</span>
+<span class="go">a   c d : 0</span>
+<span class="go">  b c d : 0</span>
+<span class="go">a b c d : 4/5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">is_completely_monotone</span><span class="p">()</span> <span class="c"># (it is in fact not even 2-monotone)</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span> <span class="o">=</span> <span class="n">LowProb</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">pspace</span><span class="o">=</span><span class="s">&#39;abcd&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">lprob</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;ab&#39;</span><span class="p">:</span> <span class="s">&#39;0.2&#39;</span><span class="p">,</span> <span class="s">&#39;bc&#39;</span><span class="p">:</span> <span class="s">&#39;0.2&#39;</span><span class="p">,</span> <span class="s">&#39;abc&#39;</span><span class="p">:</span> <span class="s">&#39;0.3&#39;</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">:</span> <span class="s">&#39;0.1&#39;</span><span class="p">},</span>
+<span class="gp">... </span>    <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">extend</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr</span><span class="p">)</span>
+<span class="go">        : 0</span>
+<span class="go">a       : 0</span>
+<span class="go">  b     : 1/10</span>
+<span class="go">    c   : 0</span>
+<span class="go">      d : 0</span>
+<span class="go">a b     : 1/5</span>
+<span class="go">a   c   : 0</span>
+<span class="go">a     d : 0</span>
+<span class="go">  b c   : 1/5</span>
+<span class="go">  b   d : 1/10</span>
+<span class="go">    c d : 0</span>
+<span class="go">a b c   : 3/10</span>
+<span class="go">a b   d : 1/5</span>
+<span class="go">a   c d : 0</span>
+<span class="go">  b c d : 1/5</span>
+<span class="go">a b c d : 1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">mobius</span><span class="p">)</span>
+<span class="go">        : 0</span>
+<span class="go">a       : 0</span>
+<span class="go">  b     : 1/10</span>
+<span class="go">    c   : 0</span>
+<span class="go">      d : 0</span>
+<span class="go">a b     : 1/10</span>
+<span class="go">a   c   : 0</span>
+<span class="go">a     d : 0</span>
+<span class="go">  b c   : 1/10</span>
+<span class="go">  b   d : 0</span>
+<span class="go">    c d : 0</span>
+<span class="go">a b c   : 0</span>
+<span class="go">a b   d : 0</span>
+<span class="go">a   c d : 0</span>
+<span class="go">  b c d : 0</span>
+<span class="go">a b c d : 7/10</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">is_completely_monotone</span><span class="p">()</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="improb.lowprev.lowprob.LowProb.is_n_monotone">
+<tt class="descname">is_n_monotone</tt><big>(</big><em>monotonicity=None</em><big>)</big><a class="headerlink" href="#improb.lowprev.lowprob.LowProb.is_n_monotone" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given that the lower probability is (n-1)-monotone, is the
+lower probability n-monotone?</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">To check for n-monotonicity, call this method with
+<em>monotonicity=xrange(n + 1)</em>.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">For convenience, 0-montonicity is defined as empty set and
+possibility space having lower probability 0 and 1
+respectively.</p>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">The lower probability must be defined for all events. If
+needed, call <a class="reference internal" href="lowpoly.html#improb.lowprev.lowpoly.LowPoly.extend" title="improb.lowprev.lowpoly.LowPoly.extend"><tt class="xref py py-meth docutils literal"><span class="pre">extend()</span></tt></a>
+first.</p>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">For large levels of monotonicity, it is slightly more
+efficient to call
+<a class="reference internal" href="../setfunction.html#improb.setfunction.SetFunction.is_bba_n_monotone" title="improb.setfunction.SetFunction.is_bba_n_monotone"><tt class="xref py py-meth docutils literal"><span class="pre">is_bba_n_monotone()</span></tt></a>
+on <a class="reference internal" href="#improb.lowprev.lowprob.LowProb.mobius" title="improb.lowprev.lowprob.LowProb.mobius"><tt class="xref py py-attr docutils literal"><span class="pre">mobius</span></tt></a>.</p>
+</div>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="improb.lowprev.lowprob.LowProb.make_extreme_n_monotone">
+<em class="property">classmethod </em><tt class="descname">make_extreme_n_monotone</tt><big>(</big><em>pspace</em>, <em>monotonicity=None</em><big>)</big><a class="headerlink" href="#improb.lowprev.lowprob.LowProb.make_extreme_n_monotone" title="Permalink to this definition">¶</a></dt>
+<dd><p>Yield extreme lower probabilities with given monotonicity.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Currently this doesn&#8217;t work very well except for the cases
+below.</p>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">lprs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">LowProb</span><span class="o">.</span><span class="n">make_extreme_n_monotone</span><span class="p">(</span><span class="s">&#39;abc&#39;</span><span class="p">,</span> <span class="n">monotonicity</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">lprs</span><span class="p">)</span>
+<span class="go">8</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">is_coherent</span><span class="p">()</span> <span class="k">for</span> <span class="n">lpr</span> <span class="ow">in</span> <span class="n">lprs</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">is_n_monotone</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="k">for</span> <span class="n">lpr</span> <span class="ow">in</span> <span class="n">lprs</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">is_n_monotone</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="k">for</span> <span class="n">lpr</span> <span class="ow">in</span> <span class="n">lprs</span><span class="p">)</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lprs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">LowProb</span><span class="o">.</span><span class="n">make_extreme_n_monotone</span><span class="p">(</span><span class="s">&#39;abc&#39;</span><span class="p">,</span> <span class="n">monotonicity</span><span class="o">=</span><span class="mi">3</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">lprs</span><span class="p">)</span>
+<span class="go">7</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">is_coherent</span><span class="p">()</span> <span class="k">for</span> <span class="n">lpr</span> <span class="ow">in</span> <span class="n">lprs</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">is_n_monotone</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="k">for</span> <span class="n">lpr</span> <span class="ow">in</span> <span class="n">lprs</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">is_n_monotone</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="k">for</span> <span class="n">lpr</span> <span class="ow">in</span> <span class="n">lprs</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lprs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">LowProb</span><span class="o">.</span><span class="n">make_extreme_n_monotone</span><span class="p">(</span><span class="s">&#39;abcd&#39;</span><span class="p">,</span> <span class="n">monotonicity</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">lprs</span><span class="p">)</span>
+<span class="go">41</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">is_coherent</span><span class="p">()</span> <span class="k">for</span> <span class="n">lpr</span> <span class="ow">in</span> <span class="n">lprs</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">is_n_monotone</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="k">for</span> <span class="n">lpr</span> <span class="ow">in</span> <span class="n">lprs</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">is_n_monotone</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="k">for</span> <span class="n">lpr</span> <span class="ow">in</span> <span class="n">lprs</span><span class="p">)</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">is_n_monotone</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span> <span class="k">for</span> <span class="n">lpr</span> <span class="ow">in</span> <span class="n">lprs</span><span class="p">)</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lprs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">LowProb</span><span class="o">.</span><span class="n">make_extreme_n_monotone</span><span class="p">(</span><span class="s">&#39;abcd&#39;</span><span class="p">,</span> <span class="n">monotonicity</span><span class="o">=</span><span class="mi">3</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">lprs</span><span class="p">)</span>
+<span class="go">16</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">is_coherent</span><span class="p">()</span> <span class="k">for</span> <span class="n">lpr</span> <span class="ow">in</span> <span class="n">lprs</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">is_n_monotone</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="k">for</span> <span class="n">lpr</span> <span class="ow">in</span> <span class="n">lprs</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">is_n_monotone</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="k">for</span> <span class="n">lpr</span> <span class="ow">in</span> <span class="n">lprs</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">is_n_monotone</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span> <span class="k">for</span> <span class="n">lpr</span> <span class="ow">in</span> <span class="n">lprs</span><span class="p">)</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lprs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">LowProb</span><span class="o">.</span><span class="n">make_extreme_n_monotone</span><span class="p">(</span><span class="s">&#39;abcd&#39;</span><span class="p">,</span> <span class="n">monotonicity</span><span class="o">=</span><span class="mi">4</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">lprs</span><span class="p">)</span>
+<span class="go">15</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">is_coherent</span><span class="p">()</span> <span class="k">for</span> <span class="n">lpr</span> <span class="ow">in</span> <span class="n">lprs</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">is_n_monotone</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="k">for</span> <span class="n">lpr</span> <span class="ow">in</span> <span class="n">lprs</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">is_n_monotone</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="k">for</span> <span class="n">lpr</span> <span class="ow">in</span> <span class="n">lprs</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">is_n_monotone</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span> <span class="k">for</span> <span class="n">lpr</span> <span class="ow">in</span> <span class="n">lprs</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c"># cddlib hangs on larger possibility spaces</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c">#lprs = list(LowProb.make_extreme_n_monotone(&#39;abcde&#39;, monotonicity=2))</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="improb.lowprev.lowprob.LowProb.make_random">
+<em class="property">classmethod </em><tt class="descname">make_random</tt><big>(</big><em>pspace=None</em>, <em>division=None</em>, <em>zero=True</em>, <em>number_type='float'</em><big>)</big><a class="headerlink" href="#improb.lowprev.lowprob.LowProb.make_random" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a random coherent lower probability.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="improb.lowprev.lowprob.LowProb.mobius">
+<tt class="descname">mobius</tt><a class="headerlink" href="#improb.lowprev.lowprob.LowProb.mobius" title="Permalink to this definition">¶</a></dt>
+<dd><p>The mobius transform of the assigned unconditional lower
+probabilities, as <a class="reference internal" href="../setfunction.html#improb.setfunction.SetFunction" title="improb.setfunction.SetFunction"><tt class="xref py py-class docutils literal"><span class="pre">SetFunction</span></tt></a>.</p>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<dl class="last docutils">
+<dt><a class="reference internal" href="../setfunction.html#improb.setfunction.SetFunction.get_mobius" title="improb.setfunction.SetFunction.get_mobius"><tt class="xref py py-meth docutils literal"><span class="pre">improb.setfunction.SetFunction.get_mobius()</span></tt></a></dt>
+<dd>Mobius transform calculation of an arbitrary set function.</dd>
+<dt><a class="reference internal" href="belfunc.html#improb.lowprev.belfunc.BelFunc" title="improb.lowprev.belfunc.BelFunc"><tt class="xref py py-class docutils literal"><span class="pre">improb.lowprev.belfunc.BelFunc</span></tt></a></dt>
+<dd>Belief functions.</dd>
+</dl>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="improb.lowprev.lowprob.LowProb.set_function">
+<tt class="descname">set_function</tt><a class="headerlink" href="#improb.lowprev.lowprob.LowProb.set_function" title="Permalink to this definition">¶</a></dt>
+<dd><p>The lower probability as
+<a class="reference internal" href="../setfunction.html#improb.setfunction.SetFunction" title="improb.setfunction.SetFunction"><tt class="xref py py-class docutils literal"><span class="pre">SetFunction</span></tt></a>.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="lowpoly.html"
+                        title="previous chapter">Polyhedral Lower Previsions</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="belfunc.html"
+                        title="next chapter">Belief Functions</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/lowprev/lowprob.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="belfunc.html" title="Belief Functions"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="lowpoly.html" title="Polyhedral Lower Previsions"
+             >previous</a> |</li>
+        <li><a href="../index.html">improb v0.1.0 (beta) documentation</a> &raquo;</li>
+          <li><a href="../lowprev.html" >Lower Previsions</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010, Matthias C. M. Troffaes.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

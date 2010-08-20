@@ -1,0 +1,185 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Probability Measures &mdash; improb v0.1.0 (beta) documentation</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1.0 (beta)',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="improb v0.1.0 (beta) documentation" href="../index.html" />
+    <link rel="up" title="Lower Previsions" href="../lowprev.html" />
+    <link rel="next" title="More Examples" href="examples.html" />
+    <link rel="prev" title="Linear Vacuous Mixtures" href="linvac.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="examples.html" title="More Examples"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="linvac.html" title="Linear Vacuous Mixtures"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">improb v0.1.0 (beta) documentation</a> &raquo;</li>
+          <li><a href="../lowprev.html" accesskey="U">Lower Previsions</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="module-improb.lowprev.prob"></span><div class="section" id="probability-measures">
+<h1>Probability Measures<a class="headerlink" href="#probability-measures" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="improb.lowprev.prob.Prob">
+<em class="property">class </em><tt class="descclassname">improb.lowprev.prob.</tt><tt class="descname">Prob</tt><big>(</big><em>pspace=None</em>, <em>mapping=None</em>, <em>lprev=None</em>, <em>uprev=None</em>, <em>prev=None</em>, <em>lprob=None</em>, <em>uprob=None</em>, <em>prob=None</em>, <em>bba=None</em>, <em>number_type=None</em><big>)</big><a class="headerlink" href="#improb.lowprev.prob.Prob" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="linvac.html#improb.lowprev.linvac.LinVac" title="improb.lowprev.linvac.LinVac"><tt class="xref py py-class docutils literal"><span class="pre">improb.lowprev.linvac.LinVac</span></tt></a></p>
+<p>A probability measure.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">p</span> <span class="o">=</span> <span class="n">Prob</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">prob</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;0.1&#39;</span><span class="p">,</span> <span class="s">&#39;0.2&#39;</span><span class="p">,</span> <span class="s">&#39;0.3&#39;</span><span class="p">,</span> <span class="s">&#39;0.05&#39;</span><span class="p">,</span> <span class="s">&#39;0.35&#39;</span><span class="p">],</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+<span class="go">0 : 1/10</span>
+<span class="go">1 : 1/5</span>
+<span class="go">2 : 3/10</span>
+<span class="go">3 : 1/20</span>
+<span class="go">4 : 7/20</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">get_precise</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">1</span><span class="p">]))</span>
+<span class="go">53/20</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">get_precise</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]))</span>
+<span class="go">10/3</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="improb.lowprev.prob.Prob.get_linvac">
+<tt class="descname">get_linvac</tt><big>(</big><em>epsilon</em><big>)</big><a class="headerlink" href="#improb.lowprev.prob.Prob.get_linvac" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert probability into a linear vacuous mixture:</p>
+<div class="math">
+<p><img src="../_images/math/db735f2a1eef8c3b9ef5336071ce4f82d13e1ba9.png" alt="\underline{E}(f)=(1-\epsilon)E(f)+\epsilon\inf f" /></p>
+</div></dd></dl>
+
+<dl class="method">
+<dt id="improb.lowprev.prob.Prob.get_precise">
+<tt class="descname">get_precise</tt><big>(</big><em>gamble</em>, <em>event=True</em>, <em>algorithm='linear'</em><big>)</big><a class="headerlink" href="#improb.lowprev.prob.Prob.get_precise" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the conditional expectation,</p>
+<div class="math">
+<p><img src="../_images/math/b815f8090f5d8a45ec81dc8afaf979a497593762.png" alt="E(f|A)=
+\frac{
+\sum_{\omega\in A}p(\omega)f(\omega)
+}{
+\sum_{\omega\in A}p(\omega)
+}" /></p>
+</div><p>where <img class="math" src="../_images/math/81584f3ecae932df9cc4dfd665020e3bd62ca324.png" alt="p(\omega)"/> is simply the probability of the
+singleton <img class="math" src="../_images/math/54d7d48553f4d9e7ab418118607ea324cbfddfda.png" alt="\omega"/>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="bp">self</span><span class="p">[{</span><span class="n">omega</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span> <span class="bp">True</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="improb.lowprev.prob.Prob.make_random">
+<em class="property">classmethod </em><tt class="descname">make_random</tt><big>(</big><em>pspace=None</em>, <em>division=None</em>, <em>zero=True</em>, <em>number_type='float'</em><big>)</big><a class="headerlink" href="#improb.lowprev.prob.Prob.make_random" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a random probability mass function.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">random</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">25</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">Prob</span><span class="o">.</span><span class="n">make_random</span><span class="p">(</span><span class="s">&quot;abcd&quot;</span><span class="p">,</span> <span class="n">division</span><span class="o">=</span><span class="mi">10</span><span class="p">))</span>
+<span class="go">a : 0.4</span>
+<span class="go">b : 0.0</span>
+<span class="go">c : 0.1</span>
+<span class="go">d : 0.5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">25</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">Prob</span><span class="o">.</span><span class="n">make_random</span><span class="p">(</span><span class="s">&quot;abcd&quot;</span><span class="p">,</span> <span class="n">division</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">zero</span><span class="o">=</span><span class="bp">False</span><span class="p">))</span>
+<span class="go">a : 0.3</span>
+<span class="go">b : 0.1</span>
+<span class="go">c : 0.2</span>
+<span class="go">d : 0.4</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="linvac.html"
+                        title="previous chapter">Linear Vacuous Mixtures</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="examples.html"
+                        title="next chapter">More Examples</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/lowprev/prob.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="examples.html" title="More Examples"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="linvac.html" title="Linear Vacuous Mixtures"
+             >previous</a> |</li>
+        <li><a href="../index.html">improb v0.1.0 (beta) documentation</a> &raquo;</li>
+          <li><a href="../lowprev.html" >Lower Previsions</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010, Matthias C. M. Troffaes.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

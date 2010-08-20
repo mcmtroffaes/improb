@@ -1,0 +1,778 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Introduction &mdash; improb v0.1.0 (beta) documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1.0 (beta)',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="improb v0.1.0 (beta) documentation" href="index.html" />
+    <link rel="next" title="Lower Previsions" href="lowprev.html" />
+    <link rel="prev" title="Getting Started" href="quickstart.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="lowprev.html" title="Lower Previsions"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="quickstart.html" title="Getting Started"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">improb v0.1.0 (beta) documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="module-improb"></span><div class="section" id="introduction">
+<h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
+<p>To get started quickly, use</p>
+<ul class="simple">
+<li><tt class="xref py py-class docutils literal"><span class="pre">float</span></tt> or <tt class="xref py py-class docutils literal"><span class="pre">str</span></tt> for <a class="reference internal" href="#values"><em>values</em></a>,</li>
+<li><tt class="xref py py-class docutils literal"><span class="pre">int</span></tt> or <tt class="xref py py-class docutils literal"><span class="pre">list</span></tt> for <a class="reference internal" href="#possibility-spaces"><em>possibility spaces</em></a>,</li>
+<li><tt class="xref py py-class docutils literal"><span class="pre">list</span></tt> or <a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><tt class="docutils literal"><span class="pre">dict</span></tt></a> for <a class="reference internal" href="#gambles"><em>gambles</em></a>, and</li>
+<li><tt class="xref py py-class docutils literal"><span class="pre">list</span></tt> for <a class="reference internal" href="#events"><em>events</em></a>.</li>
+</ul>
+<p>The library supports many more modes of operation, to which we turn
+next.</p>
+<div class="section" id="values">
+<span id="id1"></span><h2>Values<a class="headerlink" href="#values" title="Permalink to this headline">¶</a></h2>
+<p>Throughout the library, you can choose (slow) exact arithmetic with
+<a class="reference external" href="http://docs.python.org/library/fractions.html#fractions.Fraction" title="(in Python v2.7)"><tt class="docutils literal"><span class="pre">fractions.Fraction</span></tt></a> (rational numbers), or (fast) approximate
+arithmetic with <tt class="xref py py-class docutils literal"><span class="pre">float</span></tt> (limited precision reals).</p>
+<p>Numbers can be specified directly as instances of
+<a class="reference external" href="http://docs.python.org/library/fractions.html#fractions.Fraction" title="(in Python v2.7)"><tt class="docutils literal"><span class="pre">fractions.Fraction</span></tt></a> (e.g. <tt class="docutils literal"><span class="pre">fractions.Fraction(1,</span> <span class="pre">3)</span></tt>) or
+<tt class="xref py py-class docutils literal"><span class="pre">float</span></tt> (e.g. <tt class="docutils literal"><span class="pre">1.23</span></tt>). You can also use <tt class="xref py py-class docutils literal"><span class="pre">int</span></tt>
+(e.g. <tt class="docutils literal"><span class="pre">20</span></tt>), or <tt class="xref py py-class docutils literal"><span class="pre">str</span></tt> in the form of for instance <tt class="docutils literal"><span class="pre">'1.23'</span></tt>
+or <tt class="docutils literal"><span class="pre">'1/3'</span></tt>&#8212;these are internally converted to their exact
+representation if you work with fractions, or their approximate
+representation if you work with floats.</p>
+<p>The constructors of lower previsions and gambles have a mandatory
+<em>number_type</em> keyword argument: if it is <tt class="docutils literal"><span class="pre">'float'</span></tt> then float
+arithmetic is used, and if it is <tt class="docutils literal"><span class="pre">'fraction'</span></tt> then rational
+arithmetic is used.</p>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<dl class="last docutils">
+<dt><a class="reference external" href="http://mcmtroffaes.github.com/pycddlib/numbertype.html#cdd.NumberTypeable" title="(in pycddlib v1.0.2)"><tt class="docutils literal"><span class="pre">cdd.NumberTypeable</span></tt></a></dt>
+<dd>A general purpose class for objects which admit different
+numerical representations.</dd>
+</dl>
+</div>
+</div>
+<div class="section" id="possibility-spaces">
+<span id="id2"></span><h2>Possibility Spaces<a class="headerlink" href="#possibility-spaces" title="Permalink to this headline">¶</a></h2>
+<p>Any <tt class="xref py py-class docutils literal"><span class="pre">collections.Iterable</span></tt> of immutable objects can be used to
+specify a possibility space. Effectively, an
+<tt class="xref py py-class docutils literal"><span class="pre">collections.Iterable</span></tt> <em>pspace</em> is interpreted as an ordered
+<a class="reference external" href="http://docs.python.org/library/stdtypes.html#set" title="(in Python v2.7)"><tt class="docutils literal"><span class="pre">set</span></tt></a>.</p>
+<p>For convenience, you can also construct a possibility space from any
+integer <tt class="docutils literal"><span class="pre">n</span></tt>&#8212;this is equivalent to specifying <tt class="docutils literal"><span class="pre">range(n)</span></tt>.</p>
+<p>For further convenience, you can construct Cartesian products simply
+by specifying multiple iterables or integers.</p>
+<dl class="class">
+<dt id="improb.PSpace">
+<em class="property">class </em><tt class="descclassname">improb.</tt><tt class="descname">PSpace</tt><big>(</big><em>*args</em><big>)</big><a class="headerlink" href="#improb.PSpace" title="Permalink to this definition">¶</a></dt>
+<dd><p>An immutable possibility space, derived from
+<tt class="xref py py-class docutils literal"><span class="pre">collections.Set</span></tt> and <tt class="xref py py-class docutils literal"><span class="pre">collections.Hashable</span></tt>. This
+is effectively an immutable ordered set with a fancy constructor.</p>
+<dl class="method">
+<dt id="improb.PSpace.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>*args</em><big>)</big><a class="headerlink" href="#improb.PSpace.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert <em>args</em> into a possibility space.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>args</strong> (<tt class="xref py py-class docutils literal"><span class="pre">collections.Iterable</span></tt> or <tt class="xref py py-class docutils literal"><span class="pre">int</span></tt>) &#8211; The components of the space.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Some examples of how components can be specified:</p>
+<ul>
+<li><p class="first">A range of integers.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">PSpace</span><span class="p">(</span><span class="nb">xrange</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">3</span><span class="p">)))</span>
+<span class="go">[2, 5, 8, 11, 14]</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">A string.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">PSpace</span><span class="p">(</span><span class="s">&#39;abcdefg&#39;</span><span class="p">))</span>
+<span class="go">[&#39;a&#39;, &#39;b&#39;, &#39;c&#39;, &#39;d&#39;, &#39;e&#39;, &#39;f&#39;, &#39;g&#39;]</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">A list of strings.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">PSpace</span><span class="p">(</span><span class="s">&#39;rain cloudy sunny&#39;</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39; &#39;</span><span class="p">)))</span>
+<span class="go">[&#39;rain&#39;, &#39;cloudy&#39;, &#39;sunny&#39;]</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">As a special case, you can also specify just a single integer. This
+will be converted to a tuple of integers of the corresponding length.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">PSpace</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+<span class="go">[0, 1, 2]</span>
+</pre></div>
+</div>
+</li>
+</ul>
+<p>If multiple arguments are specified, the product is calculated:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">PSpace</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="s">&#39;abc&#39;</span><span class="p">))</span> 
+<span class="go">[(0, &#39;a&#39;), (0, &#39;b&#39;), (0, &#39;c&#39;),</span>
+<span class="go"> (1, &#39;a&#39;), (1, &#39;b&#39;), (1, &#39;c&#39;),</span>
+<span class="go"> (2, &#39;a&#39;), (2, &#39;b&#39;), (2, &#39;c&#39;)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">PSpace</span><span class="p">((</span><span class="s">&#39;rain&#39;</span><span class="p">,</span> <span class="s">&#39;cloudy&#39;</span><span class="p">,</span> <span class="s">&#39;sunny&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;cold&#39;</span><span class="p">,</span> <span class="s">&#39;warm&#39;</span><span class="p">)))</span> 
+<span class="go">[(&#39;rain&#39;, &#39;cold&#39;), (&#39;rain&#39;, &#39;warm&#39;),</span>
+<span class="go"> (&#39;cloudy&#39;, &#39;cold&#39;), (&#39;cloudy&#39;, &#39;warm&#39;),</span>
+<span class="go"> (&#39;sunny&#39;, &#39;cold&#39;), (&#39;sunny&#39;, &#39;warm&#39;)]</span>
+</pre></div>
+</div>
+<p>Duplicates are automatically removed:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">PSpace</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]))</span>
+<span class="go">[2, 5, 3, 9, 1]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="improb.PSpace.__repr__">
+<tt class="descname">__repr__</tt><big>(</big><big>)</big><a class="headerlink" href="#improb.PSpace.__repr__" title="Permalink to this definition">¶</a></dt>
+<dd><div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">PSpace</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span>
+<span class="go">PSpace([2, 4, 5])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">PSpace</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+<span class="go">PSpace(3)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="improb.PSpace.__str__">
+<tt class="descname">__str__</tt><big>(</big><big>)</big><a class="headerlink" href="#improb.PSpace.__str__" title="Permalink to this definition">¶</a></dt>
+<dd><div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">PSpace</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]))</span>
+<span class="go">2 4 5</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="improb.PSpace.make">
+<em class="property">classmethod </em><tt class="descname">make</tt><big>(</big><em>pspace</em><big>)</big><a class="headerlink" href="#improb.PSpace.make" title="Permalink to this definition">¶</a></dt>
+<dd><p>If <em>pspace</em> is a <a class="reference internal" href="#improb.PSpace" title="improb.PSpace"><tt class="xref py py-class docutils literal"><span class="pre">PSpace</span></tt></a>, then returns <em>pspace</em>.
+Otherwise, converts <em>pspace</em> to a <a class="reference internal" href="#improb.PSpace" title="improb.PSpace"><tt class="xref py py-class docutils literal"><span class="pre">PSpace</span></tt></a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>pspace</strong> (<tt class="xref py py-class docutils literal"><span class="pre">list</span></tt> or similar; see <a class="reference internal" href="#possibility-spaces"><em>Possibility Spaces</em></a>) &#8211; The possibility space.</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A possibility space.</p>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#improb.PSpace" title="improb.PSpace"><tt class="xref py py-class docutils literal"><span class="pre">PSpace</span></tt></a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="improb.PSpace.make_event">
+<tt class="descname">make_event</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#improb.PSpace.make_event" title="Permalink to this definition">¶</a></dt>
+<dd><p>If <em>event</em> is a <a class="reference internal" href="#improb.Event" title="improb.Event"><tt class="xref py py-class docutils literal"><span class="pre">Event</span></tt></a>, then checks possibility
+space and returns <em>event</em>. Otherwise, converts <em>event</em> to a
+<a class="reference internal" href="#improb.Event" title="improb.Event"><tt class="xref py py-class docutils literal"><span class="pre">Event</span></tt></a>.</p>
+<p>If you wish to construct an event on a product space, which is
+itself composed of a product of events, specify its components
+as separate arguments&#8212;in this case, each of the components
+must be a sequence.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>event</strong> (<tt class="xref py py-class docutils literal"><span class="pre">list</span></tt> or similar; see <a class="reference internal" href="#events"><em>Events</em></a>) &#8211; The event.</li>
+<li><strong>name</strong> (<tt class="xref py py-class docutils literal"><span class="pre">str</span></tt>) &#8211; The name of the event (used for pretty printing).</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A event.</p>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="#improb.Event" title="improb.Event"><tt class="xref py py-class docutils literal"><span class="pre">Event</span></tt></a></p>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Raises :</th><td class="field-body"><p class="first last"><a class="reference external" href="http://docs.python.org/library/exceptions.html#exceptions.ValueError" title="(in Python v2.7)"><tt class="docutils literal"><span class="pre">exceptions.ValueError</span></tt></a> if possibility spaces do not match</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pspace</span> <span class="o">=</span> <span class="n">PSpace</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">pspace</span><span class="o">.</span><span class="n">make_event</span><span class="p">([(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)]))</span>
+<span class="go">(0, 0) : 0</span>
+<span class="go">(0, 1) : 1</span>
+<span class="go">(0, 2) : 0</span>
+<span class="go">(1, 0) : 0</span>
+<span class="go">(1, 1) : 0</span>
+<span class="go">(1, 2) : 1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">pspace</span><span class="o">.</span><span class="n">make_event</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,)))</span>
+<span class="go">(0, 0) : 0</span>
+<span class="go">(0, 1) : 0</span>
+<span class="go">(0, 2) : 1</span>
+<span class="go">(1, 0) : 0</span>
+<span class="go">(1, 1) : 0</span>
+<span class="go">(1, 2) : 1</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="improb.PSpace.make_gamble">
+<tt class="descname">make_gamble</tt><big>(</big><em>gamble</em>, <em>number_type</em><big>)</big><a class="headerlink" href="#improb.PSpace.make_gamble" title="Permalink to this definition">¶</a></dt>
+<dd><p>If <em>gamble</em> is</p>
+<ul class="simple">
+<li>a <a class="reference internal" href="#improb.Gamble" title="improb.Gamble"><tt class="xref py py-class docutils literal"><span class="pre">Gamble</span></tt></a>, then checks possibility space and number
+type and returns <em>gamble</em>,</li>
+<li>an <a class="reference internal" href="#improb.Event" title="improb.Event"><tt class="xref py py-class docutils literal"><span class="pre">Event</span></tt></a>, then checks possibility space and returns
+the indicator of <em>gamble</em> with the correct number type,</li>
+<li>anything else, then construct a <a class="reference internal" href="#improb.Gamble" title="improb.Gamble"><tt class="xref py py-class docutils literal"><span class="pre">Gamble</span></tt></a> using
+<em>gamble</em> as data.</li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>gamble</strong> (<a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><tt class="docutils literal"><span class="pre">dict</span></tt></a> or similar; see <a class="reference internal" href="#gambles"><em>Gambles</em></a>) &#8211; The gamble.</li>
+<li><strong>number_type</strong> (<tt class="xref py py-class docutils literal"><span class="pre">str</span></tt>) &#8211; The type to use for numbers: <tt class="docutils literal"><span class="pre">'float'</span></tt> or <tt class="docutils literal"><span class="pre">'fraction'</span></tt>.</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A gamble.</p>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="#improb.Gamble" title="improb.Gamble"><tt class="xref py py-class docutils literal"><span class="pre">Gamble</span></tt></a></p>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Raises :</th><td class="field-body"><p class="first last"><a class="reference external" href="http://docs.python.org/library/exceptions.html#exceptions.ValueError" title="(in Python v2.7)"><tt class="docutils literal"><span class="pre">exceptions.ValueError</span></tt></a> if possibility spaces
+or number types do not match</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">improb</span> <span class="kn">import</span> <span class="n">PSpace</span><span class="p">,</span> <span class="n">Event</span><span class="p">,</span> <span class="n">Gamble</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pspace</span> <span class="o">=</span> <span class="n">PSpace</span><span class="p">(</span><span class="s">&#39;abc&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">event</span> <span class="o">=</span> <span class="n">Event</span><span class="p">(</span><span class="n">pspace</span><span class="p">,</span> <span class="s">&#39;ac&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gamble</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">indicator</span><span class="p">(</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fgamble</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">indicator</span><span class="p">(</span><span class="s">&#39;float&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pevent</span> <span class="o">=</span> <span class="n">Event</span><span class="p">(</span><span class="s">&#39;ab&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pgamble</span> <span class="o">=</span> <span class="n">Gamble</span><span class="p">(</span><span class="s">&#39;ab&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">pspace</span><span class="o">.</span><span class="n">make_gamble</span><span class="p">({</span><span class="s">&#39;b&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span> <span class="s">&#39;fraction&#39;</span><span class="p">))</span>
+<span class="go">a : 0</span>
+<span class="go">b : 1</span>
+<span class="go">c : 0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">pspace</span><span class="o">.</span><span class="n">make_gamble</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="s">&#39;fraction&#39;</span><span class="p">))</span>
+<span class="go">a : 1</span>
+<span class="go">b : 0</span>
+<span class="go">c : 1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">pspace</span><span class="o">.</span><span class="n">make_gamble</span><span class="p">(</span><span class="n">gamble</span><span class="p">,</span> <span class="s">&#39;fraction&#39;</span><span class="p">))</span>
+<span class="go">a : 1</span>
+<span class="go">b : 0</span>
+<span class="go">c : 1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">pspace</span><span class="o">.</span><span class="n">make_gamble</span><span class="p">(</span><span class="n">fgamble</span><span class="p">,</span> <span class="s">&#39;fraction&#39;</span><span class="p">))</span> 
+<span class="gt">Traceback (most recent call last):</span>
+    <span class="o">...</span>
+<span class="nc">ValueError</span>: <span class="n-Identifier">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">pspace</span><span class="o">.</span><span class="n">make_gamble</span><span class="p">(</span><span class="n">pevent</span><span class="p">,</span> <span class="s">&#39;fraction&#39;</span><span class="p">))</span> 
+<span class="gt">Traceback (most recent call last):</span>
+    <span class="o">...</span>
+<span class="nc">ValueError</span>: <span class="n-Identifier">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">pspace</span><span class="o">.</span><span class="n">make_gamble</span><span class="p">(</span><span class="n">pgamble</span><span class="p">,</span> <span class="s">&#39;fraction&#39;</span><span class="p">))</span> 
+<span class="gt">Traceback (most recent call last):</span>
+    <span class="o">...</span>
+<span class="nc">ValueError</span>: <span class="n-Identifier">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">pspace</span><span class="o">.</span><span class="n">make_gamble</span><span class="p">({</span><span class="s">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#39;c&#39;</span><span class="p">:</span> <span class="mi">8</span><span class="p">},</span> <span class="s">&#39;fraction&#39;</span><span class="p">))</span>
+<span class="go">a : 1</span>
+<span class="go">b : 0</span>
+<span class="go">c : 8</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">pspace</span><span class="o">.</span><span class="n">make_gamble</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="s">&#39;fraction&#39;</span><span class="p">))</span>
+<span class="go">a : 2</span>
+<span class="go">b : 5</span>
+<span class="go">c : 8</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="improb.PSpace.subsets">
+<tt class="descname">subsets</tt><big>(</big><em>event=True</em>, <em>empty=True</em>, <em>full=True</em>, <em>size=None</em>, <em>contains=False</em><big>)</big><a class="headerlink" href="#improb.PSpace.subsets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterates over all subsets of the possibility space.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>event</strong> (<tt class="xref py py-class docutils literal"><span class="pre">list</span></tt> or similar; see <a class="reference internal" href="#events"><em>Events</em></a>) &#8211; An event (optional).</li>
+<li><strong>empty</strong> (<tt class="xref py py-class docutils literal"><span class="pre">bool</span></tt>) &#8211; Whether to include the empty event or not.</li>
+<li><strong>full</strong> (<tt class="xref py py-class docutils literal"><span class="pre">bool</span></tt>) &#8211; Whether to include <em>event</em> or not.</li>
+<li><strong>size</strong> (<tt class="xref py py-class docutils literal"><span class="pre">int</span></tt> or <tt class="xref py py-class docutils literal"><span class="pre">collections.Interable</span></tt>) &#8211; Any size constraints. If specified, then <em>empty</em>
+and <em>full</em> are ignored.</li>
+<li><strong>contains</strong> (<tt class="xref py py-class docutils literal"><span class="pre">list</span></tt> or similar; see <a class="reference internal" href="#events"><em>Events</em></a>) &#8211; An event that must be contained in all
+returned subsets.</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Yields all subsets.</p>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">Iterator of <a class="reference internal" href="#improb.Event" title="improb.Event"><tt class="xref py py-class docutils literal"><span class="pre">Event</span></tt></a>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pspace</span> <span class="o">=</span> <span class="n">PSpace</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">---</span><span class="se">\n</span><span class="s">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">subset</span><span class="p">)</span> <span class="k">for</span> <span class="n">subset</span> <span class="ow">in</span> <span class="n">pspace</span><span class="o">.</span><span class="n">subsets</span><span class="p">()))</span>
+<span class="go">2 : 0</span>
+<span class="go">4 : 0</span>
+<span class="go">5 : 0</span>
+<span class="go">---</span>
+<span class="go">2 : 1</span>
+<span class="go">4 : 0</span>
+<span class="go">5 : 0</span>
+<span class="go">---</span>
+<span class="go">2 : 0</span>
+<span class="go">4 : 1</span>
+<span class="go">5 : 0</span>
+<span class="go">---</span>
+<span class="go">2 : 0</span>
+<span class="go">4 : 0</span>
+<span class="go">5 : 1</span>
+<span class="go">---</span>
+<span class="go">2 : 1</span>
+<span class="go">4 : 1</span>
+<span class="go">5 : 0</span>
+<span class="go">---</span>
+<span class="go">2 : 1</span>
+<span class="go">4 : 0</span>
+<span class="go">5 : 1</span>
+<span class="go">---</span>
+<span class="go">2 : 0</span>
+<span class="go">4 : 1</span>
+<span class="go">5 : 1</span>
+<span class="go">---</span>
+<span class="go">2 : 1</span>
+<span class="go">4 : 1</span>
+<span class="go">5 : 1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">---</span><span class="se">\n</span><span class="s">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">subset</span><span class="p">)</span> <span class="k">for</span> <span class="n">subset</span> <span class="ow">in</span> <span class="n">pspace</span><span class="o">.</span><span class="n">subsets</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">])))</span>
+<span class="go">2 : 0</span>
+<span class="go">4 : 0</span>
+<span class="go">5 : 0</span>
+<span class="go">---</span>
+<span class="go">2 : 1</span>
+<span class="go">4 : 0</span>
+<span class="go">5 : 0</span>
+<span class="go">---</span>
+<span class="go">2 : 0</span>
+<span class="go">4 : 1</span>
+<span class="go">5 : 0</span>
+<span class="go">---</span>
+<span class="go">2 : 1</span>
+<span class="go">4 : 1</span>
+<span class="go">5 : 0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">---</span><span class="se">\n</span><span class="s">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">subset</span><span class="p">)</span> <span class="k">for</span> <span class="n">subset</span> <span class="ow">in</span> <span class="n">pspace</span><span class="o">.</span><span class="n">subsets</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="n">empty</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">full</span><span class="o">=</span><span class="bp">False</span><span class="p">)))</span>
+<span class="go">2 : 1</span>
+<span class="go">4 : 0</span>
+<span class="go">5 : 0</span>
+<span class="go">---</span>
+<span class="go">2 : 0</span>
+<span class="go">4 : 1</span>
+<span class="go">5 : 0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">---</span><span class="se">\n</span><span class="s">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">subset</span><span class="p">)</span> <span class="k">for</span> <span class="n">subset</span> <span class="ow">in</span> <span class="n">pspace</span><span class="o">.</span><span class="n">subsets</span><span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="n">contains</span><span class="o">=</span><span class="p">[</span><span class="mi">4</span><span class="p">])))</span>
+<span class="go">2 : 0</span>
+<span class="go">4 : 1</span>
+<span class="go">5 : 0</span>
+<span class="go">---</span>
+<span class="go">2 : 1</span>
+<span class="go">4 : 1</span>
+<span class="go">5 : 0</span>
+<span class="go">---</span>
+<span class="go">2 : 0</span>
+<span class="go">4 : 1</span>
+<span class="go">5 : 1</span>
+<span class="go">---</span>
+<span class="go">2 : 1</span>
+<span class="go">4 : 1</span>
+<span class="go">5 : 1</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="gambles">
+<span id="id3"></span><h2>Gambles<a class="headerlink" href="#gambles" title="Permalink to this headline">¶</a></h2>
+<p>Any <tt class="xref py py-class docutils literal"><span class="pre">collections.Mapping</span></tt> or <tt class="xref py py-class docutils literal"><span class="pre">collections.Sequence</span></tt> can
+be used to specify a gamble. Effectively, given a possibility space
+<em>pspace</em>, a <tt class="xref py py-class docutils literal"><span class="pre">collections.Mapping</span></tt> <em>mapping</em> corresponds to the
+mapping (specified as Python dictionary):</p>
+<div class="highlight-python"><pre>{omega: mapping.get(omega, 0) for omega in pspace}</pre>
+</div>
+<p>and a <tt class="xref py py-class docutils literal"><span class="pre">collections.Sequence</span></tt> <em>sequence</em> corresponds to:</p>
+<div class="highlight-python"><pre>{omega: value for omega, value in zip(pspace, sequence)}</pre>
+</div>
+<p>This yields maximum flexibility so you can use the simplest possible
+specification for a gamble, depending on the situation.</p>
+<p>Internally, the following class is used to represent gambles; it is an
+immutable <tt class="xref py py-class docutils literal"><span class="pre">collections.Mapping</span></tt>, and supports the usual
+pointwise arithmetic operations.</p>
+<dl class="class">
+<dt id="improb.Gamble">
+<em class="property">class </em><tt class="descclassname">improb.</tt><tt class="descname">Gamble</tt><big>(</big><em>pspace</em>, <em>data</em>, <em>number_type=None</em><big>)</big><a class="headerlink" href="#improb.Gamble" title="Permalink to this definition">¶</a></dt>
+<dd><p>An immutable gamble.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pspace</span> <span class="o">=</span> <span class="n">PSpace</span><span class="p">(</span><span class="s">&#39;abc&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f1</span> <span class="o">=</span> <span class="n">Gamble</span><span class="p">(</span><span class="n">pspace</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s">&#39;c&#39;</span><span class="p">:</span> <span class="mi">8</span><span class="p">},</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">f1</span><span class="p">)</span>
+<span class="go">a : 1</span>
+<span class="go">b : 4</span>
+<span class="go">c : 8</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">f1</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span>
+<span class="go">a : 3</span>
+<span class="go">b : 6</span>
+<span class="go">c : 10</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">f1</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span>
+<span class="go">a : -1</span>
+<span class="go">b : 2</span>
+<span class="go">c : 6</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">f1</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
+<span class="go">a : 2</span>
+<span class="go">b : 8</span>
+<span class="go">c : 16</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">f1</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span>
+<span class="go">a : 1/3</span>
+<span class="go">b : 4/3</span>
+<span class="go">c : 8/3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f2</span> <span class="o">=</span> <span class="n">Gamble</span><span class="p">(</span><span class="n">pspace</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;a&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">:</span> <span class="mi">8</span><span class="p">,</span> <span class="s">&#39;c&#39;</span><span class="p">:</span> <span class="mi">7</span><span class="p">},</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">f1</span> <span class="o">+</span> <span class="n">f2</span><span class="p">)</span>
+<span class="go">a : 6</span>
+<span class="go">b : 12</span>
+<span class="go">c : 15</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">f1</span> <span class="o">-</span> <span class="n">f2</span><span class="p">)</span>
+<span class="go">a : -4</span>
+<span class="go">b : -4</span>
+<span class="go">c : 1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">f1</span> <span class="o">*</span> <span class="n">f2</span><span class="p">)</span> 
+<span class="go">a : 5</span>
+<span class="go">b : 32</span>
+<span class="go">c : 56</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">f1</span> <span class="o">/</span> <span class="n">f2</span><span class="p">)</span> 
+<span class="gt">Traceback (most recent call last):</span>
+    <span class="o">...</span>
+<span class="nc">TypeError</span>: <span class="n-Identifier">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">event</span> <span class="o">=</span> <span class="n">Event</span><span class="p">(</span><span class="n">pspace</span><span class="p">,</span> <span class="s">&#39;ac&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">f1</span> <span class="o">+</span> <span class="n">event</span><span class="p">)</span>
+<span class="go">a : 2</span>
+<span class="go">b : 4</span>
+<span class="go">c : 9</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">f1</span> <span class="o">-</span> <span class="n">event</span><span class="p">)</span>
+<span class="go">a : 0</span>
+<span class="go">b : 4</span>
+<span class="go">c : 7</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">f1</span> <span class="o">*</span> <span class="n">event</span><span class="p">)</span>
+<span class="go">a : 1</span>
+<span class="go">b : 0</span>
+<span class="go">c : 8</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">f1</span> <span class="o">/</span> <span class="n">event</span><span class="p">)</span>
+<span class="gt">Traceback (most recent call last):</span>
+    <span class="o">...</span>
+<span class="nc">TypeError</span>: <span class="n-Identifier">...</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="improb.Gamble.__repr__">
+<tt class="descname">__repr__</tt><big>(</big><big>)</big><a class="headerlink" href="#improb.Gamble.__repr__" title="Permalink to this definition">¶</a></dt>
+<dd><div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">Gamble</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">{</span><span class="mi">2</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">:</span> <span class="mi">8</span><span class="p">},</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">)</span> 
+<span class="go">Gamble(pspace=PSpace([2, 3, 4]),</span>
+<span class="go">       mapping={2: 1.0,</span>
+<span class="go">                3: 4.0,</span>
+<span class="go">                4: 8.0})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Gamble</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">{</span><span class="mi">2</span><span class="p">:</span> <span class="s">&#39;2/6&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">:</span> <span class="s">&#39;4.0&#39;</span><span class="p">,</span> <span class="mi">4</span><span class="p">:</span> <span class="mi">8</span><span class="p">},</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span> 
+<span class="go">Gamble(pspace=PSpace([2, 3, 4]),</span>
+<span class="go">       mapping={2: &#39;1/3&#39;,</span>
+<span class="go">                3: 4,</span>
+<span class="go">                4: 8})</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="improb.Gamble.__str__">
+<tt class="descname">__str__</tt><big>(</big><big>)</big><a class="headerlink" href="#improb.Gamble.__str__" title="Permalink to this definition">¶</a></dt>
+<dd><div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pspace</span> <span class="o">=</span> <span class="n">PSpace</span><span class="p">(</span><span class="s">&#39;rain sun clouds&#39;</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">Gamble</span><span class="p">(</span><span class="n">pspace</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;rain&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mi">14</span><span class="p">,</span> <span class="s">&#39;sun&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s">&#39;clouds&#39;</span><span class="p">:</span> <span class="mi">20</span><span class="p">},</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">))</span>
+<span class="go">rain   : -14.0</span>
+<span class="go">sun    : 4.0</span>
+<span class="go">clouds : 20.0</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="improb.Gamble.pspace">
+<tt class="descname">pspace</tt><a class="headerlink" href="#improb.Gamble.pspace" title="Permalink to this definition">¶</a></dt>
+<dd><p>A <a class="reference internal" href="#improb.PSpace" title="improb.PSpace"><tt class="xref py py-class docutils literal"><span class="pre">PSpace</span></tt></a> representing the possibility space.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="events">
+<span id="id4"></span><h2>Events<a class="headerlink" href="#events" title="Permalink to this headline">¶</a></h2>
+<p>Any <tt class="xref py py-class docutils literal"><span class="pre">collections.Iterable</span></tt> can be used to specify an
+event. Effectively, given a possibility space <em>pspace</em>, an
+<tt class="xref py py-class docutils literal"><span class="pre">collections.Iterable</span></tt> corresponds to the event (specified as a
+Python set):</p>
+<div class="highlight-python"><pre>{omega for omega in iterable if omega in pspace}</pre>
+</div>
+<p>For convenience, you can also specify an event as <tt class="xref py py-const xref docutils literal"><span class="pre">True</span></tt> (which
+corresponds to the full set) or <tt class="xref py py-const xref docutils literal"><span class="pre">False</span></tt> (which corresponds to
+the empty set).</p>
+<p>Internally, the following class is used to represent events; it is an
+immutable <tt class="xref py py-class docutils literal"><span class="pre">collections.Set</span></tt>, and supports a few more common
+operations.</p>
+<dl class="class">
+<dt id="improb.Event">
+<em class="property">class </em><tt class="descclassname">improb.</tt><tt class="descname">Event</tt><big>(</big><em>pspace</em>, <em>data=False</em>, <em>name=None</em><big>)</big><a class="headerlink" href="#improb.Event" title="Permalink to this definition">¶</a></dt>
+<dd><p>An immutable event.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pspace</span> <span class="o">=</span> <span class="n">PSpace</span><span class="p">(</span><span class="s">&#39;abcdef&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">event1</span> <span class="o">=</span> <span class="n">Event</span><span class="p">(</span><span class="n">pspace</span><span class="p">,</span> <span class="s">&#39;acd&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">event1</span><span class="p">)</span>
+<span class="go">a : 1</span>
+<span class="go">b : 0</span>
+<span class="go">c : 1</span>
+<span class="go">d : 1</span>
+<span class="go">e : 0</span>
+<span class="go">f : 0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">event2</span> <span class="o">=</span> <span class="n">Event</span><span class="p">(</span><span class="n">pspace</span><span class="p">,</span> <span class="s">&#39;cdef&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">event2</span><span class="p">)</span>
+<span class="go">a : 0</span>
+<span class="go">b : 0</span>
+<span class="go">c : 1</span>
+<span class="go">d : 1</span>
+<span class="go">e : 1</span>
+<span class="go">f : 1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">event1</span> <span class="o">&amp;</span> <span class="n">event2</span><span class="p">)</span>
+<span class="go">a : 0</span>
+<span class="go">b : 0</span>
+<span class="go">c : 1</span>
+<span class="go">d : 1</span>
+<span class="go">e : 0</span>
+<span class="go">f : 0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">event1</span> <span class="o">|</span> <span class="n">event2</span><span class="p">)</span>
+<span class="go">a : 1</span>
+<span class="go">b : 0</span>
+<span class="go">c : 1</span>
+<span class="go">d : 1</span>
+<span class="go">e : 1</span>
+<span class="go">f : 1</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="improb.Event.__repr__">
+<tt class="descname">__repr__</tt><big>(</big><big>)</big><a class="headerlink" href="#improb.Event.__repr__" title="Permalink to this definition">¶</a></dt>
+<dd><div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pspace</span> <span class="o">=</span> <span class="n">PSpace</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Event</span><span class="p">(</span><span class="n">pspace</span><span class="p">,</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
+<span class="go">Event(pspace=PSpace([2, 3, 4]), elements=set([3, 4]))</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="improb.Event.__str__">
+<tt class="descname">__str__</tt><big>(</big><big>)</big><a class="headerlink" href="#improb.Event.__str__" title="Permalink to this definition">¶</a></dt>
+<dd><div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pspace</span> <span class="o">=</span> <span class="n">PSpace</span><span class="p">(</span><span class="s">&#39;rain sun clouds&#39;</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">Event</span><span class="p">(</span><span class="n">pspace</span><span class="p">,</span> <span class="s">&#39;rain clouds&#39;</span><span class="o">.</span><span class="n">split</span><span class="p">()))</span>
+<span class="go">rain   : 1</span>
+<span class="go">sun    : 0</span>
+<span class="go">clouds : 1</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="improb.Event.complement">
+<tt class="descname">complement</tt><big>(</big><big>)</big><a class="headerlink" href="#improb.Event.complement" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the complement of the event.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">Event</span><span class="p">(</span><span class="n">pspace</span><span class="o">=</span><span class="s">&#39;abcde&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="s">&#39;bde&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">complement</span><span class="p">())</span>
+<span class="go">a : 1</span>
+<span class="go">b : 0</span>
+<span class="go">c : 1</span>
+<span class="go">d : 0</span>
+<span class="go">e : 0</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body">Complement.</td>
+</tr>
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#improb.Event" title="improb.Event"><tt class="xref py py-class docutils literal"><span class="pre">Event</span></tt></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="improb.Event.indicator">
+<tt class="descname">indicator</tt><big>(</big><em>number_type=None</em><big>)</big><a class="headerlink" href="#improb.Event.indicator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return indicator gamble for the event.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>number_type</strong> (<tt class="xref py py-class docutils literal"><span class="pre">str</span></tt>) &#8211; The number type.</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Indicator gamble.</p>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#improb.Gamble" title="improb.Gamble"><tt class="xref py py-class docutils literal"><span class="pre">Gamble</span></tt></a></p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pspace</span> <span class="o">=</span> <span class="n">PSpace</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">event</span> <span class="o">=</span> <span class="n">Event</span><span class="p">(</span><span class="n">pspace</span><span class="p">,</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">event</span><span class="o">.</span><span class="n">indicator</span><span class="p">(</span><span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span> 
+<span class="go">Gamble(pspace=PSpace(5),</span>
+<span class="go">       mapping={0: 0,</span>
+<span class="go">                1: 0,</span>
+<span class="go">                2: 1,</span>
+<span class="go">                3: 0,</span>
+<span class="go">                4: 1})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">event</span><span class="o">.</span><span class="n">indicator</span><span class="p">(</span><span class="n">number_type</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">)</span> 
+<span class="go">Gamble(pspace=PSpace(5),</span>
+<span class="go">       mapping={0: 0.0,</span>
+<span class="go">                1: 0.0,</span>
+<span class="go">                2: 1.0,</span>
+<span class="go">                3: 0.0,</span>
+<span class="go">                4: 1.0})</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="improb.Event.pspace">
+<tt class="descname">pspace</tt><a class="headerlink" href="#improb.Event.pspace" title="Permalink to this definition">¶</a></dt>
+<dd><p>An <a class="reference internal" href="#improb.PSpace" title="improb.PSpace"><tt class="xref py py-class docutils literal"><span class="pre">PSpace</span></tt></a> representing the possibility space.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Introduction</a><ul>
+<li><a class="reference internal" href="#values">Values</a></li>
+<li><a class="reference internal" href="#possibility-spaces">Possibility Spaces</a></li>
+<li><a class="reference internal" href="#gambles">Gambles</a></li>
+<li><a class="reference internal" href="#events">Events</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="quickstart.html"
+                        title="previous chapter">Getting Started</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="lowprev.html"
+                        title="next chapter">Lower Previsions</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/introduction.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="lowprev.html" title="Lower Previsions"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="quickstart.html" title="Getting Started"
+             >previous</a> |</li>
+        <li><a href="index.html">improb v0.1.0 (beta) documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010, Matthias C. M. Troffaes.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

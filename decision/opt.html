@@ -1,0 +1,275 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Optimality Operators &mdash; improb v0.1.0 (beta) documentation</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1.0 (beta)',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="improb v0.1.0 (beta) documentation" href="../index.html" />
+    <link rel="up" title="Decision Making" href="../decision.html" />
+    <link rel="next" title="Decision Trees" href="tree.html" />
+    <link rel="prev" title="Decision Making" href="../decision.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="tree.html" title="Decision Trees"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../decision.html" title="Decision Making"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">improb v0.1.0 (beta) documentation</a> &raquo;</li>
+          <li><a href="../decision.html" accesskey="U">Decision Making</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="module-improb.decision.opt"></span><div class="section" id="optimality-operators">
+<h1>Optimality Operators<a class="headerlink" href="#optimality-operators" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="abstract-operators">
+<h2>Abstract Operators<a class="headerlink" href="#abstract-operators" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="improb.decision.opt.Opt">
+<em class="property">class </em><tt class="descclassname">improb.decision.opt.</tt><tt class="descname">Opt</tt><a class="headerlink" href="#improb.decision.opt.Opt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Abstract base class for optimality operators.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="improb.decision.opt.OptPartialPreorder">
+<em class="property">class </em><tt class="descclassname">improb.decision.opt.</tt><tt class="descname">OptPartialPreorder</tt><a class="headerlink" href="#improb.decision.opt.OptPartialPreorder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#improb.decision.opt.Opt" title="improb.decision.opt.Opt"><tt class="xref py py-class docutils literal"><span class="pre">improb.decision.opt.Opt</span></tt></a></p>
+<p>Abstract base class for optimality operators that use a
+maximality criterion with respect to a partial preordering.</p>
+<dl class="method">
+<dt id="improb.decision.opt.OptPartialPreorder.is_strictly_larger">
+<tt class="descname">is_strictly_larger</tt><big>(</big><em>gamble</em>, <em>other_gamble</em>, <em>event=True</em><big>)</big><a class="headerlink" href="#improb.decision.opt.OptPartialPreorder.is_strictly_larger" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the partial ordering.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="improb.decision.opt.OptTotalPreorder">
+<em class="property">class </em><tt class="descclassname">improb.decision.opt.</tt><tt class="descname">OptTotalPreorder</tt><a class="headerlink" href="#improb.decision.opt.OptTotalPreorder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#improb.decision.opt.Opt" title="improb.decision.opt.Opt"><tt class="xref py py-class docutils literal"><span class="pre">improb.decision.opt.Opt</span></tt></a>, <a class="reference external" href="http://mcmtroffaes.github.com/pycddlib/numbertype.html#cdd.NumberTypeable" title="(in pycddlib v1.0.2)"><tt class="docutils literal"><span class="pre">cdd.NumberTypeable</span></tt></a></p>
+<p>Abstract base class for optimality operators that use a
+maximality criterion with respect to a total preordering, which is
+assumed to be represented via real numbers.</p>
+<dl class="method">
+<dt id="improb.decision.opt.OptTotalPreorder.get_value">
+<tt class="descname">get_value</tt><big>(</big><em>gamble</em>, <em>event=True</em><big>)</big><a class="headerlink" href="#improb.decision.opt.OptTotalPreorder.get_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the total order.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body">The value of the gamble.</td>
+</tr>
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body"><tt class="xref py py-class docutils literal"><span class="pre">float</span></tt> or similar; see <a class="reference internal" href="../introduction.html#values"><em>Values</em></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="concrete-operators">
+<h2>Concrete Operators<a class="headerlink" href="#concrete-operators" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="improb.decision.opt.OptAdmissible">
+<em class="property">class </em><tt class="descclassname">improb.decision.opt.</tt><tt class="descname">OptAdmissible</tt><big>(</big><em>pspace</em>, <em>number_type=None</em><big>)</big><a class="headerlink" href="#improb.decision.opt.OptAdmissible" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#improb.decision.opt.OptPartialPreorder" title="improb.decision.opt.OptPartialPreorder"><tt class="xref py py-class docutils literal"><span class="pre">improb.decision.opt.OptPartialPreorder</span></tt></a>, <a class="reference external" href="http://mcmtroffaes.github.com/pycddlib/numbertype.html#cdd.NumberTypeable" title="(in pycddlib v1.0.2)"><tt class="docutils literal"><span class="pre">cdd.NumberTypeable</span></tt></a></p>
+<p>Optimality by pointwise dominance.</p>
+<dl class="method">
+<dt id="improb.decision.opt.OptAdmissible.is_strictly_larger">
+<tt class="descname">is_strictly_larger</tt><big>(</big><em>gamble</em>, <em>other_gamble</em>, <em>event=True</em><big>)</big><a class="headerlink" href="#improb.decision.opt.OptAdmissible.is_strictly_larger" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check for pointwise dominance.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">opt</span> <span class="o">=</span> <span class="n">OptAdmissible</span><span class="p">(</span><span class="s">&#39;abc&#39;</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">opt</span><span class="o">.</span><span class="n">is_strictly_larger</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">opt</span><span class="o">.</span><span class="n">is_strictly_larger</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">opt</span><span class="o">.</span><span class="n">is_strictly_larger</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">opt</span><span class="o">.</span><span class="n">is_strictly_larger</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">opt</span><span class="o">.</span><span class="n">is_strictly_larger</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&#39;8/3&#39;</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">opt</span><span class="o">.</span><span class="n">is_strictly_larger</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">event</span><span class="o">=</span><span class="s">&#39;ac&#39;</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="improb.decision.opt.OptLowPrevMax">
+<em class="property">class </em><tt class="descclassname">improb.decision.opt.</tt><tt class="descname">OptLowPrevMax</tt><big>(</big><em>lowprev</em><big>)</big><a class="headerlink" href="#improb.decision.opt.OptLowPrevMax" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#improb.decision.opt.OptPartialPreorder" title="improb.decision.opt.OptPartialPreorder"><tt class="xref py py-class docutils literal"><span class="pre">improb.decision.opt.OptPartialPreorder</span></tt></a></p>
+<p>Maximality with respect to a lower prevision.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="improb.decision.opt.OptLowPrevMaxMin">
+<em class="property">class </em><tt class="descclassname">improb.decision.opt.</tt><tt class="descname">OptLowPrevMaxMin</tt><big>(</big><em>lowprev</em><big>)</big><a class="headerlink" href="#improb.decision.opt.OptLowPrevMaxMin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#improb.decision.opt.OptTotalPreorder" title="improb.decision.opt.OptTotalPreorder"><tt class="xref py py-class docutils literal"><span class="pre">improb.decision.opt.OptTotalPreorder</span></tt></a></p>
+<p>Gamma-maximin with respect to a lower prevision.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="improb.decision.opt.OptLowPrevMaxMax">
+<em class="property">class </em><tt class="descclassname">improb.decision.opt.</tt><tt class="descname">OptLowPrevMaxMax</tt><big>(</big><em>lowprev</em><big>)</big><a class="headerlink" href="#improb.decision.opt.OptLowPrevMaxMax" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#improb.decision.opt.OptLowPrevMaxMin" title="improb.decision.opt.OptLowPrevMaxMin"><tt class="xref py py-class docutils literal"><span class="pre">improb.decision.opt.OptLowPrevMaxMin</span></tt></a></p>
+<p>Gamma-maximin with respect to a lower prevision.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="improb.decision.opt.OptLowPrevMaxHurwicz">
+<em class="property">class </em><tt class="descclassname">improb.decision.opt.</tt><tt class="descname">OptLowPrevMaxHurwicz</tt><big>(</big><em>lowprev</em>, <em>alpha</em><big>)</big><a class="headerlink" href="#improb.decision.opt.OptLowPrevMaxHurwicz" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#improb.decision.opt.OptLowPrevMaxMin" title="improb.decision.opt.OptLowPrevMaxMin"><tt class="xref py py-class docutils literal"><span class="pre">improb.decision.opt.OptLowPrevMaxMin</span></tt></a></p>
+<p>Hurwicz with respect to a lower prevision.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<p>Example taken from <a class="footnote-reference" href="#troffaes2007" id="id1">[1]</a>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span> <span class="o">=</span> <span class="n">LowPoly</span><span class="p">(</span><span class="n">pspace</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">set_lower</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="s">&#39;0.28&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">set_upper</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="s">&#39;0.70&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gambles</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mf">2.35</span><span class="p">,</span> <span class="mf">2.35</span><span class="p">],</span> <span class="p">[</span><span class="mf">4.1</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.3</span><span class="p">]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">opt</span> <span class="o">=</span> <span class="n">OptLowPrevMax</span><span class="p">(</span><span class="n">lpr</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">opt</span><span class="p">(</span><span class="n">gambles</span><span class="p">))</span> <span class="o">==</span> <span class="p">[[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mf">2.35</span><span class="p">,</span> <span class="mf">2.35</span><span class="p">]]</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">OptLowPrevMaxMin</span><span class="p">(</span><span class="n">lpr</span><span class="p">)(</span><span class="n">gambles</span><span class="p">))</span> <span class="o">==</span> <span class="p">[[</span><span class="mf">2.35</span><span class="p">,</span> <span class="mf">2.35</span><span class="p">]]</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">OptLowPrevMaxMax</span><span class="p">(</span><span class="n">lpr</span><span class="p">)(</span><span class="n">gambles</span><span class="p">))</span> <span class="o">==</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">]]</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>Another example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span> <span class="o">=</span> <span class="n">Prob</span><span class="p">(</span><span class="n">pspace</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">prob</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;0.42&#39;</span><span class="p">,</span> <span class="s">&#39;0.08&#39;</span><span class="p">,</span> <span class="s">&#39;0.18&#39;</span><span class="p">,</span> <span class="s">&#39;0.32&#39;</span><span class="p">],</span>
+<span class="gp">... </span>           <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get_linvac</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">opt</span> <span class="o">=</span> <span class="n">OptLowPrevMax</span><span class="p">(</span><span class="n">lpr</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">gambles</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">10</span><span class="o">-</span><span class="n">c</span><span class="p">,</span><span class="mi">10</span><span class="o">-</span><span class="n">c</span><span class="p">,</span><span class="mi">15</span><span class="o">-</span><span class="n">c</span><span class="p">,</span><span class="mi">15</span><span class="o">-</span><span class="n">c</span><span class="p">],[</span><span class="mi">10</span><span class="o">-</span><span class="n">c</span><span class="p">,</span><span class="mi">5</span><span class="o">-</span><span class="n">c</span><span class="p">,</span><span class="mi">15</span><span class="o">-</span><span class="n">c</span><span class="p">,</span><span class="mi">20</span><span class="o">-</span><span class="n">c</span><span class="p">],</span>
+<span class="gp">... </span>               <span class="p">[</span><span class="mi">5</span><span class="o">-</span><span class="n">c</span><span class="p">,</span><span class="mi">10</span><span class="o">-</span><span class="n">c</span><span class="p">,</span><span class="mi">20</span><span class="o">-</span><span class="n">c</span><span class="p">,</span><span class="mi">15</span><span class="o">-</span><span class="n">c</span><span class="p">],[</span><span class="mi">5</span><span class="o">-</span><span class="n">c</span><span class="p">,</span><span class="mi">5</span><span class="o">-</span><span class="n">c</span><span class="p">,</span><span class="mi">20</span><span class="o">-</span><span class="n">c</span><span class="p">,</span><span class="mi">20</span><span class="o">-</span><span class="n">c</span><span class="p">],</span>
+<span class="gp">... </span>               <span class="p">[</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">15</span><span class="p">,</span><span class="mi">15</span><span class="p">],[</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mi">20</span><span class="p">]]</span>
+<span class="gp">... </span>    <span class="k">print</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">opt</span><span class="p">(</span><span class="n">gambles</span><span class="p">)))</span>
+<span class="go">[[10, 5, 15, 20]]</span>
+<span class="go">[[9, 4, 14, 19], [10, 10, 15, 15], [5, 5, 20, 20]]</span>
+<span class="go">[[10, 10, 15, 15], [5, 5, 20, 20]]</span>
+</pre></div>
+</div>
+<p class="rubric">Footnotes</p>
+<table class="docutils footnote" frame="void" id="troffaes2007" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td>Matthias C. M. Troffaes. Decision making under uncertainty using
+imprecise probabilities. International Journal of Approximate
+Reasoning, 45(1):17-29, May 2007.</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Optimality Operators</a><ul>
+<li><a class="reference internal" href="#abstract-operators">Abstract Operators</a></li>
+<li><a class="reference internal" href="#concrete-operators">Concrete Operators</a></li>
+<li><a class="reference internal" href="#examples">Examples</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../decision.html"
+                        title="previous chapter">Decision Making</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="tree.html"
+                        title="next chapter">Decision Trees</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/decision/opt.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="tree.html" title="Decision Trees"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../decision.html" title="Decision Making"
+             >previous</a> |</li>
+        <li><a href="../index.html">improb v0.1.0 (beta) documentation</a> &raquo;</li>
+          <li><a href="../decision.html" >Decision Making</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010, Matthias C. M. Troffaes.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>

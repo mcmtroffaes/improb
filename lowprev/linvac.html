@@ -1,0 +1,182 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Linear Vacuous Mixtures &mdash; improb v0.1.0 (beta) documentation</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1.0 (beta)',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="improb v0.1.0 (beta) documentation" href="../index.html" />
+    <link rel="up" title="Lower Previsions" href="../lowprev.html" />
+    <link rel="next" title="Probability Measures" href="prob.html" />
+    <link rel="prev" title="Belief Functions" href="belfunc.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="prob.html" title="Probability Measures"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="belfunc.html" title="Belief Functions"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">improb v0.1.0 (beta) documentation</a> &raquo;</li>
+          <li><a href="../lowprev.html" accesskey="U">Lower Previsions</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="module-improb.lowprev.linvac"></span><div class="section" id="linear-vacuous-mixtures">
+<h1>Linear Vacuous Mixtures<a class="headerlink" href="#linear-vacuous-mixtures" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="improb.lowprev.linvac.LinVac">
+<em class="property">class </em><tt class="descclassname">improb.lowprev.linvac.</tt><tt class="descname">LinVac</tt><big>(</big><em>pspace=None</em>, <em>mapping=None</em>, <em>lprev=None</em>, <em>uprev=None</em>, <em>prev=None</em>, <em>lprob=None</em>, <em>uprob=None</em>, <em>prob=None</em>, <em>bba=None</em>, <em>number_type=None</em><big>)</big><a class="headerlink" href="#improb.lowprev.linvac.LinVac" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="belfunc.html#improb.lowprev.belfunc.BelFunc" title="improb.lowprev.belfunc.BelFunc"><tt class="xref py py-class docutils literal"><span class="pre">improb.lowprev.belfunc.BelFunc</span></tt></a></p>
+<p>Linear-vacuous mixture, implemented as an unconditional lower
+probability on singletons.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">improb.lowprev.prob</span> <span class="kn">import</span> <span class="n">Prob</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span> <span class="o">=</span> <span class="n">Prob</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">prob</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;0.2&#39;</span><span class="p">,</span> <span class="s">&#39;0.3&#39;</span><span class="p">,</span> <span class="s">&#39;0.5&#39;</span><span class="p">],</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get_linvac</span><span class="p">(</span><span class="n">epsilon</span><span class="o">=</span><span class="s">&#39;0.1&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">get_lower</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]))</span>
+<span class="go">9/50</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">get_lower</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">]))</span>
+<span class="go">27/100</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">get_lower</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]))</span>
+<span class="go">9/20</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">get_lower</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">]))</span>
+<span class="go">163/100</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">get_upper</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">]))</span>
+<span class="go">183/100</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span> <span class="o">=</span> <span class="n">Prob</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">prob</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;0.42&#39;</span><span class="p">,</span> <span class="s">&#39;0.08&#39;</span><span class="p">,</span> <span class="s">&#39;0.18&#39;</span><span class="p">,</span> <span class="s">&#39;0.32&#39;</span><span class="p">],</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get_linvac</span><span class="p">(</span><span class="n">epsilon</span><span class="o">=</span><span class="s">&#39;0.1&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">get_lower</span><span class="p">([</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="o">-</span><span class="mi">5</span><span class="p">]))</span>
+<span class="go">-1/2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">get_lower</span><span class="p">([</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="o">-</span><span class="mi">5</span><span class="p">],</span> <span class="nb">set</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">])))</span> <span class="c"># (6 - 31 * 0.1) / (3 + 2 * 0.1)</span>
+<span class="go">29/32</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">get_lower</span><span class="p">([</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">],</span> <span class="nb">set</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">])))</span> <span class="c"># (6 - 31 * 0.1) / (2 + 3 * 0.1) </span>
+<span class="go">29/23</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">get_lower</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mi">5</span><span class="p">]))</span> <span class="c"># -(6 + 19 * 0.1) / 5</span>
+<span class="go">-79/50</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">get_lower</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">5</span><span class="p">]))</span> <span class="c"># (6 - 31 * 0.1) / 5</span>
+<span class="go">29/50</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="improb.lowprev.linvac.LinVac.get_lower">
+<tt class="descname">get_lower</tt><big>(</big><em>gamble</em>, <em>event=True</em>, <em>algorithm='linvac'</em><big>)</big><a class="headerlink" href="#improb.lowprev.linvac.LinVac.get_lower" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the lower expectation of a gamble conditional on
+an event, by the following formula:</p>
+<div class="math">
+<p><img src="../_images/math/3469de16aca936ee19e56edc820a1cf9b054402f.png" alt="\underline{E}(f|A)=
+\frac{
+(1-\epsilon)\sum_{\omega\in A}p(\omega)f(\omega)
++ \epsilon\min_{\omega\in A}f(\omega)
+}{
+(1-\epsilon)\sum_{\omega\in A}p(\omega)
++ \epsilon
+}" /></p>
+</div><p>where <img class="math" src="../_images/math/df8900596922c52a0e25ab7d1a250fc3a14f01d7.png" alt="\epsilon=1-\sum_{\omega}\underline{P}(\omega)"/> and
+<img class="math" src="../_images/math/82a336d5b587572ff39eb3c3663589151f9c438e.png" alt="p(\omega)=\underline{P}(\omega)/(1-\epsilon)"/>. Here,
+<img class="math" src="../_images/math/f1f393b690d98fce88ecbea533d2f9a3e3c6becc.png" alt="\underline{P}(\omega)"/> is simply:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="bp">self</span><span class="p">[{</span><span class="n">omega</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span> <span class="bp">True</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>This method will <em>not</em> raise an exception, even if the
+assessments are incoherent (obviously, in such case,
+<img class="math" src="../_images/math/2a2df1df1f79999382ee7184370e5633941fa615.png" alt="\underline{E}"/> will be incoherent as well). It will
+raise an exception if not all lower probabilities on
+singletons are defined (if needed, extend it first).</p>
+</dd></dl>
+
+</dd></dl>
+
+<div class="admonition-todo admonition " id="index-0">
+<p class="first admonition-title">Todo</p>
+<p class="last">Add examples.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="belfunc.html"
+                        title="previous chapter">Belief Functions</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="prob.html"
+                        title="next chapter">Probability Measures</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/lowprev/linvac.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="prob.html" title="Probability Measures"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="belfunc.html" title="Belief Functions"
+             >previous</a> |</li>
+        <li><a href="../index.html">improb v0.1.0 (beta) documentation</a> &raquo;</li>
+          <li><a href="../lowprev.html" >Lower Previsions</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010, Matthias C. M. Troffaes.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+    </div>
+  </body>
+</html>
