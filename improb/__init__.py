@@ -26,6 +26,7 @@ from cdd import NumberTypeable
 import collections
 import fractions
 import itertools
+import numbers
 
 class PSpace(collections.Set, collections.Hashable):
     """An immutable possibility space, derived from
@@ -126,7 +127,7 @@ class PSpace(collections.Set, collections.Hashable):
         """
         return pspace if isinstance(pspace, cls) else cls(pspace)
 
-    def make_event(self, *args):
+    def make_event(self, *args, **kwargs):
         """If *event* is a :class:`Event`, then checks possibility
         space and returns *event*. Otherwise, converts *event* to a
         :class:`Event`.
@@ -138,6 +139,8 @@ class PSpace(collections.Set, collections.Hashable):
 
         :param event: The event.
         :type event: |eventtype|
+        :param name: The name of the event (used for pretty printing).
+        :type name: :class:`str`
         :return: A event.
         :rtype: :class:`Event`
         :raises: :exc:`~exceptions.ValueError` if possibility spaces do not match
@@ -158,6 +161,7 @@ class PSpace(collections.Set, collections.Hashable):
         (1, 1) : 0
         (1, 2) : 1
         """
+        name = kwargs.get("name")
         if not args:
             raise ValueError('specify at least one argument')
         elif len(args) == 1:
@@ -167,20 +171,22 @@ class PSpace(collections.Set, collections.Hashable):
                     raise ValueError('possibility space mismatch')
                 return event
             elif event is True:
-                return Event(self, event)
+                return Event(self, event, name=name)
             elif event is False:
-                return Event(self, event)
+                return Event(self, event, name=name)
             elif isinstance(event, Gamble):
                 if self != event.pspace:
                     raise ValueError('possibility space mismatch')
                 if not(set(event.itervalues()) <= set([0, 1])):
                     raise ValueError("not an indicator gamble")
-                return Event(self, (omega for omega, value in event.iteritems()
-                                    if value == 1))
+                return Event(self,
+                             (omega for omega, value in event.iteritems()
+                              if value == 1),
+                             name=name)
             else:
-                return Event(self, event)
+                return Event(self, event, name=name)
         else:
-            return Event(self, itertools.product(*args))
+            return Event(self, itertools.product(*args), name=name)
 
     def make_gamble(self, gamble, number_type):
         """If *gamble* is
@@ -466,7 +472,7 @@ class Gamble(collections.Mapping, collections.Hashable, NumberTypeable):
 
         :param pspace: The possibility space.
         :type pspace: |pspacetype|
-        :param data: The specification of a gamble.
+        :param data: The specification of a gamble, or a constant.
         :type data: |gambletype|
         :param number_type: The type to use for numbers: ``'float'`` or ``'fraction'``.
         :type number_type: ``type``
@@ -481,6 +487,9 @@ class Gamble(collections.Mapping, collections.Hashable, NumberTypeable):
             self._data = dict((omega, self.make_number(value))
                               for omega, value
                               in itertools.izip(self.pspace, data))
+        elif isinstance(data, numbers.Real):
+            self._data = dict((omega, self.make_number(data))
+                              for omega in self.pspace)
         else:
             raise TypeError('specify data as sequence or mapping')
 
@@ -616,13 +625,15 @@ class Event(collections.Set, collections.Hashable):
     e : 1
     f : 1
     """
-    def __init__(self, pspace, data=False):
+    def __init__(self, pspace, data=False, name=None):
         """Construct an event on the given possibility space.
 
         :param pspace: The possibility space.
         :type pspace: |pspacetype|
         :param data: The specification of an event.
         :type data: |eventtype|
+        :param name: The name of the event (used for pretty printing).
+        :type name: :class:`str`
         """
         self._pspace = PSpace.make(pspace)
         if isinstance(data, collections.Iterable):
@@ -634,11 +645,19 @@ class Event(collections.Set, collections.Hashable):
             self._data = frozenset()
         else:
             raise TypeError("specify data as iterable, True, or False")
+        if name is not None:
+            self._name = name
+        else:
+            self._name = "(" + ",".join(str(omega) for omega in self) + ")"
 
     @property
     def pspace(self):
         """An :class:`~improb.PSpace` representing the possibility space."""
         return self._pspace
+
+    @property
+    def name(self):
+        return self._name
 
     # must override this because the class constructor does not accept
     # an iterable for an input

@@ -25,6 +25,7 @@ import numbers
 
 from improb import PSpace, Event, Gamble
 from improb._compat import OrderedDict
+from improb.decision.opt import Opt
 
 class Tree(collections.MutableMapping):
     r"""A decision tree.
@@ -33,7 +34,7 @@ class Tree(collections.MutableMapping):
     >>> print(t.pspace)
     None
     >>> print(t)
-    5.0
+    :5.0
     >>> list(t.get_normal_form())
     [(5.0, Reward(5.0, number_type='float'))]
     >>> t = Chance(pspace=(0, 1), data={(0,): Reward(5, number_type='float'), (1,): Reward(6, number_type='float')})
@@ -42,9 +43,9 @@ class Tree(collections.MutableMapping):
     >>> t.get_number_type()
     'float'
     >>> print(t)
-    O--(0)--5.0
+    O--(0)--:5.0
        |
-       (1)--6.0
+       (1)--:6.0
     >>> list(gamble for gamble, normal_tree in t.get_normal_form())
     [Gamble(pspace=PSpace(2), mapping={0: 5.0, 1: 6.0})]
     >>> t = Decision({"d1": Reward(5, number_type='float'),
@@ -52,17 +53,17 @@ class Tree(collections.MutableMapping):
     >>> print(t.pspace)
     None
     >>> print(t) # dict can change ordering
-    #--d2--6.0
+    #--d2--:6.0
        |
-       d1--5.0
+       d1--:5.0
     >>> for gamble, normal_tree in sorted(t.get_normal_form()):
     ...     print(gamble)
     5.0
     6.0
     >>> for gamble, normal_tree in sorted(t.get_normal_form()):
     ...     print(normal_tree)
-    #--d1--5.0
-    #--d2--6.0
+    #--d1--:5.0
+    #--d2--:6.0
     >>> pspace = PSpace(4)
     >>> t1 = Chance(pspace)
     >>> t1[(0,1)] = Reward(1, number_type='fraction')
@@ -80,17 +81,17 @@ class Tree(collections.MutableMapping):
     >>> t[(0,2)] = t12
     >>> t[(1,3)] = t3
     >>> print(t)
-    O--(0,2)--#--d1--O--(0,1)--1
+    O--(0,2)--#--d1--O--(0,1)--:1
        |         |      |
-       |         |      (2,3)--2
+       |         |      (2,3)--:2
        |         |
-       |         d2--O--(0,1)--5
+       |         d2--O--(0,1)--:5
        |                |
-       |                (2,3)--6
+       |                (2,3)--:6
        |
-       (1,3)--O--(0,1)--8
+       (1,3)--O--(0,1)--:8
                  |
-                 (2,3)--9
+                 (2,3)--:9
     >>> t.pspace
     PSpace(4)
     >>> for gamble, normal_tree in t.get_normal_form():
@@ -109,21 +110,21 @@ class Tree(collections.MutableMapping):
     >>> for gamble, normal_tree in t.get_normal_form():
     ...     print(normal_tree)
     ...     print('')
-    O--(0,2)--#--d1--O--(0,1)--1
+    O--(0,2)--#--d1--O--(0,1)--:1
        |                |
-       |                (2,3)--2
+       |                (2,3)--:2
        |
-       (1,3)--O--(0,1)--8
+       (1,3)--O--(0,1)--:8
                  |
-                 (2,3)--9
+                 (2,3)--:9
     <BLANKLINE>
-    O--(0,2)--#--d2--O--(0,1)--5
+    O--(0,2)--#--d2--O--(0,1)--:5
        |                |
-       |                (2,3)--6
+       |                (2,3)--:6
        |
-       (1,3)--O--(0,1)--8
+       (1,3)--O--(0,1)--:8
                  |
-                 (2,3)--9
+                 (2,3)--:9
     <BLANKLINE>
     """
     __metaclass__ = ABCMeta
@@ -156,8 +157,7 @@ class Tree(collections.MutableMapping):
     def __str__(self):
         """Return string representation of tree."""
         # note: special case for Event to make it fit on a single line
-        children = [("(" + ",".join(str(omega) for omega in key) + ")")
-                    if isinstance(key, Event) else str(key)
+        children = [key.name if isinstance(key, Event) else str(key)
                     for key in self]
         subtrees = [str(subtree).split('\n')
                     for subtree in self.itervalues()]
@@ -222,13 +222,23 @@ class Tree(collections.MutableMapping):
                 opt((gamble for gamble, tree in _norm_back_opt), event))
             for gamble, normal_tree in _norm_back_opt:
                 if gamble in opt_gambles:
-                    yield gamble, tree
+                    yield gamble, normal_tree
 
     @abstractmethod
     def _get_norm_back_opt(self, opt=None, event=True):
         """This is the core implementation of get_norm_back_opt: it is
         get_norm_back_opt but without applying opt at the root of the tree.
         """
+        raise NotImplementedError
+
+    @abstractmethod
+    def __add__(self, value):
+        """Add a value to all final reward nodes."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def __sub__(self, value):
+        """Substract a value from all final reward nodes."""
         raise NotImplementedError
 
 class Reward(Tree, cdd.NumberTypeable):
@@ -267,12 +277,20 @@ class Reward(Tree, cdd.NumberTypeable):
         raise ValueError('reward node has no children')
 
     def __str__(self):
-        return self.number_str(self.reward)
+        return ":" + self.number_str(self.reward)
 
     def __repr__(self):
         return "Reward({0}, number_type='{1}')".format(
             self.number_repr(self.reward),
             self.number_type)
+
+    def __add__(self, value):
+        return Reward(self.reward + self.make_number(value),
+                      number_type=self.number_type)
+
+    def __sub__(self, value):
+        return Reward(self.reward - self.make_number(value),
+                      number_type=self.number_type)
 
 class Decision(Tree):
     """A decision tree rooted at a decision node.
@@ -333,6 +351,16 @@ class Decision(Tree):
                       for key, value in self.iteritems())
             + "})"
             )
+
+    def __add__(self, value):
+        return Decision(
+            OrderedDict((decision, subtree + value)
+                        for decision, subtree in self.iteritems()))
+
+    def __sub__(self, value):
+        return Decision(
+            OrderedDict((decision, subtree - value)
+                        for decision, subtree in self.iteritems()))
 
 class Chance(Tree):
     """A decision tree rooted at a chance node.
@@ -442,3 +470,15 @@ class Chance(Tree):
                       for key, value in self.iteritems())
             + "})"
             )
+
+    def __add__(self, value):
+        return Chance(
+            self.pspace,
+            OrderedDict((event, subtree + value)
+                        for event, subtree in self.iteritems()))
+
+    def __sub__(self, value):
+        return Chance(
+            self.pspace,
+            OrderedDict((event, subtree - value)
+                         for event, subtree in self.iteritems()))
