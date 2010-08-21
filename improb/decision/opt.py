@@ -109,7 +109,8 @@ class OptTotalPreorder(Opt, cdd.NumberTypeable):
 
 class OptAdmissible(OptPartialPreorder, cdd.NumberTypeable):
     """Optimality by pointwise dominance."""
-    def __init__(self, pspace, number_type=None):
+    def __init__(self, pspace, number_type='float'):
+        cdd.NumberTypeable.__init__(self, number_type)
         self._pspace = PSpace.make(pspace)
 
     @property
@@ -158,6 +159,7 @@ class OptLowPrevMaxMin(OptTotalPreorder):
     def __init__(self, lowprev):
         if not isinstance(lowprev, LowPrev):
             raise TypeError("expected a lower prevision as first argument")
+        cdd.NumberTypeable.__init__(self, lowprev.number_type)
         self._lowprev = lowprev
 
     def get_value(self, gamble, event=True):

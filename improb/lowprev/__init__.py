@@ -20,7 +20,7 @@
 from __future__ import division, absolute_import, print_function
 
 from abc import ABCMeta, abstractproperty, abstractmethod
-from cdd import NumberTypeable
+import cdd
 import collections
 from fractions import Fraction
 import itertools
@@ -28,7 +28,7 @@ import itertools
 from improb import PSpace, Gamble, Event
 from improb.setfunction import SetFunction
 
-class LowPrev(collections.MutableMapping, NumberTypeable):
+class LowPrev(collections.MutableMapping, cdd.NumberTypeable):
     """Abstract base class for working with arbitrary lower previsions."""
     __metaclass__ = ABCMeta
 

@@ -23,7 +23,7 @@ __version__ = '0.1.0'
 __release__ = __version__ + ' (beta)'
 
 from abc import ABCMeta, abstractmethod, abstractproperty
-from cdd import NumberTypeable
+import cdd
 import collections
 import fractions
 import itertools
@@ -408,7 +408,7 @@ class PSpace(collections.Set, collections.Hashable):
             for subset in itertools.combinations(event - contains, subset_size):
                 yield Event(self, subset) | contains
 
-class Gamble(collections.Mapping, collections.Hashable, NumberTypeable):
+class Gamble(collections.Mapping, collections.Hashable, cdd.NumberTypeable):
     """An immutable gamble.
 
     >>> pspace = PSpace('abc')
@@ -468,7 +468,7 @@ class Gamble(collections.Mapping, collections.Hashable, NumberTypeable):
         ...
     TypeError: ...
     """
-    def __init__(self, pspace, data, number_type=None):
+    def __init__(self, pspace, data, number_type='float'):
         """Construct a gamble on the given possibility space.
 
         :param pspace: The possibility space.
@@ -476,8 +476,9 @@ class Gamble(collections.Mapping, collections.Hashable, NumberTypeable):
         :param data: The specification of a gamble, or a constant.
         :type data: |gambletype|
         :param number_type: The type to use for numbers: ``'float'`` or ``'fraction'``.
-        :type number_type: ``type``
+        :type number_type: :class:`str`
         """
+        cdd.NumberTypeable.__init__(self, number_type)
         self._pspace = PSpace.make(pspace)
         if isinstance(data, collections.Mapping):
             self._data = dict((omega, self.make_number(data.get(omega, 0)))
@@ -714,7 +715,7 @@ class Event(collections.Set, collections.Hashable):
         """
         return Event(self.pspace, True) - self
 
-    def indicator(self, number_type=None):
+    def indicator(self, number_type='float'):
         """Return indicator gamble for the event.
 
         :param number_type: The number type.

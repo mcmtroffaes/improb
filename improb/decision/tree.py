@@ -30,14 +30,14 @@ from improb.decision.opt import Opt
 class Tree(collections.MutableMapping):
     r"""A decision tree.
 
-    >>> t = Reward(5, number_type='float')
+    >>> t = Reward(5)
     >>> print(t.pspace)
     None
     >>> print(t)
     :5.0
     >>> list(t.get_normal_form())
     [(5.0, Reward(5.0, number_type='float'))]
-    >>> t = Chance(pspace=(0, 1), data={(0,): Reward(5, number_type='float'), (1,): Reward(6, number_type='float')})
+    >>> t = Chance(pspace=(0, 1), data={(0,): Reward(5), (1,): Reward(6)})
     >>> t.pspace
     PSpace(2)
     >>> t.get_number_type()
@@ -48,8 +48,8 @@ class Tree(collections.MutableMapping):
        (1)--:6.0
     >>> list(gamble for gamble, normal_tree in t.get_normal_form())
     [Gamble(pspace=PSpace(2), mapping={0: 5.0, 1: 6.0})]
-    >>> t = Decision({"d1": Reward(5, number_type='float'),
-    ...               "d2": Reward(6, number_type='float')})
+    >>> t = Decision({"d1": Reward(5),
+    ...               "d2": Reward(6)})
     >>> print(t.pspace)
     None
     >>> print(t) # dict can change ordering
@@ -66,17 +66,17 @@ class Tree(collections.MutableMapping):
     #--d2--:6.0
     >>> pspace = PSpace(4)
     >>> t1 = Chance(pspace)
-    >>> t1[(0,1)] = Reward(1, number_type='fraction')
-    >>> t1[(2,3)] = Reward(2, number_type='fraction')
+    >>> t1[(0,1)] = Reward(1, 'fraction')
+    >>> t1[(2,3)] = Reward(2, 'fraction')
     >>> t2 = Chance(pspace)
-    >>> t2[(0,1)] = Reward(5, number_type='fraction')
-    >>> t2[(2,3)] = Reward(6, number_type='fraction')
+    >>> t2[(0,1)] = Reward(5, 'fraction')
+    >>> t2[(2,3)] = Reward(6, 'fraction')
     >>> t12 = Decision()
     >>> t12["d1"] = t1
     >>> t12["d2"] = t2
     >>> t3 = Chance(pspace)
-    >>> t3[(0,1)] = Reward(8, number_type='fraction')
-    >>> t3[(2,3)] = Reward(9, number_type='fraction')
+    >>> t3[(0,1)] = Reward(8, 'fraction')
+    >>> t3[(2,3)] = Reward(9, 'fraction')
     >>> t = Chance(pspace)
     >>> t[(0,2)] = t12
     >>> t[(1,3)] = t3
@@ -243,7 +243,8 @@ class Tree(collections.MutableMapping):
 
 class Reward(Tree, cdd.NumberTypeable):
     """A reward node."""
-    def __init__(self, reward, number_type=None):
+    def __init__(self, reward, number_type='float'):
+        cdd.NumberTypeable.__init__(self, number_type)
         if not isinstance(reward, numbers.Real):
             raise TypeError('specify a numeric reward')
         self.reward = self.make_number(reward)
@@ -383,17 +384,17 @@ class Chance(Tree):
     def check_pspace(self):
         """Events of the chance nodes must form the possibility space.
 
-        >>> t = Chance(pspace=(0,1), data={(0,): Reward(5, number_type='float'), (0,1): Reward(6, number_type='float')})
+        >>> t = Chance(pspace=(0,1), data={(0,): Reward(5), (0,1): Reward(6)})
         >>> t.check_pspace() # doctest: +ELLIPSIS
         Traceback (most recent call last):
             ...
         ValueError: ...
-        >>> t = Chance(pspace=(0,1), data={(0,): Reward(5, number_type='float')})
+        >>> t = Chance(pspace=(0,1), data={(0,): Reward(5)})
         >>> t.check_pspace() # doctest: +ELLIPSIS
         Traceback (most recent call last):
             ...
         ValueError: ...
-        >>> t = Chance(pspace=(0,1), data={(0,): Reward(5, number_type='float'), (1,): Reward(6, number_type='float')})
+        >>> t = Chance(pspace=(0,1), data={(0,): Reward(5), (1,): Reward(6)})
         >>> t.check_pspace()
         """
         # check that there are no pairwise intersections

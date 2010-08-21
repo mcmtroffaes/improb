@@ -41,6 +41,7 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
         :param data: A mapping that defines the value on each event (missing values default to zero).
         :type data: :class:`dict`
         """
+        cdd.NumberTypeable.__init__(self, number_type)
         self._pspace = PSpace.make(pspace)
         self._data = {}
         if data is not None:
