@@ -28,103 +28,73 @@ from improb._compat import OrderedDict
 from improb.decision.opt import Opt
 
 class Tree(collections.MutableMapping):
-    r"""A decision tree.
+    """Abstract base class for decision trees.
 
-    >>> t = Reward(5)
-    >>> print(t.pspace)
-    None
-    >>> print(t)
-    :5.0
-    >>> list(t.get_normal_form())
-    [(5.0, Reward(5.0, number_type='float'))]
-    >>> t = Chance(pspace=(0, 1), data={(0,): 5, (1,): 6})
-    >>> t.pspace
-    PSpace(2)
-    >>> t.get_number_type()
-    'float'
-    >>> print(t)
-    O--(0)--:5.0
-       |
-       (1)--:6.0
-    >>> list(gamble for gamble, normal_tree in t.get_normal_form())
-    [Gamble(pspace=PSpace(2), mapping={0: 5.0, 1: 6.0})]
-    >>> t = Decision({"d1": 5,
-    ...               "d2": 6})
-    >>> print(t.pspace)
-    None
-    >>> print(t) # dict can change ordering
-    #--d2--:6.0
-       |
-       d1--:5.0
-    >>> for gamble, normal_tree in sorted(t.get_normal_form()):
-    ...     print(gamble)
-    5.0
-    6.0
-    >>> for gamble, normal_tree in sorted(t.get_normal_form()):
-    ...     print(normal_tree)
-    #--d1--:5.0
-    #--d2--:6.0
-    >>> pspace = PSpace(4)
+    >>> pspace = PSpace("AB", "XY")
+    >>> A = pspace.make_event("A", "XY", name="A")
+    >>> B = pspace.make_event("B", "XY", name="B")
+    >>> X = pspace.make_event("AB", "X", name="X")
+    >>> Y = pspace.make_event("AB", "Y", name="Y")
     >>> t1 = Chance(pspace)
-    >>> t1[(0,1)] = '1' # using strings for fractions
-    >>> t1[(2,3)] = '2/11'
+    >>> t1[A] = '1' # using strings for fractions
+    >>> t1[B] = '2/11'
     >>> t2 = Chance(pspace)
-    >>> t2[(0,1)] = '5/3'
-    >>> t2[(2,3)] = '6'
+    >>> t2[A] = '5/3'
+    >>> t2[B] = '6'
     >>> t12 = Decision()
     >>> t12["d1"] = t1
     >>> t12["d2"] = t2
     >>> t3 = Chance(pspace)
-    >>> t3[(0,1)] = '8'
-    >>> t3[(2,3)] = '4.5'
+    >>> t3[A] = '8'
+    >>> t3[B] = '4.5'
     >>> t = Chance(pspace)
-    >>> t[(0,2)] = t12
-    >>> t[(1,3)] = t3
+    >>> t[X] = t12
+    >>> t[Y] = t3
     >>> print(t)
-    O--(0,2)--#--d1--O--(0,1)--:1
-       |         |      |
-       |         |      (2,3)--:2/11
-       |         |
-       |         d2--O--(0,1)--:5/3
-       |                |
-       |                (2,3)--:6
+    O--X--#--d1--O--A--:1
+       |     |      |
+       |     |      B--:2/11
+       |     |
+       |     d2--O--A--:5/3
+       |            |
+       |            B--:6
        |
-       (1,3)--O--(0,1)--:8
-                 |
-                 (2,3)--:9/2
+       Y--O--A--:8
+             |
+             B--:9/2
     >>> t.pspace
-    PSpace(4)
+    PSpace([('A', 'X'), ('A', 'Y'), ('B', 'X'), ('B', 'Y')])
     >>> for gamble, normal_tree in t.get_normal_form():
     ...     print(gamble)
     ...     print('')
-    0 : 1
-    1 : 8
-    2 : 2/11
-    3 : 9/2
+    ('A', 'X') : 1
+    ('A', 'Y') : 8
+    ('B', 'X') : 2/11
+    ('B', 'Y') : 9/2
     <BLANKLINE>
-    0 : 5/3
-    1 : 8
-    2 : 6
-    3 : 9/2
+    ('A', 'X') : 5/3
+    ('A', 'Y') : 8
+    ('B', 'X') : 6
+    ('B', 'Y') : 9/2
     <BLANKLINE>
     >>> for gamble, normal_tree in t.get_normal_form():
     ...     print(normal_tree)
     ...     print('')
-    O--(0,2)--#--d1--O--(0,1)--:1
-       |                |
-       |                (2,3)--:2/11
+    O--X--#--d1--O--A--:1
+       |            |
+       |            B--:2/11
        |
-       (1,3)--O--(0,1)--:8
-                 |
-                 (2,3)--:9/2
+       Y--O--A--:8
+             |
+             B--:9/2
     <BLANKLINE>
-    O--(0,2)--#--d2--O--(0,1)--:5/3
-       |                |
-       |                (2,3)--:6
+    O--X--#--d2--O--A--:5/3
+       |            |
+       |            B--:6
        |
-       (1,3)--O--(0,1)--:8
-                 |
-                 (2,3)--:9/2
+       Y--O--A--:8
+             |
+             B--:9/2
     <BLANKLINE>
     """
     __metaclass__ = ABCMeta
@@ -137,6 +107,11 @@ class Tree(collections.MutableMapping):
         raise NotImplementedError
 
     def get_number_type(self):
+        """Get the number type of the first reward node in the tree.
+
+        :return: The number type.
+        :rtype: :class:`str`
+        """
         for subtree in self.itervalues():
             # this just picks the first reward node
             return subtree.get_number_type()
@@ -182,16 +157,35 @@ class Tree(collections.MutableMapping):
         return "\n".join(children)
 
     def get_normal_form(self):
-        """Yield normal form as (gamble, tree) pairs, where the tree
-        represents the normal form decision corresponding to the gamble.
+        """Calculate all normal form decisions, and their
+        corresponding gambles.
+
+        :return: The normal form of the decision tree.
+        :rtype: Yields (:class:`~improb.Gamble`, :class:`Tree`) pairs,
+            where the tree is a normal form decision (i.e. a tree
+            where each decision node has a single branch), and the
+            gamble is the one induced by this tree.
         """
+
         # get_norm_back_opt without optimality operator gives exactly all
         # normal form gambles!
         return self._get_norm_back_opt()
 
     def get_norm_opt(self, opt=None, event=True):
-        """Normal form optimality with respect to a given optimality
-        operator, conditional on the given event.
+        """Get the optimal normal form decisions with respect to the
+        optimality operator *opt*, conditional on *event*. This method
+        does not use backward induction: it simply calculates all
+        normal form decisions and then applies *opt* on them.
+
+        :param opt: The optimality operator (optional).
+        :type opt: :class:`~improb.decision.opt.Opt`
+        :param event: The event to condition on (optional).
+        :type event: |eventtype|
+        :return: Optimal normal form decisions.
+        :rtype: Yields (:class:`~improb.Gamble`, :class:`Tree`) pairs,
+            where the tree is a normal form decision (i.e. a tree
+            where each decision node has a single branch), and the
+            gamble is the one induced by this tree.
         """
         if opt is None:
             for gamble, normal_tree in self._get_norm_back_opt():
@@ -207,9 +201,13 @@ class Tree(collections.MutableMapping):
                     yield gamble, normal_tree
 
     def get_norm_back_opt(self, opt=None, event=True):
-        """Yield optimal solution by normal form backward induction,
-        as (gamble, tree) pairs, where the tree represents the normal
-        form decision corresponding to the gamble.
+        """Like :meth:`get_norm_opt`, but uses normal form backward
+        induction, which is more efficient.
+
+        .. warning::
+
+            If *opt* does not satisfy certain properties, the result
+            can be different from :meth:`get_norm_opt`.
         """
         if opt is None:
             for gamble, normal_tree in self._get_norm_back_opt():
@@ -226,23 +224,53 @@ class Tree(collections.MutableMapping):
 
     @abstractmethod
     def _get_norm_back_opt(self, opt=None, event=True):
-        """This is the core implementation of get_norm_back_opt: it is
-        get_norm_back_opt but without applying opt at the root of the tree.
+        """Like :meth:`get_norm_back_opt` but without applying *opt*
+        at the root of the tree in the final stage.
+
+        All other normal form methods (:meth:`get_normal_form`,
+        :meth:`get_norm_opt`, and :meth:`get_norm_back_opt`) are
+        defined in terms of this method, so subclasses only need to
+        implement this one as far as normal form calculations are
+        concerned.
         """
         raise NotImplementedError
 
     @abstractmethod
     def __add__(self, value):
-        """Add a value to all final reward nodes."""
+        """Add a value to all final reward nodes.
+
+        :param value: The value to add.
+        :type value: |numbertype|
+        """
         raise NotImplementedError
 
     @abstractmethod
     def __sub__(self, value):
-        """Substract a value from all final reward nodes."""
+        """Subtract a value from all final reward nodes.
+
+        :param value: The value to subtract.
+        :type value: |numbertype|
+        """
         raise NotImplementedError
 
 class Reward(Tree, cdd.NumberTypeable):
-    """A reward node."""
+    """A reward node.
+
+    :param reward: The reward.
+    :type reward: |numbertype|
+    :param number_type: The number type (optional). If omitted,
+        :func:`~cdd.get_number_type_from_value` is used.
+    :type number_type: :class:`str`
+
+    >>> t = Reward(5)
+    >>> print(t.pspace)
+    None
+    >>> print(t)
+    :5.0
+    >>> list(t.get_normal_form())
+    [(5.0, Reward(5.0, number_type='float'))]
+    """
+
     def __init__(self, reward, number_type=None):
         if not isinstance(reward, (numbers.Real, str)):
             raise TypeError('specify a numeric reward')
@@ -299,8 +327,25 @@ class Decision(Tree):
     """A decision tree rooted at a decision node.
 
     :param data: Mapping from decisions (i.e. strings, but any
-        immutable object would work) to trees.
+        immutable object would work) to trees (optional).
     :type data: :class:`collections.Mapping`
+
+    >>> t = Decision({"d1": 5,
+    ...               "d2": 6})
+    >>> print(t.pspace)
+    None
+    >>> print(t) # dict can change ordering
+    #--d2--:6.0
+       |
+       d1--:5.0
+    >>> for gamble, normal_tree in sorted(t.get_normal_form()):
+    ...     print(gamble)
+    5.0
+    6.0
+    >>> for gamble, normal_tree in sorted(t.get_normal_form()):
+    ...     print(normal_tree)
+    #--d1--:5.0
+    #--d2--:6.0
     """
     def __init__(self, data=None):
         self._data = OrderedDict()
@@ -374,6 +419,18 @@ class Chance(Tree):
     :type pspace: |pspacetype|
     :param data: Mapping from events to trees (optional).
     :type data: :class:`collections.Mapping`
+
+    >>> t = Chance(pspace=(0, 1), data={(0,): 5, (1,): 6})
+    >>> t.pspace
+    PSpace(2)
+    >>> t.get_number_type()
+    'float'
+    >>> print(t)
+    O--(0)--:5.0
+       |
+       (1)--:6.0
+    >>> list(gamble for gamble, normal_tree in t.get_normal_form())
+    [Gamble(pspace=PSpace(2), mapping={0: 5.0, 1: 6.0})]
     """
     def __init__(self, pspace, data=None):
         self._data = OrderedDict()

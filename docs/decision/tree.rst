@@ -14,6 +14,8 @@ Decision Trees
    :members:
 
    .. automethod:: _get_norm_back_opt
+   .. automethod:: __add__
+   .. automethod:: __sub__
 
 .. autoclass:: Reward
    :show-inheritance:
