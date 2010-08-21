@@ -189,11 +189,13 @@ class PSpace(collections.Set, collections.Hashable):
         else:
             return Event(self, itertools.product(*args), name=name)
 
-    def make_gamble(self, gamble, number_type):
+    def make_gamble(self, gamble, number_type=None):
         """If *gamble* is
 
         * a :class:`Gamble`, then checks possibility space and number
-          type and returns *gamble*,
+          type and returns *gamble*; if number type does not
+          correspond, returns a copy of *gamble* with requested number
+          type,
 
         * an :class:`Event`, then checks possibility space and returns
           the indicator of *gamble* with the correct number type,
@@ -203,7 +205,10 @@ class PSpace(collections.Set, collections.Hashable):
 
         :param gamble: The gamble.
         :type gamble: |gambletype|
-        :param number_type: The type to use for numbers: ``'float'`` or ``'fraction'``.
+        :param number_type: The type to use for numbers: ``'float'``
+            or ``'fraction'``. If omitted, then
+            :func:`~cdd.get_number_type_from_sequences` is used to
+            determine the number type.
         :type number_type: :class:`str`
         :return: A gamble.
         :rtype: :class:`Gamble`
@@ -214,7 +219,7 @@ class PSpace(collections.Set, collections.Hashable):
         >>> pspace = PSpace('abc')
         >>> event = Event(pspace, 'ac')
         >>> gamble = event.indicator('fraction')
-        >>> fgamble = event.indicator('float')
+        >>> fgamble = event.indicator() # float number type
         >>> pevent = Event('ab', False)
         >>> pgamble = Gamble('ab', [2, 5], number_type='fraction')
         >>> print(pspace.make_gamble({'b': 1}, 'fraction'))
@@ -229,10 +234,10 @@ class PSpace(collections.Set, collections.Hashable):
         a : 1
         b : 0
         c : 1
-        >>> print(pspace.make_gamble(fgamble, 'fraction')) # doctest: +ELLIPSIS
-        Traceback (most recent call last):
-            ...
-        ValueError: ...
+        >>> print(pspace.make_gamble(fgamble, 'fraction'))
+        a : 1
+        b : 0
+        c : 1
         >>> print(pspace.make_gamble(pevent, 'fraction')) # doctest: +ELLIPSIS
         Traceback (most recent call last):
             ...
@@ -253,9 +258,10 @@ class PSpace(collections.Set, collections.Hashable):
         if isinstance(gamble, Gamble):
             if self != gamble.pspace:
                 raise ValueError('possibility space mismatch')
-            if number_type != gamble.number_type:
-                raise ValueError('number type mismatch')
-            return gamble
+            if (number_type is not None) and (number_type != gamble.number_type):
+                return Gamble(self, gamble, number_type=number_type)
+            else:
+                return gamble
         elif isinstance(gamble, Event):
             if self != gamble.pspace:
                 raise ValueError('possibility space mismatch')
@@ -412,6 +418,14 @@ class Gamble(collections.Mapping, collections.Hashable, cdd.NumberTypeable):
     """An immutable gamble.
 
     >>> pspace = PSpace('abc')
+    >>> Gamble(pspace, {'a': 1, 'b': 4, 'c': 8}).number_type
+    'float'
+    >>> Gamble(pspace, [1, 2, 3]).number_type
+    'float'
+    >>> Gamble(pspace, {'a': '1/7', 'b': '4/3', 'c': '8/5'}).number_type
+    'fraction'
+    >>> Gamble(pspace, ['1', '2', '3/2']).number_type
+    'fraction'
     >>> f1 = Gamble(pspace, {'a': 1, 'b': 4, 'c': 8}, number_type='fraction')
     >>> print(f1)
     a : 1
@@ -468,28 +482,48 @@ class Gamble(collections.Mapping, collections.Hashable, cdd.NumberTypeable):
         ...
     TypeError: ...
     """
-    def __init__(self, pspace, data, number_type='float'):
+    def __init__(self, pspace, data, number_type=None):
         """Construct a gamble on the given possibility space.
 
         :param pspace: The possibility space.
         :type pspace: |pspacetype|
         :param data: The specification of a gamble, or a constant.
         :type data: |gambletype|
-        :param number_type: The type to use for numbers: ``'float'`` or ``'fraction'``.
+        :param number_type: The type to use for numbers: ``'float'``
+            or ``'fraction'``. If omitted, then
+            :func:`~cdd.get_number_type_from_sequences` is used to
+            determine the number type.
         :type number_type: :class:`str`
         """
-        cdd.NumberTypeable.__init__(self, number_type)
         self._pspace = PSpace.make(pspace)
         if isinstance(data, collections.Mapping):
+            if number_type is None:
+                cdd.NumberTypeable.__init__(
+                    self,
+                    cdd.get_number_type_from_sequences(data.itervalues()))
+            else:
+                cdd.NumberTypeable.__init__(self, number_type)
             self._data = dict((omega, self.make_number(data.get(omega, 0)))
                               for omega in self.pspace)
         elif isinstance(data, collections.Sequence):
             if len(data) < len(self.pspace):
                 raise ValueError("data sequence too short")
+            if number_type is None:
+                cdd.NumberTypeable.__init__(
+                    self,
+                    cdd.get_number_type_from_sequences(data))
+            else:
+                cdd.NumberTypeable.__init__(self, number_type)
             self._data = dict((omega, self.make_number(value))
                               for omega, value
                               in itertools.izip(self.pspace, data))
         elif isinstance(data, numbers.Real):
+            if number_type is None:
+                cdd.NumberTypeable.__init__(
+                    self,
+                    cdd.get_number_type_from_value(data))
+            else:
+                cdd.NumberTypeable.__init__(self, number_type)
             self._data = dict((omega, self.make_number(data))
                               for omega in self.pspace)
         else:
@@ -715,24 +749,25 @@ class Event(collections.Set, collections.Hashable):
         """
         return Event(self.pspace, True) - self
 
-    def indicator(self, number_type='float'):
+    def indicator(self, number_type=None):
         """Return indicator gamble for the event.
 
-        :param number_type: The number type.
+        :param number_type: The number type (defaults to ``'float'``
+            if omitted).
         :type number_type: :class:`str`
         :return: Indicator gamble.
         :rtype: :class:`Gamble`
 
         >>> pspace = PSpace(5)
         >>> event = Event(pspace, [2, 4])
-        >>> event.indicator(number_type='fraction') # doctest: +NORMALIZE_WHITESPACE
+        >>> event.indicator('fraction') # doctest: +NORMALIZE_WHITESPACE
         Gamble(pspace=PSpace(5),
                mapping={0: 0,
                         1: 0,
                         2: 1,
                         3: 0,
                         4: 1})
-        >>> event.indicator(number_type='float') # doctest: +NORMALIZE_WHITESPACE
+        >>> event.indicator() # doctest: +NORMALIZE_WHITESPACE
         Gamble(pspace=PSpace(5),
                mapping={0: 0.0,
                         1: 0.0,
@@ -740,6 +775,9 @@ class Event(collections.Set, collections.Hashable):
                         3: 0.0,
                         4: 1.0})
         """
+        if number_type is None:
+            # float is default
+            number_type = 'float'
         return Gamble(self.pspace,
                       dict((omega, 1 if omega in self else 0)
                            for omega in self.pspace),
