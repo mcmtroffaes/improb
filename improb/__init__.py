@@ -315,7 +315,7 @@ class PSpace(collections.Set, collections.Hashable):
         :type full: :class:`bool`
         :param size: Any size constraints. If specified, then *empty*
             and *full* are ignored.
-        :type size: :class:`int` or :class:`collections.Interable`
+        :type size: :class:`int` or :class:`collections.Iterable`
         :param contains: An event that must be contained in all
             returned subsets.
         :type contains: |eventtype|
