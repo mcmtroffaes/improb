@@ -60,7 +60,7 @@ class LowPoly(LowPrev):
     def __init__(self, pspace=None, mapping=None,
                  lprev=None, uprev=None, prev=None,
                  lprob=None, uprob=None, prob=None,
-                 bba=None, number_type='float'):
+                 bba=None, number_type=None):
         """Construct a polyhedral lower prevision on *pspace*.
 
         Generally, you can pass a :class:`dict` as a keyword argument
@@ -68,20 +68,18 @@ class LowPoly(LowPrev):
         probabilities:
 
         >>> print(LowPoly(pspace=3, mapping={
-        ...     ((3, 1, 2), True): ('1.5', None),
-        ...     ((1, 0, -1), (1, 2)): ('0.25', '0.3')},
-        ...     number_type='float')) # doctest: +NORMALIZE_WHITESPACE
+        ...     ((3, 1, 2), True): (1.5, None),
+        ...     ((1, 0, -1), (1, 2)): (0.25, 0.3)})) # doctest: +NORMALIZE_WHITESPACE
          0    1   2
         3.0  1.0 2.0  | 0 1 2 : [1.5 ,     ]
         1.0  0.0 -1.0 |   1 2 : [0.25, 0.3 ]
         >>> print(LowPoly(pspace=3,
-        ...     lprev={(1, 3, 2): '1.5', (2, 0, -1): '1'},
-        ...     uprev={(2, 0, -1): '1.9'},
-        ...     prev={(9, 8, 20): '15'},
-        ...     lprob={(1, 2): '0.2', (1,): '0.1'},
-        ...     uprob={(1, 2): '0.3', (0,): '0.9'},
-        ...     prob={(2,): '0.3'},
-        ...     number_type='float')) # doctest: +NORMALIZE_WHITESPACE
+        ...     lprev={(1, 3, 2): 1.5, (2, 0, -1): 1},
+        ...     uprev={(2, 0, -1): 1.9},
+        ...     prev={(9, 8, 20): 15},
+        ...     lprob={(1, 2): 0.2, (1,): 0.1},
+        ...     uprob={(1, 2): 0.3, (0,): 0.9},
+        ...     prob={(2,): '0.3'})) # doctest: +NORMALIZE_WHITESPACE
           0    1   2
          0.0  0.0 1.0  | 0 1 2 : [0.3 , 0.3 ]
          0.0  1.0 0.0  | 0 1 2 : [0.1 ,     ]
@@ -95,7 +93,7 @@ class LowPoly(LowPrev):
         you need to set values on singletons, you can use a list
         instead of a dictionary:
 
-        >>> print(LowPoly(pspace='abc', lprob=['0.1', '0.2', '0.3'], number_type='fraction')) # doctest: +NORMALIZE_WHITESPACE
+        >>> print(LowPoly(pspace='abc', lprob=['0.1', '0.2', '0.3'])) # doctest: +NORMALIZE_WHITESPACE
         a b c
         0 0 1 | a b c : [3/10, ]
         0 1 0 | a b c : [1/5 , ]
@@ -105,7 +103,7 @@ class LowPoly(LowPrev):
         is copied. For example:
 
         >>> from improb.lowprev.lowprob import LowProb
-        >>> lpr = LowPoly(pspace='abc', lprob=['0.1', '0.1', '0.1'], number_type='fraction')
+        >>> lpr = LowPoly(pspace='abc', lprob=['0.1', '0.1', '0.1'])
         >>> print(lpr)
         a b c
         0 0 1 | a b c : [1/10,     ]
@@ -135,7 +133,9 @@ class LowPoly(LowPrev):
         :type prob: :class:`collections.Mapping` or :class:`collections.Sequence`
         :param bba: Mapping from event to basic belief assignment (useful for constructing belief functions).
         :type bba: :class:`collections.Mapping`
-        :param number_type: The number type.
+        :param number_type: The number type. If not specified, it is
+            determined using `~cdd.get_number_type_from_sequences` on
+            all values.
         :type number_type: :class:`str`
         """
 
@@ -154,14 +154,55 @@ class LowPoly(LowPrev):
                 raise TypeError(
                     'expected collections.Mapping or collections.Sequence')
 
+        def get_number_type(xprevs, xprobs):
+            """Determine number type from arguments."""
+            # special case: nothing specified, defaults to float
+            if (all(xprev is None for xprev in xprevs)
+                and all(xprob is None for xprob in xprobs)):
+                return 'float'
+            # inspect all values
+            for xprev in xprevs:
+                if xprev is None:
+                    continue
+                for key, value in xprev.iteritems():
+                    # inspect gamble
+                    if isinstance(key, Gamble):
+                        if key.number_type == 'float':
+                            return 'float'
+                    elif isinstance(key, collections.Sequence):
+                        if cdd.get_number_type_from_sequences(key) == 'float':
+                            return 'float'
+                    elif isinstance(key, collections.Mapping):
+                        if cdd.get_number_type_from_sequences(key.itervalues()) == 'float':
+                            return 'float'
+                    # inspect value(s)
+                    if isinstance(value, collections.Sequence):
+                        if cdd.get_number_type_from_sequences(value) == 'float':
+                            return 'float'
+                    else:
+                        if cdd.get_number_type_from_value(value) == 'float':
+                            return 'float'
+            for xprob in xprobs:
+                if xprob is None:
+                    continue
+                for key, value in iter_items(xprob):
+                    if cdd.get_number_type_from_value(value) == 'float':
+                        return 'float'
+            # everything is fraction
+            return 'fraction'
+
         # if first argument is a LowPoly, then override all other arguments
         if isinstance(pspace, LowPoly):
             mapping = dict(pspace.iteritems())
             number_type = pspace.number_type
             pspace = pspace.pspace
         # initialize everything
-        cdd.NumberTypeable.__init__(self, number_type)
         self._pspace = PSpace.make(pspace)
+        if number_type is None:
+            number_type = get_number_type(
+                [mapping, lprev, uprev, prev, bba],
+                [lprob, uprob, prob])
+        cdd.NumberTypeable.__init__(self, number_type)
         self._mapping = {}
         if mapping:
             for key, value in mapping.iteritems():
