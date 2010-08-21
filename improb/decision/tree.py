@@ -144,7 +144,7 @@ class Tree(collections.MutableMapping):
     def check_pspace(self):
         """Check the possibility spaces.
 
-        :raise: `exceptions.ValueError` on mismatch
+        :raise: :exc:`~exceptions.ValueError` on mismatch
         """
         if self.pspace is None:
             # no further chance nodes, is ok!
@@ -300,7 +300,7 @@ class Decision(Tree):
 
     :param data: Mapping from decisions (i.e. strings, but any
         immutable object would work) to trees.
-    :type data: `collections.Mapping`
+    :type data: :class:`collections.Mapping`
     """
     def __init__(self, data=None):
         self._data = OrderedDict()
@@ -373,7 +373,7 @@ class Chance(Tree):
     :param pspace: The possibility space.
     :type pspace: |pspacetype|
     :param data: Mapping from events to trees (optional).
-    :type data: `collections.Mapping`
+    :type data: :class:`collections.Mapping`
     """
     def __init__(self, pspace, data=None):
         self._data = OrderedDict()
