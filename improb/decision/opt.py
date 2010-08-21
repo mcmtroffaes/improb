@@ -168,7 +168,7 @@ class OptLowPrevMaxMin(OptTotalPreorder):
         return self._lowprev.get_lower(gamble, event=event)
 
 class OptLowPrevMaxMax(OptLowPrevMaxMin):
-    """Gamma-maximin with respect to a lower prevision."""
+    """Gamma-maximax with respect to a lower prevision."""
 
     def get_value(self, gamble, event=True):
         return self._lowprev.get_upper(gamble, event=event)
