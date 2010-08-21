@@ -423,7 +423,7 @@ class Chance(Tree):
         # iterating self.itervalues() and
         # self.iterkeys() correspond to each other
         all_normal_forms = itertools.product(
-            *[tuple(subtree.get_norm_back_opt())
+            *[tuple(subtree.get_norm_back_opt(opt, event))
               for subtree in self.itervalues()])
         for normal_forms in all_normal_forms:
             data = {}
