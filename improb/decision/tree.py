@@ -37,7 +37,7 @@ class Tree(collections.MutableMapping):
     :5.0
     >>> list(t.get_normal_form())
     [(5.0, Reward(5.0, number_type='float'))]
-    >>> t = Chance(pspace=(0, 1), data={(0,): Reward(5), (1,): Reward(6)})
+    >>> t = Chance(pspace=(0, 1), data={(0,): 5, (1,): 6})
     >>> t.pspace
     PSpace(2)
     >>> t.get_number_type()
@@ -48,8 +48,8 @@ class Tree(collections.MutableMapping):
        (1)--:6.0
     >>> list(gamble for gamble, normal_tree in t.get_normal_form())
     [Gamble(pspace=PSpace(2), mapping={0: 5.0, 1: 6.0})]
-    >>> t = Decision({"d1": Reward(5),
-    ...               "d2": Reward(6)})
+    >>> t = Decision({"d1": 5,
+    ...               "d2": 6})
     >>> print(t.pspace)
     None
     >>> print(t) # dict can change ordering
@@ -305,8 +305,6 @@ class Decision(Tree):
         # check type
         if isinstance(data, collections.Mapping):
             for key, value in data.iteritems():
-                if not isinstance(value, Tree):
-                    raise TypeError('children must have Tree values')
                 self[key] = value
         elif data is not None:
             raise TypeError('specify a mapping')
@@ -337,6 +335,10 @@ class Decision(Tree):
         return self._data[key]
 
     def __setitem__(self, key, value):
+        if isinstance(value, numbers.Real):
+            value = Reward(value) # number type assumed to be float
+        if not isinstance(value, Tree):
+            raise TypeError('expected Tree')
         self._data[key] = value
 
     def __delitem__(self, key):
@@ -384,17 +386,17 @@ class Chance(Tree):
     def check_pspace(self):
         """Events of the chance nodes must form the possibility space.
 
-        >>> t = Chance(pspace=(0,1), data={(0,): Reward(5), (0,1): Reward(6)})
+        >>> t = Chance(pspace='ab', data={'a': 5, 'ab': 6})
         >>> t.check_pspace() # doctest: +ELLIPSIS
         Traceback (most recent call last):
             ...
         ValueError: ...
-        >>> t = Chance(pspace=(0,1), data={(0,): Reward(5)})
+        >>> t = Chance(pspace='ab', data={'a': 5})
         >>> t.check_pspace() # doctest: +ELLIPSIS
         Traceback (most recent call last):
             ...
         ValueError: ...
-        >>> t = Chance(pspace=(0,1), data={(0,): Reward(5), (1,): Reward(6)})
+        >>> t = Chance(pspace='ab', data={'a': 5, 'b': 6})
         >>> t.check_pspace()
         """
         # check that there are no pairwise intersections
@@ -454,6 +456,10 @@ class Chance(Tree):
         return self._data[self.pspace.make_event(key)]
 
     def __setitem__(self, key, value):
+        if isinstance(value, numbers.Real):
+            value = Reward(value) # number type assumed to be float
+        if not isinstance(value, Tree):
+            raise TypeError('expected Tree')
         self._data[self.pspace.make_event(key)] = value
 
     def __delitem__(self, key):

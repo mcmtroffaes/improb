@@ -42,11 +42,11 @@ Solving the decision tree for the oil catter example in
 >>> O = pspace.make_event('SWD', 'O', name="open")
 >>> C = pspace.make_event('SWD', 'C', name="closed")
 >>> lpr = LowPoly(pspace)
->>> t0 = Reward(0)
+>>> t0 = 0
 >>> t1 = Chance(pspace)
->>> t1[S] = Reward(20)
->>> t1[W] = Reward(5)
->>> t1[D] = Reward(-7)
+>>> t1[S] = 20
+>>> t1[W] = 5
+>>> t1[D] = -7
 >>> t = Decision()
 >>> t["not drill"] = t0
 >>> t["drill"] = t1
@@ -129,11 +129,11 @@ Solving the lake district example:
 >>> R = pspace.make_event('rs', 'R', name='rain')
 >>> S = pspace.make_event('rs', 'S', name='sunshine')
 >>> t0 = Chance(pspace)
->>> t0[R] = Reward(10)
->>> t0[S] = Reward(15)
+>>> t0[R] = 10
+>>> t0[S] = 15
 >>> t1 = Chance(pspace)
->>> t1[R] = Reward(5)
->>> t1[S] = Reward(20)
+>>> t1[R] = 5
+>>> t1[S] = 20
 >>> t = Decision()
 >>> t["take waterproof"] = t0
 >>> t["no waterproof"] = t1
