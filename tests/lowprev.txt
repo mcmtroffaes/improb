@@ -170,7 +170,7 @@ True
 Mobius Transform
 ~~~~~~~~~~~~~~~~
 
->>> lpr = LowProb(pspace=2, number_type='float')
+>>> lpr = LowProb(pspace=2)
 >>> lpr.set_lower([0,0], 0)
 >>> lpr.set_lower([1,0], 0.3)
 >>> lpr.set_lower([0,1], 0.2)
@@ -204,19 +204,19 @@ Avoiding Sure Loss
 This example incurs sure loss because the maximum of the sum of the gambles
 [1,2,3,0] and [3,2,1,0] is 4, however 2.5 + 2.5 is strictly larger than 4.
 
->>> lpr = LowPoly(pspace=4, number_type='float')
->>> lpr.set_lower([1,2,3,0], '2.5')
->>> lpr.set_lower([3,2,1,0], '2.5')
+>>> lpr = LowPoly(pspace=4)
+>>> lpr.set_lower([1,2,3,0], 2.5)
+>>> lpr.set_lower([3,2,1,0], 2.5)
 >>> lpr.is_avoiding_sure_loss()
 False
 
 A few simple examples:
 
->>> lpr = LowPoly(pspace='xyz', number_type='fraction')
+>>> lpr = LowPoly(pspace='xyz')
 >>> lpr.is_avoiding_sure_loss()
 True
 
->>> lpr = LowPoly(pspace='xyz', lprob=['0.1', '0.2', '0.15'], number_type='fraction')
+>>> lpr = LowPoly(pspace='xyz', lprob=['0.1', '0.2', '0.15'])
 >>> lpr[{'x':1}, 'x'] = (1, None)
 >>> lpr[{'x':0}, 'x'] = (0, None)
 >>> lpr.is_avoiding_sure_loss()
@@ -260,47 +260,47 @@ False
 
 Another more complex example:
 
->>> lpr_s_t = LowPoly(pspace=9, number_type='float')
->>> lpr_s_t.set_lower([1,0,0,0,0,0,0,0,0], '0.500')
->>> lpr_s_t.set_upper([1,0,0,0,0,0,0,0,0], '0.666')
->>> lpr_s_t.set_lower([0,1,0,0,0,0,0,0,0], '0.222')
->>> lpr_s_t.set_upper([0,1,0,0,0,0,0,0,0], '0.272')
->>> lpr_s_t.set_lower([0,0,1,0,0,0,0,0,0], '0.125')
->>> lpr_s_t.set_upper([0,0,1,0,0,0,0,0,0], '0.181')
->>> lpr_s_t.set_lower([0,0,0,1,0,0,0,0,0], '0.222')
->>> lpr_s_t.set_upper([0,0,0,1,0,0,0,0,0], '0.333')
->>> lpr_s_t.set_lower([0,0,0,0,1,0,0,0,0], '0.363')
->>> lpr_s_t.set_upper([0,0,0,0,1,0,0,0,0], '0.444')
->>> lpr_s_t.set_lower([0,0,0,0,0,1,0,0,0], '0.250')
->>> lpr_s_t.set_upper([0,0,0,0,0,1,0,0,0], '0.363')
->>> lpr_s_t.set_lower([0,0,0,0,0,0,1,0,0], '0.111')
->>> lpr_s_t.set_upper([0,0,0,0,0,0,1,0,0], '0.166')
->>> lpr_s_t.set_lower([0,0,0,0,0,0,0,1,0], '0.333')
->>> lpr_s_t.set_upper([0,0,0,0,0,0,0,1,0], '0.363')
->>> lpr_s_t.set_lower([0,0,0,0,0,0,0,0,1], '0.454')
->>> lpr_s_t.set_upper([0,0,0,0,0,0,0,0,1], '0.625')
+>>> lpr_s_t = LowPoly(pspace=9)
+>>> lpr_s_t.set_lower([1,0,0,0,0,0,0,0,0], 0.500)
+>>> lpr_s_t.set_upper([1,0,0,0,0,0,0,0,0], 0.666)
+>>> lpr_s_t.set_lower([0,1,0,0,0,0,0,0,0], 0.222)
+>>> lpr_s_t.set_upper([0,1,0,0,0,0,0,0,0], 0.272)
+>>> lpr_s_t.set_lower([0,0,1,0,0,0,0,0,0], 0.125)
+>>> lpr_s_t.set_upper([0,0,1,0,0,0,0,0,0], 0.181)
+>>> lpr_s_t.set_lower([0,0,0,1,0,0,0,0,0], 0.222)
+>>> lpr_s_t.set_upper([0,0,0,1,0,0,0,0,0], 0.333)
+>>> lpr_s_t.set_lower([0,0,0,0,1,0,0,0,0], 0.363)
+>>> lpr_s_t.set_upper([0,0,0,0,1,0,0,0,0], 0.444)
+>>> lpr_s_t.set_lower([0,0,0,0,0,1,0,0,0], 0.250)
+>>> lpr_s_t.set_upper([0,0,0,0,0,1,0,0,0], 0.363)
+>>> lpr_s_t.set_lower([0,0,0,0,0,0,1,0,0], 0.111)
+>>> lpr_s_t.set_upper([0,0,0,0,0,0,1,0,0], 0.166)
+>>> lpr_s_t.set_lower([0,0,0,0,0,0,0,1,0], 0.333)
+>>> lpr_s_t.set_upper([0,0,0,0,0,0,0,1,0], 0.363)
+>>> lpr_s_t.set_lower([0,0,0,0,0,0,0,0,1], 0.454)
+>>> lpr_s_t.set_upper([0,0,0,0,0,0,0,0,1], 0.625)
 >>> lpr_s_t.is_avoiding_sure_loss()
 False
 
 Coherence
 ~~~~~~~~~
 
->>> lpr = LowPoly(pspace=4, number_type='float')
->>> lpr.set_lower([1,2,3,0], '2.5')
+>>> lpr = LowPoly(pspace=4)
+>>> lpr.set_lower([1,2,3,0], 2.5)
 >>> lpr.is_coherent()
 True
->>> lpr.set_upper([2,4,6,0], '3') # coherence requires at least 5
+>>> lpr.set_upper([2,4,6,0], 3) # coherence requires at least 5
 >>> lpr.is_coherent()
 False
 
 Linearity
 ~~~~~~~~~
 
->>> lpr = LowPoly(pspace=4, number_type='float')
->>> lpr.set_lower([1,2,3,0], '2.5')
+>>> lpr = LowPoly(pspace=4)
+>>> lpr.set_lower([1,2,3,0], 2.5)
 >>> lpr.is_linear()
 False
->>> lpr.set_upper([2,4,6,0], '5')
+>>> lpr.set_upper([2,4,6,0], 5)
 >>> lpr.is_linear()
 True
 
@@ -311,17 +311,17 @@ Finding coherent lower and upper bounds for the oil catter example in
 [#kikuti2005]_:
 
 >>> # lower previsions over s, given t
->>> lpr_s_t = [LowPoly(pspace=3, number_type='float'),
-...            LowPoly(pspace=3, number_type='float'),
-...            LowPoly(pspace=3, number_type='float')]
+>>> lpr_s_t = [LowPoly(pspace=3),
+...            LowPoly(pspace=3),
+...            LowPoly(pspace=3)]
 >>> # lower prevision over t
->>> lpr_t = LowPoly(pspace=3, number_type='float')
->>> lpr_s_t[0].set_lower([1,0,0], '0.5')
->>> lpr_s_t[0].set_upper([1,0,0], '0.666')
->>> lpr_s_t[0].set_lower([0,1,0], '0.222')
->>> lpr_s_t[0].set_upper([0,1,0], '0.272')
->>> lpr_s_t[0].set_lower([0,0,1], '0.125')
->>> lpr_s_t[0].set_upper([0,0,1], '0.181')
+>>> lpr_t = LowPoly(pspace=3)
+>>> lpr_s_t[0].set_lower([1,0,0], 0.5)
+>>> lpr_s_t[0].set_upper([1,0,0], 0.666)
+>>> lpr_s_t[0].set_lower([0,1,0], 0.222)
+>>> lpr_s_t[0].set_upper([0,1,0], 0.272)
+>>> lpr_s_t[0].set_lower([0,0,1], 0.125)
+>>> lpr_s_t[0].set_upper([0,0,1], 0.181)
 >>> lpr_s_t[0].is_coherent()
 False
 >>> print(float(lpr_s_t[0].get_lower([1,0,0]))) # not coherent!
@@ -336,13 +336,12 @@ False
 0.125
 >>> print(float(lpr_s_t[0].get_upper([0,0,1])))
 0.181
->>> lpr_s_t[1] = LowPoly(pspace=3, number_type='float')
->>> lpr_s_t[1].set_lower([1,0,0], '0.222')
->>> lpr_s_t[1].set_upper([1,0,0], '0.333')
->>> lpr_s_t[1].set_lower([0,1,0], '0.363')
->>> lpr_s_t[1].set_upper([0,1,0], '0.444')
->>> lpr_s_t[1].set_lower([0,0,1], '0.250')
->>> lpr_s_t[1].set_upper([0,0,1], '0.363')
+>>> lpr_s_t[1].set_lower([1,0,0], 0.222)
+>>> lpr_s_t[1].set_upper([1,0,0], 0.333)
+>>> lpr_s_t[1].set_lower([0,1,0], 0.363)
+>>> lpr_s_t[1].set_upper([0,1,0], 0.444)
+>>> lpr_s_t[1].set_lower([0,0,1], 0.250)
+>>> lpr_s_t[1].set_upper([0,0,1], 0.363)
 >>> lpr_s_t[1].is_coherent()
 True
 >>> print(float(lpr_s_t[1].get_lower([1,0,0])))
@@ -357,13 +356,12 @@ True
 0.25
 >>> print(float(lpr_s_t[1].get_upper([0,0,1])))
 0.363
->>> lpr_s_t[2] = LowPoly(pspace=3, number_type='float')
->>> lpr_s_t[2].set_lower([1,0,0], '0.111')
->>> lpr_s_t[2].set_upper([1,0,0], '0.166')
->>> lpr_s_t[2].set_lower([0,1,0], '0.333')
->>> lpr_s_t[2].set_upper([0,1,0], '0.363')
->>> lpr_s_t[2].set_lower([0,0,1], '0.454')
->>> lpr_s_t[2].set_upper([0,0,1], '0.625')
+>>> lpr_s_t[2].set_lower([1,0,0], 0.111)
+>>> lpr_s_t[2].set_upper([1,0,0], 0.166)
+>>> lpr_s_t[2].set_lower([0,1,0], 0.333)
+>>> lpr_s_t[2].set_upper([0,1,0], 0.363)
+>>> lpr_s_t[2].set_lower([0,0,1], 0.454)
+>>> lpr_s_t[2].set_upper([0,0,1], 0.625)
 >>> lpr_s_t[2].is_coherent()
 False
 >>> print(float(lpr_s_t[2].get_lower([1,0,0])))
@@ -378,12 +376,12 @@ False
 0.471
 >>> print(float(lpr_s_t[2].get_upper([0,0,1]))) # not coherent!
 0.556
->>> lpr_t.set_lower([1,0,0], '0.181')
->>> lpr_t.set_upper([1,0,0], '0.222')
->>> lpr_t.set_lower([0,1,0], '0.333')
->>> lpr_t.set_upper([0,1,0], '0.363')
->>> lpr_t.set_lower([0,0,1], '0.444')
->>> lpr_t.set_upper([0,0,1], '0.454')
+>>> lpr_t.set_lower([1,0,0], 0.181)
+>>> lpr_t.set_upper([1,0,0], 0.222)
+>>> lpr_t.set_lower([0,1,0], 0.333)
+>>> lpr_t.set_upper([0,1,0], 0.363)
+>>> lpr_t.set_lower([0,0,1], 0.444)
+>>> lpr_t.set_upper([0,0,1], 0.454)
 >>> lpr_t.is_coherent()
 False
 >>> print(float(lpr_t.get_lower([1,0,0]))) # not coherent!
@@ -414,9 +412,9 @@ False
 >>> print(float(lpr_s_t[2].get_lower(minus_gamble_s)))
 -12.008
 >>> # calculate its lower prevision by marginal extension
->>> # XXX currently, using this hackish way to set up the marginal extension
->>> # XXX will replace this with something better at some point...
->>> lpr = LowPoly(pspace=9, number_type='float')
+>>> # XXX this is a quick hackish way to set up the marginal extension
+>>> # XXX see decision tree example for something more sane
+>>> lpr = LowPoly(pspace=9)
 >>> def get_lower(gamble_s_t):
 ...     return lpr_t.get_lower([lpr_s.get_lower(gamble_s)
 ...                             for lpr_s, gamble_s

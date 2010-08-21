@@ -32,7 +32,7 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
     Bases: :class:`collections.MutableMapping`, :class:`cdd.NumberTypeable`
     """
 
-    def __init__(self, pspace, data=None, number_type='float'):
+    def __init__(self, pspace, data=None, number_type=None):
         """Construct a set function on the power set of the given
         possibility space.
 
@@ -41,6 +41,12 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
         :param data: A mapping that defines the value on each event (missing values default to zero).
         :type data: :class:`dict`
         """
+        if number_type is None:
+            if data is not None:
+                number_type = cdd.get_number_type_from_sequences(
+                    data.itervalues())
+            else:
+                number_type = 'float'
         cdd.NumberTypeable.__init__(self, number_type)
         self._pspace = PSpace.make(pspace)
         self._data = {}
@@ -75,13 +81,13 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
 
     def __repr__(self):
         """
-        >>> SetFunction(pspace=3, data={(): '1.0', (0, 2): '2.1', (0, 1, 2): '1/3'}, number_type='float') # doctest: +NORMALIZE_WHITESPACE
+        >>> SetFunction(pspace=3, data={(): 1, (0, 2): 2.1, (0, 1, 2): '1/3'}) # doctest: +NORMALIZE_WHITESPACE
         SetFunction(pspace=PSpace(3),
                     data={(): 1.0,
                           (0, 2): 2.1000000000000001,
                           (0, 1, 2): 0.33333333333333331},
                     number_type='float')
-        >>> SetFunction(pspace=3, data={(): '1.0', (0, 2): '2.1', (0, 1, 2): '1/3'}, number_type='fraction') # doctest: +NORMALIZE_WHITESPACE
+        >>> SetFunction(pspace=3, data={(): '1.0', (0, 2): '2.1', (0, 1, 2): '1/3'}) # doctest: +NORMALIZE_WHITESPACE
         SetFunction(pspace=PSpace(3),
                     data={(): 1,
                           (0, 2): '21/10',
@@ -99,7 +105,7 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
 
     def __str__(self):
         """
-        >>> print(SetFunction(pspace='abc', data={'': 1, 'ac': 2, 'abc': '3.1'}, number_type='fraction'))
+        >>> print(SetFunction(pspace='abc', data={'': '1', 'ac': '2', 'abc': '3.1'}))
               : 1
         a   c : 2
         a b c : 31/10
@@ -134,7 +140,7 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
            The set function must be defined for all subsets of the
            given event.
 
-        >>> setfunc = SetFunction(pspace='ab', data={'': 0, 'a': 0.25, 'b': 0.3, 'ab': 1}, number_type='float')
+        >>> setfunc = SetFunction(pspace='ab', data={'': 0, 'a': 0.25, 'b': 0.3, 'ab': 1})
         >>> print(setfunc)
             : 0.0
         a   : 0.25
@@ -142,8 +148,7 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
         a b : 1.0
         >>> inv = SetFunction(pspace='ab',
         ...                   data=dict((event, setfunc.get_mobius(event))
-        ...                        for event in setfunc.pspace.subsets()),
-        ...                   number_type='float')
+        ...                        for event in setfunc.pspace.subsets()))
         >>> print(inv)
             : 0.0
         a   : 0.25
@@ -174,8 +179,7 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
 
         >>> setfunc = SetFunction(
         ...     pspace='ab',
-        ...     data={'': 0, 'a': 0.25, 'b': 0.3, 'ab': 0.45},
-        ...     number_type='float')
+        ...     data={'': 0, 'a': 0.25, 'b': 0.3, 'ab': 0.45})
         >>> print(setfunc)
             : 0.0
         a   : 0.25
@@ -183,8 +187,7 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
         a b : 0.45
         >>> inv = SetFunction(pspace='ab',
         ...                   data=dict((event, setfunc.get_zeta(event))
-        ...                             for event in setfunc.pspace.subsets()),
-        ...                   number_type='float')
+        ...                             for event in setfunc.pspace.subsets()))
         >>> print(inv)
             : 0.0
         a   : 0.25

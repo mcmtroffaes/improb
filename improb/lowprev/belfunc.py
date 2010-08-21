@@ -54,7 +54,7 @@ class BelFunc(LowProb):
            must contain *all* events. If needed, call
            :meth:`~improb.lowprev.lowpoly.LowPoly.extend`:
 
-           >>> bel = BelFunc(2, lprob=['0.2', '0.25'], number_type='fraction') # doctest: +ELLIPSIS
+           >>> bel = BelFunc(2, lprob=['0.2', '0.25']) # doctest: +ELLIPSIS
            >>> print(bel)
            0   : 1/5
              1 : 1/4
@@ -86,8 +86,7 @@ class BelFunc(LowProb):
 
            >>> bel = BelFunc(
            ...     pspace='abcd',
-           ...     lprob={'ab': '0.2', 'bc': '0.2', 'abc': '0.2', 'b': '0.1'},
-           ...     number_type='fraction')
+           ...     lprob={'ab': '0.2', 'bc': '0.2', 'abc': '0.2', 'b': '0.1'})
            >>> bel.extend()
            >>> bel.is_completely_monotone() # (it is in fact not even 2-monotone)
            False
@@ -102,7 +101,7 @@ class BelFunc(LowProb):
         >>> from improb.lowprev.lowprob import LowProb
         >>> from improb import PSpace
         >>> pspace = PSpace(2)
-        >>> lowprob = LowProb(pspace, lprob=['0.3', '0.2'], number_type='fraction')
+        >>> lowprob = LowProb(pspace, lprob=['0.3', '0.2'])
         >>> lowprob.extend()
         >>> lowprob.is_completely_monotone()
         True
@@ -116,7 +115,7 @@ class BelFunc(LowProb):
         0   : 3/10
           1 : 1/5
         0 1 : 1/2
-        >>> lpr = BelFunc(pspace, bba=lowprob.mobius, number_type='fraction')
+        >>> lpr = BelFunc(pspace, bba=lowprob.mobius)
         >>> lpr.is_completely_monotone()
         True
         >>> print(lpr)

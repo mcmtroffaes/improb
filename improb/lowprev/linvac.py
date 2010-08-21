@@ -27,7 +27,7 @@ class LinVac(BelFunc):
     probability on singletons.
 
     >>> from improb.lowprev.prob import Prob
-    >>> lpr = Prob(3, prob=['0.2', '0.3', '0.5'], number_type='fraction').get_linvac(epsilon='0.1')
+    >>> lpr = Prob(3, prob=['0.2', '0.3', '0.5']).get_linvac('0.1')
     >>> print(lpr.get_lower([1,0,0]))
     9/50
     >>> print(lpr.get_lower([0,1,0]))
@@ -38,7 +38,7 @@ class LinVac(BelFunc):
     163/100
     >>> print(lpr.get_upper([3,2,1]))
     183/100
-    >>> lpr = Prob(4, prob=['0.42', '0.08', '0.18', '0.32'], number_type='fraction').get_linvac(epsilon='0.1')
+    >>> lpr = Prob(4, prob=['0.42', '0.08', '0.18', '0.32']).get_linvac('0.1')
     >>> print(lpr.get_lower([5,5,-5,-5]))
     -1/2
     >>> print(lpr.get_lower([5,5,-5,-5], set([0,2]))) # (6 - 31 * 0.1) / (3 + 2 * 0.1)

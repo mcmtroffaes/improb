@@ -30,7 +30,7 @@ from improb.lowprev.lowpoly import LowPoly
 class Prob(LinVac):
     """A probability measure.
 
-    >>> p = Prob(5, prob=['0.1', '0.2', '0.3', '0.05', '0.35'], number_type='fraction')
+    >>> p = Prob(5, prob=['0.1', '0.2', '0.3', '0.05', '0.35'])
     >>> print(p)
     0 : 1/10
     1 : 1/5
