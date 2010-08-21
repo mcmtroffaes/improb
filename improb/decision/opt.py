@@ -109,7 +109,9 @@ class OptTotalPreorder(Opt, cdd.NumberTypeable):
 
 class OptAdmissible(OptPartialPreorder, cdd.NumberTypeable):
     """Optimality by pointwise dominance."""
-    def __init__(self, pspace, number_type='float'):
+    def __init__(self, pspace, number_type=None):
+        if number_type is None:
+            number_type = 'float'
         cdd.NumberTypeable.__init__(self, number_type)
         self._pspace = PSpace.make(pspace)
 
