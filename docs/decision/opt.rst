@@ -52,9 +52,9 @@ Examples
 
 Example taken from [#troffaes2007]_:
 
->>> lpr = LowPoly(pspace=2, number_type='float')
->>> lpr.set_lower([1, 0], '0.28')
->>> lpr.set_upper([1, 0], '0.70')
+>>> lpr = LowPoly(pspace=2)
+>>> lpr.set_lower([1, 0], 0.28)
+>>> lpr.set_upper([1, 0], 0.70)
 >>> gambles = [[4, 0], [0, 4], [3, 2], [0.5, 3], [2.35, 2.35], [4.1, -0.3]]
 >>> opt = OptLowPrevMax(lpr)
 >>> list(opt(gambles)) == [[4, 0], [0, 4], [3, 2], [2.35, 2.35]]
@@ -66,8 +66,7 @@ True
 
 Another example:
 
->>> lpr = Prob(pspace=4, prob=['0.42', '0.08', '0.18', '0.32'],
-...            number_type='float').get_linvac(0.1)
+>>> lpr = Prob(pspace=4, prob=[0.42, 0.08, 0.18, 0.32]).get_linvac(0.1)
 >>> opt = OptLowPrevMax(lpr)
 >>> for c in range(3):
 ...     gambles = [[10-c,10-c,15-c,15-c],[10-c,5-c,15-c,20-c],

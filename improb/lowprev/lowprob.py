@@ -34,22 +34,22 @@ class LowProb(LowPoly):
     :class:`~improb.lowprev.lowpoly.LowPoly`, except that only
     unconditional assessments on events are allowed.
 
-    >>> print(LowProb(3, lprob={(0, 1): '0.1', (1, 2): '0.2'}, number_type='float'))
-    0 1   : 0.1
-      1 2 : 0.2
-    >>> print(LowProb(3, lprev={(3, 1, 0): 1}, number_type='float')) # doctest: +ELLIPSIS
+    >>> print(LowProb(3, lprob={(0, 1): '0.1', (1, 2): '0.2'}))
+    0 1   : 1/10
+      1 2 : 1/5
+    >>> print(LowProb(3, lprev={(3, 1, 0): 1})) # doctest: +ELLIPSIS
     Traceback (most recent call last):
         ...
     ValueError: not an indicator gamble
-    >>> print(LowProb(3, uprob={(0, 1): '0.1'}, number_type='float')) # doctest: +ELLIPSIS
+    >>> print(LowProb(3, uprob={(0, 1): '0.1'})) # doctest: +ELLIPSIS
     Traceback (most recent call last):
         ...
     ValueError: cannot specify upper prevision
-    >>> print(LowProb(3, mapping={((3, 1, 0), (0, 1)): ('1.4', None)}, number_type='float')) # doctest: +ELLIPSIS
+    >>> print(LowProb(3, mapping={((3, 1, 0), (0, 1)): (1.4, None)})) # doctest: +ELLIPSIS
     Traceback (most recent call last):
         ...
     ValueError: not unconditional
-    >>> lpr = LowProb(3, lprob={(0, 1): '0.1', (1, 2): '0.2', (2,): '0.05'}, number_type='fraction')
+    >>> lpr = LowProb(3, lprob={(0, 1): '0.1', (1, 2): '0.2', (2,): '0.05'})
     >>> lpr.extend()
     >>> print(lpr)
           : 0
@@ -213,8 +213,7 @@ class LowProb(LowPoly):
 
         >>> lpr = LowProb(
         ...     pspace='abcd',
-        ...     lprob={'ab': '0.2', 'bc': '0.2', 'abc': '0.2', 'b': '0.1'},
-        ...     number_type='fraction')
+        ...     lprob={'ab': '0.2', 'bc': '0.2', 'abc': '0.2', 'b': '0.1'})
         >>> lpr.extend()
         >>> print(lpr)
                 : 0
@@ -255,8 +254,7 @@ class LowProb(LowPoly):
 
         >>> lpr = LowProb(
         ...     pspace='abcd',
-        ...     lprob={'ab': '0.2', 'bc': '0.2', 'abc': '0.3', 'b': '0.1'},
-        ...     number_type='fraction')
+        ...     lprob={'ab': '0.2', 'bc': '0.2', 'abc': '0.3', 'b': '0.1'})
         >>> lpr.extend()
         >>> print(lpr)
                 : 0
