@@ -66,32 +66,32 @@ class Tree(collections.MutableMapping):
     #--d2--:6.0
     >>> pspace = PSpace(4)
     >>> t1 = Chance(pspace)
-    >>> t1[(0,1)] = Reward(1, 'fraction')
-    >>> t1[(2,3)] = Reward(2, 'fraction')
+    >>> t1[(0,1)] = '1' # using strings for fractions
+    >>> t1[(2,3)] = '2/11'
     >>> t2 = Chance(pspace)
-    >>> t2[(0,1)] = Reward(5, 'fraction')
-    >>> t2[(2,3)] = Reward(6, 'fraction')
+    >>> t2[(0,1)] = '5/3'
+    >>> t2[(2,3)] = '6'
     >>> t12 = Decision()
     >>> t12["d1"] = t1
     >>> t12["d2"] = t2
     >>> t3 = Chance(pspace)
-    >>> t3[(0,1)] = Reward(8, 'fraction')
-    >>> t3[(2,3)] = Reward(9, 'fraction')
+    >>> t3[(0,1)] = '8'
+    >>> t3[(2,3)] = '4.5'
     >>> t = Chance(pspace)
     >>> t[(0,2)] = t12
     >>> t[(1,3)] = t3
     >>> print(t)
     O--(0,2)--#--d1--O--(0,1)--:1
        |         |      |
-       |         |      (2,3)--:2
+       |         |      (2,3)--:2/11
        |         |
-       |         d2--O--(0,1)--:5
+       |         d2--O--(0,1)--:5/3
        |                |
        |                (2,3)--:6
        |
        (1,3)--O--(0,1)--:8
                  |
-                 (2,3)--:9
+                 (2,3)--:9/2
     >>> t.pspace
     PSpace(4)
     >>> for gamble, normal_tree in t.get_normal_form():
@@ -99,32 +99,32 @@ class Tree(collections.MutableMapping):
     ...     print('')
     0 : 1
     1 : 8
-    2 : 2
-    3 : 9
+    2 : 2/11
+    3 : 9/2
     <BLANKLINE>
-    0 : 5
+    0 : 5/3
     1 : 8
     2 : 6
-    3 : 9
+    3 : 9/2
     <BLANKLINE>
     >>> for gamble, normal_tree in t.get_normal_form():
     ...     print(normal_tree)
     ...     print('')
     O--(0,2)--#--d1--O--(0,1)--:1
        |                |
-       |                (2,3)--:2
+       |                (2,3)--:2/11
        |
        (1,3)--O--(0,1)--:8
                  |
-                 (2,3)--:9
+                 (2,3)--:9/2
     <BLANKLINE>
-    O--(0,2)--#--d2--O--(0,1)--:5
+    O--(0,2)--#--d2--O--(0,1)--:5/3
        |                |
        |                (2,3)--:6
        |
        (1,3)--O--(0,1)--:8
                  |
-                 (2,3)--:9
+                 (2,3)--:9/2
     <BLANKLINE>
     """
     __metaclass__ = ABCMeta
@@ -243,10 +243,12 @@ class Tree(collections.MutableMapping):
 
 class Reward(Tree, cdd.NumberTypeable):
     """A reward node."""
-    def __init__(self, reward, number_type='float'):
-        cdd.NumberTypeable.__init__(self, number_type)
-        if not isinstance(reward, numbers.Real):
+    def __init__(self, reward, number_type=None):
+        if not isinstance(reward, (numbers.Real, str)):
             raise TypeError('specify a numeric reward')
+        if number_type is None:
+            number_type = cdd.get_number_type_from_value(reward)
+        cdd.NumberTypeable.__init__(self, number_type)
         self.reward = self.make_number(reward)
 
     @property
@@ -335,7 +337,7 @@ class Decision(Tree):
         return self._data[key]
 
     def __setitem__(self, key, value):
-        if isinstance(value, numbers.Real):
+        if isinstance(value, (numbers.Real, str)):
             value = Reward(value) # number type assumed to be float
         if not isinstance(value, Tree):
             raise TypeError('expected Tree')
@@ -456,7 +458,7 @@ class Chance(Tree):
         return self._data[self.pspace.make_event(key)]
 
     def __setitem__(self, key, value):
-        if isinstance(value, numbers.Real):
+        if isinstance(value, (numbers.Real, str)):
             value = Reward(value) # number type assumed to be float
         if not isinstance(value, Tree):
             raise TypeError('expected Tree')
