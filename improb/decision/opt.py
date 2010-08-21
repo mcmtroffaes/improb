@@ -182,3 +182,12 @@ class OptLowPrevMaxHurwicz(OptLowPrevMaxMin):
     def get_value(self, gamble, event=True):
         return (self.alpha * self._lowprev.get_upper(gamble, event=event)
                 + (1 - self.alpha) * self._lowprev.get_lower(gamble, event=event))
+
+class OptLowPrevMaxInterval(OptLowPrevMax):
+    """Interval dominance with respect to a lower prevision."""
+
+    # TODO implement faster algorithm
+    def is_strictly_larger(self, gamble, other_gamble, event=True):
+        return self._lowprev.number_cmp(
+            self._lowprev.get_lower(gamble, event=event),
+            self._lowprev.get_upper(other_gamble, event=event)) > 0

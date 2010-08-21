@@ -3,7 +3,7 @@
    from improb import PSpace, Gamble, Event
    from improb.lowprev.lowpoly import LowPoly
    from improb.lowprev.prob import Prob
-   from improb.decision.opt import OptAdmissible, OptLowPrevMax, OptLowPrevMaxMin, OptLowPrevMaxMax, OptLowPrevMaxHurwicz
+   from improb.decision.opt import OptAdmissible, OptLowPrevMax, OptLowPrevMaxMin, OptLowPrevMaxMax, OptLowPrevMaxHurwicz, OptLowPrevMaxInterval
 
 .. module:: improb.decision.opt
 
@@ -47,6 +47,10 @@ Concrete Operators
    :show-inheritance:
    :members:
 
+.. autoclass:: OptLowPrevMaxInterval
+   :show-inheritance:
+   :members:
+
 Examples
 --------
 
@@ -62,6 +66,8 @@ True
 >>> list(OptLowPrevMaxMin(lpr)(gambles)) == [[2.35, 2.35]]
 True
 >>> list(OptLowPrevMaxMax(lpr)(gambles)) == [[0, 4]]
+True
+>>> list(OptLowPrevMaxInterval(lpr)(gambles)) == [[4, 0], [0, 4], [3, 2], [2.35, 2.35], [4.1, -0.3]]
 True
 
 Another example:
