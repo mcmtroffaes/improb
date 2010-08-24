@@ -27,7 +27,7 @@ Topic :: Scientific/Engineering :: Mathematics
 Programming Language :: Python
 Operating System :: OS Independent"""
 
-from distutils.core import setup
+from setuptools import setup
 from improb import __version__
 
 doclines = __doc__.split("\n")
