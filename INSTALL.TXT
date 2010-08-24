@@ -1,7 +1,7 @@
 Automatic Installer
 ~~~~~~~~~~~~~~~~~~~
 
-The simplest way to install improb, is to `download <http://github.com/mcmtroffaes/improb/downloads/>`_ the installer and run it. To use the library, you also need `pycddlib <http://mcmtroffaes.github.com/pycddlib>`_.
+The simplest way to install improb, is to `download <http://pypi.python.org/pypi/improb/#downloads>`_ the installer and run it. To use the library, you also need `pycddlib <http://pypi.python.org/pypi/pycddlib/#downloads>`_.
 
 Building From Source
 ~~~~~~~~~~~~~~~~~~~~

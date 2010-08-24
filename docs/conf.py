@@ -206,5 +206,5 @@ todo_include_todos = True
 
 intersphinx_mapping = {
     'python': ('http://docs.python.org/', None),
-    'cdd': ('http://mcmtroffaes.github.com/pycddlib', None),
+    'cdd': ('http://packages.python.org/pycddlib', None),
 }

@@ -44,4 +44,6 @@ setup(
     platforms = "any",
     description = doclines[0],
     long_description = "\n".join(doclines[2:]),
-    url = "http://code.google.com/p/stip/")
+    url = "http://pypi.python.org/pypi/improb/",
+    classifiers = classifiers.split('\n'),
+)
