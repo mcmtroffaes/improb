@@ -60,8 +60,34 @@ class LowPoly(LowPrev):
     def __init__(self, pspace=None, mapping=None,
                  lprev=None, uprev=None, prev=None,
                  lprob=None, uprob=None, prob=None,
-                 bba=None, number_type=None):
+                 bba=None, credalset=None, number_type=None):
         """Construct a polyhedral lower prevision on *pspace*.
+
+        :param pspace: The possibility space.
+        :type pspace: |pspacetype|
+        :param mapping: Mapping from (gamble, event) to (lower prevision, upper prevision).
+        :type mapping: :class:`collections.Mapping`
+        :param lprev: Mapping from gamble to lower prevision.
+        :type lprev: :class:`collections.Mapping`
+        :param uprev: Mapping from gamble to upper prevision.
+        :type uprev: :class:`collections.Mapping`
+        :param prev: Mapping from gamble to precise prevision.
+        :type prev: :class:`collections.Mapping`
+        :param lprob: Mapping from event to lower probability.
+        :type lprob: :class:`collections.Mapping` or :class:`collections.Sequence`
+        :param uprob: Mapping from event to upper probability.
+        :type uprob: :class:`collections.Mapping` or :class:`collections.Sequence`
+        :param prob: Mapping from event to precise probability.
+        :type prob: :class:`collections.Mapping` or :class:`collections.Sequence`
+        :param bba: Mapping from event to basic belief assignment (useful for constructing belief functions).
+        :type bba: :class:`collections.Mapping`
+        :param credalset: Sequence of probability mass functions.
+        :type credalset: :class:`collections.Sequence`
+        :param number_type: The number type. If not specified, it is
+            determined using
+            :func:`~cdd.get_number_type_from_sequences` on all
+            values.
+        :type number_type: :class:`str`
 
         Generally, you can pass a :class:`dict` as a keyword argument
         in order to initialize the lower and upper previsions and/or
@@ -89,6 +115,18 @@ class LowPoly(LowPrev):
          2.0  0.0 -1.0 | 0 1 2 : [1.0 , 1.9 ]
          9.0  8.0 20.0 | 0 1 2 : [15.0, 15.0]
 
+        A credal set can be specified simply as a list:
+
+        >>> print(LowPoly(pspace=3,
+        ...     credalset=[['0.1', '0.45', '0.45'],
+        ...                ['0.4', '0.3', '0.3'],
+        ...                ['0.3', '0.2', '0.5']]))
+          0     1     2  
+        -10   10    0     | 0 1 2 : [-1,   ]
+        -1    -2    0     | 0 1 2 : [-1,   ]
+        1     1     1     | 0 1 2 : [1 , 1 ]
+        50/23 40/23 0     | 0 1 2 : [1 ,   ]
+
         As a special case, for lower/upper/precise probabilities, if
         you need to set values on singletons, you can use a list
         instead of a dictionary:
@@ -114,29 +152,6 @@ class LowPoly(LowPrev):
         a     : 1/10
           b   : 1/10
             c : 1/10
-
-        :param pspace: The possibility space.
-        :type pspace: |pspacetype|
-        :param mapping: Mapping from (gamble, event) to (lower prevision, upper prevision).
-        :type mapping: :class:`collections.Mapping`
-        :param lprev: Mapping from gamble to lower prevision.
-        :type lprev: :class:`collections.Mapping`
-        :param uprev: Mapping from gamble to upper prevision.
-        :type uprev: :class:`collections.Mapping`
-        :param prev: Mapping from gamble to precise prevision.
-        :type prev: :class:`collections.Mapping`
-        :param lprob: Mapping from event to lower probability.
-        :type lprob: :class:`collections.Mapping` or :class:`collections.Sequence`
-        :param uprob: Mapping from event to upper probability.
-        :type uprob: :class:`collections.Mapping` or :class:`collections.Sequence`
-        :param prob: Mapping from event to precise probability.
-        :type prob: :class:`collections.Mapping` or :class:`collections.Sequence`
-        :param bba: Mapping from event to basic belief assignment (useful for constructing belief functions).
-        :type bba: :class:`collections.Mapping`
-        :param number_type: The number type. If not specified, it is
-            determined using `~cdd.get_number_type_from_sequences` on
-            all values.
-        :type number_type: :class:`str`
         """
 
         def iter_items(obj):
@@ -201,7 +216,8 @@ class LowPoly(LowPrev):
         if number_type is None:
             number_type = get_number_type(
                 [mapping, lprev, uprev, prev, bba],
-                [lprob, uprob, prob])
+                [lprob, uprob, prob]
+                + (credalset if credalset else []))
         cdd.NumberTypeable.__init__(self, number_type)
         self._mapping = {}
         if mapping:
@@ -235,6 +251,19 @@ class LowPoly(LowPrev):
                 number_type=self.number_type)
             for event in self.pspace.subsets():
                 self.set_lower(event, setfunc.get_zeta(event))
+        if credalset:
+            # set up polyhedral representation
+            mat = cdd.Matrix([(['1'] + credalprob) for credalprob in credalset])
+            mat.rep_type = cdd.RepType.GENERATOR
+            poly = cdd.Polyhedron(mat)
+            dualmat = poly.get_inequalities()
+            #print(mat)
+            #print(dualmat)
+            for rownum, row in enumerate(dualmat):
+                if rownum in dualmat.lin_set:
+                    self.set_precise(row[1:], -row[0])
+                else:
+                    self.set_lower(row[1:], -row[0])
 
     def __len__(self):
         return len(self._mapping)
@@ -258,13 +287,17 @@ class LowPoly(LowPrev):
 
     def __str__(self):
         maxlen_pspace = max(len(str(omega)) for omega in self.pspace)
-        maxlen_value = max(max(len(self.number_str(gamble[omega]))
-                               for omega in self.pspace)
-                           for gamble, event in self)
+        if self:
+            maxlen_value = max(max(len(self.number_str(gamble[omega]))
+                                   for omega in self.pspace)
+                               for gamble, event in self)
+            maxlen_prev = max(max(len(self.number_str(prev))
+                                  for prev in prevs if prev is not None)
+                               for prevs in self.itervalues())
+        else:
+            maxlen_value = 0
+            maxlen_prev = 0
         maxlen = max(maxlen_pspace, maxlen_value)
-        maxlen_prev = max(max(len(self.number_str(prev))
-                              for prev in prevs if prev is not None)
-                           for prevs in self.itervalues())
         result = " ".join("{0: ^{1}}".format(omega, maxlen)
                           for omega in self.pspace) + "\n"
         result += "\n".join(
@@ -578,7 +611,10 @@ class LowPoly(LowPrev):
         self[key] = lprev, uprev
 
     def get_lower(self, gamble, event=True, algorithm='linprog'):
-        """Calculate lower expectation, using linear programming."""
+        """Calculate lower expectation, using Algorithm 4 of Walley,
+        Pelessoni, and Vicig (2004) [#walley2004]_. The algorithm
+        deals properly with zero probabilities.
+        """
         # set fastest algorithm
         if algorithm is None:
             algorithm = 'linprog'
