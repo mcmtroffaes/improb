@@ -7,13 +7,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Belief Functions &mdash; improb v0.1.0 (beta) documentation</title>
+    <title>Belief Functions &mdash; improb v0.1.0 documentation</title>
     <link rel="stylesheet" href="../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.1.0 (beta)',
+        VERSION:     '0.1.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -22,7 +22,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="improb v0.1.0 (beta) documentation" href="../index.html" />
+    <link rel="top" title="improb v0.1.0 documentation" href="../index.html" />
     <link rel="up" title="Lower Previsions" href="../lowprev.html" />
     <link rel="next" title="Linear Vacuous Mixtures" href="linvac.html" />
     <link rel="prev" title="Lower Probabilities" href="lowprob.html" /> 
@@ -43,7 +43,7 @@
         <li class="right" >
           <a href="lowprob.html" title="Lower Probabilities"
              accesskey="P">previous</a> |</li>
-        <li><a href="../index.html">improb v0.1.0 (beta) documentation</a> &raquo;</li>
+        <li><a href="../index.html">improb v0.1.0 documentation</a> &raquo;</li>
           <li><a href="../lowprev.html" accesskey="U">Lower Previsions</a> &raquo;</li> 
       </ul>
     </div>  
@@ -57,7 +57,7 @@
 <h1>Belief Functions<a class="headerlink" href="#belief-functions" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="improb.lowprev.belfunc.BelFunc">
-<em class="property">class </em><tt class="descclassname">improb.lowprev.belfunc.</tt><tt class="descname">BelFunc</tt><big>(</big><em>pspace=None</em>, <em>mapping=None</em>, <em>lprev=None</em>, <em>uprev=None</em>, <em>prev=None</em>, <em>lprob=None</em>, <em>uprob=None</em>, <em>prob=None</em>, <em>bba=None</em>, <em>number_type=None</em><big>)</big><a class="headerlink" href="#improb.lowprev.belfunc.BelFunc" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">improb.lowprev.belfunc.</tt><tt class="descname">BelFunc</tt><big>(</big><em>pspace=None</em>, <em>mapping=None</em>, <em>lprev=None</em>, <em>uprev=None</em>, <em>prev=None</em>, <em>lprob=None</em>, <em>uprob=None</em>, <em>prob=None</em>, <em>bba=None</em>, <em>credalset=None</em>, <em>number_type=None</em><big>)</big><a class="headerlink" href="#improb.lowprev.belfunc.BelFunc" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="lowprob.html#improb.lowprev.lowprob.LowProb" title="improb.lowprev.lowprob.LowProb"><tt class="xref py py-class docutils literal"><span class="pre">improb.lowprev.lowprob.LowProb</span></tt></a></p>
 <p>This identical to <a class="reference internal" href="lowprob.html#improb.lowprev.lowprob.LowProb" title="improb.lowprev.lowprob.LowProb"><tt class="xref py py-class docutils literal"><span class="pre">LowProb</span></tt></a>,
 except that it uses the Mobius transform to calculate the natural
@@ -86,7 +86,7 @@ m(A)\inf_{\omega\in A}f(\omega)" /></p>
 <p>To use the Mobius transform, the domain of the lower probability
 must contain <em>all</em> events. If needed, call
 <a class="reference internal" href="lowpoly.html#improb.lowprev.lowpoly.LowPoly.extend" title="improb.lowprev.lowpoly.LowPoly.extend"><tt class="xref py py-meth docutils literal"><span class="pre">extend()</span></tt></a>:</p>
-<div class="last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">bel</span> <span class="o">=</span> <span class="n">BelFunc</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">lprob</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;0.2&#39;</span><span class="p">,</span> <span class="s">&#39;0.25&#39;</span><span class="p">],</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span> 
+<div class="last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">bel</span> <span class="o">=</span> <span class="n">BelFunc</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">lprob</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;0.2&#39;</span><span class="p">,</span> <span class="s">&#39;0.25&#39;</span><span class="p">])</span> 
 <span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">bel</span><span class="p">)</span>
 <span class="go">0   : 1/5</span>
 <span class="go">  1 : 1/4</span>
@@ -119,8 +119,7 @@ such case still defined, although some of the values of
 <img class="math" src="../_images/math/2a2df1df1f79999382ee7184370e5633941fa615.png" alt="\underline{E}"/> will be incoherent as well).</p>
 <div class="last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">bel</span> <span class="o">=</span> <span class="n">BelFunc</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">pspace</span><span class="o">=</span><span class="s">&#39;abcd&#39;</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">lprob</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;ab&#39;</span><span class="p">:</span> <span class="s">&#39;0.2&#39;</span><span class="p">,</span> <span class="s">&#39;bc&#39;</span><span class="p">:</span> <span class="s">&#39;0.2&#39;</span><span class="p">,</span> <span class="s">&#39;abc&#39;</span><span class="p">:</span> <span class="s">&#39;0.2&#39;</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">:</span> <span class="s">&#39;0.1&#39;</span><span class="p">},</span>
-<span class="gp">... </span>    <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">lprob</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;ab&#39;</span><span class="p">:</span> <span class="s">&#39;0.2&#39;</span><span class="p">,</span> <span class="s">&#39;bc&#39;</span><span class="p">:</span> <span class="s">&#39;0.2&#39;</span><span class="p">,</span> <span class="s">&#39;abc&#39;</span><span class="p">:</span> <span class="s">&#39;0.2&#39;</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">:</span> <span class="s">&#39;0.1&#39;</span><span class="p">})</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">bel</span><span class="o">.</span><span class="n">extend</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">bel</span><span class="o">.</span><span class="n">is_completely_monotone</span><span class="p">()</span> <span class="c"># (it is in fact not even 2-monotone)</span>
 <span class="go">False</span>
@@ -137,7 +136,7 @@ such case still defined, although some of the values of
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">improb.lowprev.lowprob</span> <span class="kn">import</span> <span class="n">LowProb</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">improb</span> <span class="kn">import</span> <span class="n">PSpace</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">pspace</span> <span class="o">=</span> <span class="n">PSpace</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">lowprob</span> <span class="o">=</span> <span class="n">LowProb</span><span class="p">(</span><span class="n">pspace</span><span class="p">,</span> <span class="n">lprob</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;0.3&#39;</span><span class="p">,</span> <span class="s">&#39;0.2&#39;</span><span class="p">],</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lowprob</span> <span class="o">=</span> <span class="n">LowProb</span><span class="p">(</span><span class="n">pspace</span><span class="p">,</span> <span class="n">lprob</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;0.3&#39;</span><span class="p">,</span> <span class="s">&#39;0.2&#39;</span><span class="p">])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">lowprob</span><span class="o">.</span><span class="n">extend</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">lowprob</span><span class="o">.</span><span class="n">is_completely_monotone</span><span class="p">()</span>
 <span class="go">True</span>
@@ -151,7 +150,7 @@ such case still defined, although some of the values of
 <span class="go">0   : 3/10</span>
 <span class="go">  1 : 1/5</span>
 <span class="go">0 1 : 1/2</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span> <span class="o">=</span> <span class="n">BelFunc</span><span class="p">(</span><span class="n">pspace</span><span class="p">,</span> <span class="n">bba</span><span class="o">=</span><span class="n">lowprob</span><span class="o">.</span><span class="n">mobius</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span> <span class="o">=</span> <span class="n">BelFunc</span><span class="p">(</span><span class="n">pspace</span><span class="p">,</span> <span class="n">bba</span><span class="o">=</span><span class="n">lowprob</span><span class="o">.</span><span class="n">mobius</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">is_completely_monotone</span><span class="p">()</span>
 <span class="go">True</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr</span><span class="p">)</span>
@@ -178,10 +177,6 @@ such case still defined, although some of the values of
 
 </dd></dl>
 
-<div class="admonition-todo admonition " id="index-0">
-<p class="first admonition-title">Todo</p>
-<p class="last">Add examples.</p>
-</div>
 </div>
 
 
@@ -233,7 +228,7 @@ such case still defined, although some of the values of
         <li class="right" >
           <a href="lowprob.html" title="Lower Probabilities"
              >previous</a> |</li>
-        <li><a href="../index.html">improb v0.1.0 (beta) documentation</a> &raquo;</li>
+        <li><a href="../index.html">improb v0.1.0 documentation</a> &raquo;</li>
           <li><a href="../lowprev.html" >Lower Previsions</a> &raquo;</li> 
       </ul>
     </div>

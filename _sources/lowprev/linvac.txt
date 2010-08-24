@@ -10,5 +10,3 @@ Linear Vacuous Mixtures
 .. autoclass:: LinVac
    :members:
    :show-inheritance:
-
-.. todo:: Add examples.

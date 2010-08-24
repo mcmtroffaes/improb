@@ -7,13 +7,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Lower Probabilities &mdash; improb v0.1.0 (beta) documentation</title>
+    <title>Lower Probabilities &mdash; improb v0.1.0 documentation</title>
     <link rel="stylesheet" href="../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.1.0 (beta)',
+        VERSION:     '0.1.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -22,7 +22,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="improb v0.1.0 (beta) documentation" href="../index.html" />
+    <link rel="top" title="improb v0.1.0 documentation" href="../index.html" />
     <link rel="up" title="Lower Previsions" href="../lowprev.html" />
     <link rel="next" title="Belief Functions" href="belfunc.html" />
     <link rel="prev" title="Polyhedral Lower Previsions" href="lowpoly.html" /> 
@@ -43,7 +43,7 @@
         <li class="right" >
           <a href="lowpoly.html" title="Polyhedral Lower Previsions"
              accesskey="P">previous</a> |</li>
-        <li><a href="../index.html">improb v0.1.0 (beta) documentation</a> &raquo;</li>
+        <li><a href="../index.html">improb v0.1.0 documentation</a> &raquo;</li>
           <li><a href="../lowprev.html" accesskey="U">Lower Previsions</a> &raquo;</li> 
       </ul>
     </div>  
@@ -57,27 +57,27 @@
 <h1>Lower Probabilities<a class="headerlink" href="#lower-probabilities" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="improb.lowprev.lowprob.LowProb">
-<em class="property">class </em><tt class="descclassname">improb.lowprev.lowprob.</tt><tt class="descname">LowProb</tt><big>(</big><em>pspace=None</em>, <em>mapping=None</em>, <em>lprev=None</em>, <em>uprev=None</em>, <em>prev=None</em>, <em>lprob=None</em>, <em>uprob=None</em>, <em>prob=None</em>, <em>bba=None</em>, <em>number_type=None</em><big>)</big><a class="headerlink" href="#improb.lowprev.lowprob.LowProb" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">improb.lowprev.lowprob.</tt><tt class="descname">LowProb</tt><big>(</big><em>pspace=None</em>, <em>mapping=None</em>, <em>lprev=None</em>, <em>uprev=None</em>, <em>prev=None</em>, <em>lprob=None</em>, <em>uprob=None</em>, <em>prob=None</em>, <em>bba=None</em>, <em>credalset=None</em>, <em>number_type=None</em><big>)</big><a class="headerlink" href="#improb.lowprev.lowprob.LowProb" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="lowpoly.html#improb.lowprev.lowpoly.LowPoly" title="improb.lowprev.lowpoly.LowPoly"><tt class="xref py py-class docutils literal"><span class="pre">improb.lowprev.lowpoly.LowPoly</span></tt></a></p>
 <p>An unconditional lower probability. This class is identical to
 <a class="reference internal" href="lowpoly.html#improb.lowprev.lowpoly.LowPoly" title="improb.lowprev.lowpoly.LowPoly"><tt class="xref py py-class docutils literal"><span class="pre">LowPoly</span></tt></a>, except that only
 unconditional assessments on events are allowed.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">LowProb</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">lprob</span><span class="o">=</span><span class="p">{(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span> <span class="s">&#39;0.1&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span> <span class="s">&#39;0.2&#39;</span><span class="p">},</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">))</span>
-<span class="go">0 1   : 0.1</span>
-<span class="go">  1 2 : 0.2</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">LowProb</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">lprev</span><span class="o">=</span><span class="p">{(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">):</span> <span class="mi">1</span><span class="p">},</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">))</span> 
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">LowProb</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">lprob</span><span class="o">=</span><span class="p">{(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span> <span class="s">&#39;0.1&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span> <span class="s">&#39;0.2&#39;</span><span class="p">}))</span>
+<span class="go">0 1   : 1/10</span>
+<span class="go">  1 2 : 1/5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">LowProb</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">lprev</span><span class="o">=</span><span class="p">{(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">):</span> <span class="mi">1</span><span class="p">}))</span> 
 <span class="gt">Traceback (most recent call last):</span>
     <span class="o">...</span>
 <span class="nc">ValueError</span>: <span class="n-Identifier">not an indicator gamble</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">LowProb</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">uprob</span><span class="o">=</span><span class="p">{(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span> <span class="s">&#39;0.1&#39;</span><span class="p">},</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">))</span> 
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">LowProb</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">uprob</span><span class="o">=</span><span class="p">{(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span> <span class="s">&#39;0.1&#39;</span><span class="p">}))</span> 
 <span class="gt">Traceback (most recent call last):</span>
     <span class="o">...</span>
 <span class="nc">ValueError</span>: <span class="n-Identifier">cannot specify upper prevision</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">LowProb</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">mapping</span><span class="o">=</span><span class="p">{((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)):</span> <span class="p">(</span><span class="s">&#39;1.4&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)},</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">))</span> 
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">LowProb</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">mapping</span><span class="o">=</span><span class="p">{((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)):</span> <span class="p">(</span><span class="mf">1.4</span><span class="p">,</span> <span class="bp">None</span><span class="p">)}))</span> 
 <span class="gt">Traceback (most recent call last):</span>
     <span class="o">...</span>
 <span class="nc">ValueError</span>: <span class="n-Identifier">not unconditional</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span> <span class="o">=</span> <span class="n">LowProb</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">lprob</span><span class="o">=</span><span class="p">{(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span> <span class="s">&#39;0.1&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span> <span class="s">&#39;0.2&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span><span class="p">,):</span> <span class="s">&#39;0.05&#39;</span><span class="p">},</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span> <span class="o">=</span> <span class="n">LowProb</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">lprob</span><span class="o">=</span><span class="p">{(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span> <span class="s">&#39;0.1&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span> <span class="s">&#39;0.2&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span><span class="p">,):</span> <span class="s">&#39;0.05&#39;</span><span class="p">})</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">extend</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr</span><span class="p">)</span>
 <span class="go">      : 0</span>
@@ -219,8 +219,7 @@ first.</p>
 </div>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span> <span class="o">=</span> <span class="n">LowProb</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">pspace</span><span class="o">=</span><span class="s">&#39;abcd&#39;</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">lprob</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;ab&#39;</span><span class="p">:</span> <span class="s">&#39;0.2&#39;</span><span class="p">,</span> <span class="s">&#39;bc&#39;</span><span class="p">:</span> <span class="s">&#39;0.2&#39;</span><span class="p">,</span> <span class="s">&#39;abc&#39;</span><span class="p">:</span> <span class="s">&#39;0.2&#39;</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">:</span> <span class="s">&#39;0.1&#39;</span><span class="p">},</span>
-<span class="gp">... </span>    <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">lprob</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;ab&#39;</span><span class="p">:</span> <span class="s">&#39;0.2&#39;</span><span class="p">,</span> <span class="s">&#39;bc&#39;</span><span class="p">:</span> <span class="s">&#39;0.2&#39;</span><span class="p">,</span> <span class="s">&#39;abc&#39;</span><span class="p">:</span> <span class="s">&#39;0.2&#39;</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">:</span> <span class="s">&#39;0.1&#39;</span><span class="p">})</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">extend</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr</span><span class="p">)</span>
 <span class="go">        : 0</span>
@@ -262,8 +261,7 @@ first.</p>
 </div>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span> <span class="o">=</span> <span class="n">LowProb</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">pspace</span><span class="o">=</span><span class="s">&#39;abcd&#39;</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">lprob</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;ab&#39;</span><span class="p">:</span> <span class="s">&#39;0.2&#39;</span><span class="p">,</span> <span class="s">&#39;bc&#39;</span><span class="p">:</span> <span class="s">&#39;0.2&#39;</span><span class="p">,</span> <span class="s">&#39;abc&#39;</span><span class="p">:</span> <span class="s">&#39;0.3&#39;</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">:</span> <span class="s">&#39;0.1&#39;</span><span class="p">},</span>
-<span class="gp">... </span>    <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">lprob</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;ab&#39;</span><span class="p">:</span> <span class="s">&#39;0.2&#39;</span><span class="p">,</span> <span class="s">&#39;bc&#39;</span><span class="p">:</span> <span class="s">&#39;0.2&#39;</span><span class="p">,</span> <span class="s">&#39;abc&#39;</span><span class="p">:</span> <span class="s">&#39;0.3&#39;</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">:</span> <span class="s">&#39;0.1&#39;</span><span class="p">})</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">extend</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr</span><span class="p">)</span>
 <span class="go">        : 0</span>
@@ -484,7 +482,7 @@ probabilities, as <a class="reference internal" href="../setfunction.html#improb
         <li class="right" >
           <a href="lowpoly.html" title="Polyhedral Lower Previsions"
              >previous</a> |</li>
-        <li><a href="../index.html">improb v0.1.0 (beta) documentation</a> &raquo;</li>
+        <li><a href="../index.html">improb v0.1.0 documentation</a> &raquo;</li>
           <li><a href="../lowprev.html" >Lower Previsions</a> &raquo;</li> 
       </ul>
     </div>

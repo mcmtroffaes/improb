@@ -7,13 +7,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Decision Trees &mdash; improb v0.1.0 (beta) documentation</title>
+    <title>Decision Trees &mdash; improb v0.1.0 documentation</title>
     <link rel="stylesheet" href="../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.1.0 (beta)',
+        VERSION:     '0.1.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -22,7 +22,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="improb v0.1.0 (beta) documentation" href="../index.html" />
+    <link rel="top" title="improb v0.1.0 documentation" href="../index.html" />
     <link rel="up" title="Decision Making" href="../decision.html" />
     <link rel="prev" title="Optimality Operators" href="opt.html" /> 
   </head>
@@ -39,7 +39,7 @@
         <li class="right" >
           <a href="opt.html" title="Optimality Operators"
              accesskey="P">previous</a> |</li>
-        <li><a href="../index.html">improb v0.1.0 (beta) documentation</a> &raquo;</li>
+        <li><a href="../index.html">improb v0.1.0 documentation</a> &raquo;</li>
           <li><a href="../decision.html" accesskey="U">Decision Making</a> &raquo;</li> 
       </ul>
     </div>  
@@ -54,110 +54,119 @@
 <dl class="class">
 <dt id="improb.decision.tree.Tree">
 <em class="property">class </em><tt class="descclassname">improb.decision.tree.</tt><tt class="descname">Tree</tt><a class="headerlink" href="#improb.decision.tree.Tree" title="Permalink to this definition">¶</a></dt>
-<dd><p>A decision tree.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">Reward</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">pspace</span><span class="p">)</span>
-<span class="go">None</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
-<span class="go">:5.0</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">get_normal_form</span><span class="p">())</span>
-<span class="go">[(5.0, Reward(5.0, number_type=&#39;float&#39;))]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">Chance</span><span class="p">(</span><span class="n">pspace</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">data</span><span class="o">=</span><span class="p">{(</span><span class="mi">0</span><span class="p">,):</span> <span class="n">Reward</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,):</span> <span class="n">Reward</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">)})</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="o">.</span><span class="n">pspace</span>
-<span class="go">PSpace(2)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="o">.</span><span class="n">get_number_type</span><span class="p">()</span>
-<span class="go">&#39;float&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
-<span class="go">O--(0)--:5.0</span>
-<span class="go">   |</span>
-<span class="go">   (1)--:6.0</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">gamble</span> <span class="k">for</span> <span class="n">gamble</span><span class="p">,</span> <span class="n">normal_tree</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">get_normal_form</span><span class="p">())</span>
-<span class="go">[Gamble(pspace=PSpace(2), mapping={0: 5.0, 1: 6.0})]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">Decision</span><span class="p">({</span><span class="s">&quot;d1&quot;</span><span class="p">:</span> <span class="n">Reward</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">),</span>
-<span class="gp">... </span>              <span class="s">&quot;d2&quot;</span><span class="p">:</span> <span class="n">Reward</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">)})</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">pspace</span><span class="p">)</span>
-<span class="go">None</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="c"># dict can change ordering</span>
-<span class="go">#--d2--:6.0</span>
-<span class="go">   |</span>
-<span class="go">   d1--:5.0</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">gamble</span><span class="p">,</span> <span class="n">normal_tree</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">get_normal_form</span><span class="p">()):</span>
-<span class="gp">... </span>    <span class="k">print</span><span class="p">(</span><span class="n">gamble</span><span class="p">)</span>
-<span class="go">5.0</span>
-<span class="go">6.0</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">gamble</span><span class="p">,</span> <span class="n">normal_tree</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">get_normal_form</span><span class="p">()):</span>
-<span class="gp">... </span>    <span class="k">print</span><span class="p">(</span><span class="n">normal_tree</span><span class="p">)</span>
-<span class="go">#--d1--:5.0</span>
-<span class="go">#--d2--:6.0</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">pspace</span> <span class="o">=</span> <span class="n">PSpace</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+<dd><p>Abstract base class for decision trees.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pspace</span> <span class="o">=</span> <span class="n">PSpace</span><span class="p">(</span><span class="s">&quot;AB&quot;</span><span class="p">,</span> <span class="s">&quot;XY&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span> <span class="o">=</span> <span class="n">pspace</span><span class="o">.</span><span class="n">make_event</span><span class="p">(</span><span class="s">&quot;A&quot;</span><span class="p">,</span> <span class="s">&quot;XY&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&quot;A&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">B</span> <span class="o">=</span> <span class="n">pspace</span><span class="o">.</span><span class="n">make_event</span><span class="p">(</span><span class="s">&quot;B&quot;</span><span class="p">,</span> <span class="s">&quot;XY&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&quot;B&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">X</span> <span class="o">=</span> <span class="n">pspace</span><span class="o">.</span><span class="n">make_event</span><span class="p">(</span><span class="s">&quot;AB&quot;</span><span class="p">,</span> <span class="s">&quot;X&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&quot;X&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Y</span> <span class="o">=</span> <span class="n">pspace</span><span class="o">.</span><span class="n">make_event</span><span class="p">(</span><span class="s">&quot;AB&quot;</span><span class="p">,</span> <span class="s">&quot;Y&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&quot;Y&quot;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">t1</span> <span class="o">=</span> <span class="n">Chance</span><span class="p">(</span><span class="n">pspace</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">t1</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)]</span> <span class="o">=</span> <span class="n">Reward</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">t1</span><span class="p">[(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">)]</span> <span class="o">=</span> <span class="n">Reward</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t1</span><span class="p">[</span><span class="n">A</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;1&#39;</span> <span class="c"># using strings for fractions</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t1</span><span class="p">[</span><span class="n">B</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;2/11&#39;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">t2</span> <span class="o">=</span> <span class="n">Chance</span><span class="p">(</span><span class="n">pspace</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">t2</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)]</span> <span class="o">=</span> <span class="n">Reward</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">t2</span><span class="p">[(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">)]</span> <span class="o">=</span> <span class="n">Reward</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t2</span><span class="p">[</span><span class="n">A</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;5/3&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t2</span><span class="p">[</span><span class="n">B</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;6&#39;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">t12</span> <span class="o">=</span> <span class="n">Decision</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">t12</span><span class="p">[</span><span class="s">&quot;d1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">t1</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">t12</span><span class="p">[</span><span class="s">&quot;d2&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">t2</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">t3</span> <span class="o">=</span> <span class="n">Chance</span><span class="p">(</span><span class="n">pspace</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">t3</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)]</span> <span class="o">=</span> <span class="n">Reward</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">t3</span><span class="p">[(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">)]</span> <span class="o">=</span> <span class="n">Reward</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t3</span><span class="p">[</span><span class="n">A</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;8&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t3</span><span class="p">[</span><span class="n">B</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;4.5&#39;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">Chance</span><span class="p">(</span><span class="n">pspace</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">)]</span> <span class="o">=</span> <span class="n">t12</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="p">[(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">)]</span> <span class="o">=</span> <span class="n">t3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="p">[</span><span class="n">X</span><span class="p">]</span> <span class="o">=</span> <span class="n">t12</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="p">[</span><span class="n">Y</span><span class="p">]</span> <span class="o">=</span> <span class="n">t3</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
-<span class="go">O--(0,2)--#--d1--O--(0,1)--:1</span>
-<span class="go">   |         |      |</span>
-<span class="go">   |         |      (2,3)--:2</span>
-<span class="go">   |         |</span>
-<span class="go">   |         d2--O--(0,1)--:5</span>
-<span class="go">   |                |</span>
-<span class="go">   |                (2,3)--:6</span>
+<span class="go">O--X--#--d1--O--A--:1</span>
+<span class="go">   |     |      |</span>
+<span class="go">   |     |      B--:2/11</span>
+<span class="go">   |     |</span>
+<span class="go">   |     d2--O--A--:5/3</span>
+<span class="go">   |            |</span>
+<span class="go">   |            B--:6</span>
 <span class="go">   |</span>
-<span class="go">   (1,3)--O--(0,1)--:8</span>
-<span class="go">             |</span>
-<span class="go">             (2,3)--:9</span>
+<span class="go">   Y--O--A--:8</span>
+<span class="go">         |</span>
+<span class="go">         B--:9/2</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="o">.</span><span class="n">pspace</span>
-<span class="go">PSpace(4)</span>
+<span class="go">PSpace([(&#39;A&#39;, &#39;X&#39;), (&#39;A&#39;, &#39;Y&#39;), (&#39;B&#39;, &#39;X&#39;), (&#39;B&#39;, &#39;Y&#39;)])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">gamble</span><span class="p">,</span> <span class="n">normal_tree</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">get_normal_form</span><span class="p">():</span>
 <span class="gp">... </span>    <span class="k">print</span><span class="p">(</span><span class="n">gamble</span><span class="p">)</span>
 <span class="gp">... </span>    <span class="k">print</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">)</span>
-<span class="go">0 : 1</span>
-<span class="go">1 : 8</span>
-<span class="go">2 : 2</span>
-<span class="go">3 : 9</span>
+<span class="go">(&#39;A&#39;, &#39;X&#39;) : 1</span>
+<span class="go">(&#39;A&#39;, &#39;Y&#39;) : 8</span>
+<span class="go">(&#39;B&#39;, &#39;X&#39;) : 2/11</span>
+<span class="go">(&#39;B&#39;, &#39;Y&#39;) : 9/2</span>
 <span class="go">&lt;BLANKLINE&gt;</span>
-<span class="go">0 : 5</span>
-<span class="go">1 : 8</span>
-<span class="go">2 : 6</span>
-<span class="go">3 : 9</span>
+<span class="go">(&#39;A&#39;, &#39;X&#39;) : 5/3</span>
+<span class="go">(&#39;A&#39;, &#39;Y&#39;) : 8</span>
+<span class="go">(&#39;B&#39;, &#39;X&#39;) : 6</span>
+<span class="go">(&#39;B&#39;, &#39;Y&#39;) : 9/2</span>
 <span class="go">&lt;BLANKLINE&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">gamble</span><span class="p">,</span> <span class="n">normal_tree</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">get_normal_form</span><span class="p">():</span>
 <span class="gp">... </span>    <span class="k">print</span><span class="p">(</span><span class="n">normal_tree</span><span class="p">)</span>
 <span class="gp">... </span>    <span class="k">print</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">)</span>
-<span class="go">O--(0,2)--#--d1--O--(0,1)--:1</span>
-<span class="go">   |                |</span>
-<span class="go">   |                (2,3)--:2</span>
+<span class="go">O--X--#--d1--O--A--:1</span>
+<span class="go">   |            |</span>
+<span class="go">   |            B--:2/11</span>
 <span class="go">   |</span>
-<span class="go">   (1,3)--O--(0,1)--:8</span>
-<span class="go">             |</span>
-<span class="go">             (2,3)--:9</span>
+<span class="go">   Y--O--A--:8</span>
+<span class="go">         |</span>
+<span class="go">         B--:9/2</span>
 <span class="go">&lt;BLANKLINE&gt;</span>
-<span class="go">O--(0,2)--#--d2--O--(0,1)--:5</span>
-<span class="go">   |                |</span>
-<span class="go">   |                (2,3)--:6</span>
+<span class="go">O--X--#--d2--O--A--:5/3</span>
+<span class="go">   |            |</span>
+<span class="go">   |            B--:6</span>
 <span class="go">   |</span>
-<span class="go">   (1,3)--O--(0,1)--:8</span>
-<span class="go">             |</span>
-<span class="go">             (2,3)--:9</span>
+<span class="go">   Y--O--A--:8</span>
+<span class="go">         |</span>
+<span class="go">         B--:9/2</span>
 <span class="go">&lt;BLANKLINE&gt;</span>
 </pre></div>
 </div>
 <dl class="method">
 <dt id="improb.decision.tree.Tree._get_norm_back_opt">
 <tt class="descname">_get_norm_back_opt</tt><big>(</big><em>opt=None</em>, <em>event=True</em><big>)</big><a class="headerlink" href="#improb.decision.tree.Tree._get_norm_back_opt" title="Permalink to this definition">¶</a></dt>
-<dd><p>This is the core implementation of get_norm_back_opt: it is
-get_norm_back_opt but without applying opt at the root of the tree.</p>
+<dd><p>Like <a class="reference internal" href="#improb.decision.tree.Tree.get_norm_back_opt" title="improb.decision.tree.Tree.get_norm_back_opt"><tt class="xref py py-meth docutils literal"><span class="pre">get_norm_back_opt()</span></tt></a> but without applying <em>opt</em>
+at the root of the tree in the final stage.</p>
+<p>All other normal form methods (<a class="reference internal" href="#improb.decision.tree.Tree.get_normal_form" title="improb.decision.tree.Tree.get_normal_form"><tt class="xref py py-meth docutils literal"><span class="pre">get_normal_form()</span></tt></a>,
+<a class="reference internal" href="#improb.decision.tree.Tree.get_norm_opt" title="improb.decision.tree.Tree.get_norm_opt"><tt class="xref py py-meth docutils literal"><span class="pre">get_norm_opt()</span></tt></a>, and <a class="reference internal" href="#improb.decision.tree.Tree.get_norm_back_opt" title="improb.decision.tree.Tree.get_norm_back_opt"><tt class="xref py py-meth docutils literal"><span class="pre">get_norm_back_opt()</span></tt></a>) are
+defined in terms of this method, so subclasses only need to
+implement this one as far as normal form calculations are
+concerned.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="improb.decision.tree.Tree.__add__">
+<tt class="descname">__add__</tt><big>(</big><em>value</em><big>)</big><a class="headerlink" href="#improb.decision.tree.Tree.__add__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a value to all final reward nodes.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>value</strong> (<tt class="xref py py-class docutils literal"><span class="pre">float</span></tt> or similar; see <a class="reference internal" href="../introduction.html#values"><em>Values</em></a>) &#8211; The value to add.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="improb.decision.tree.Tree.__sub__">
+<tt class="descname">__sub__</tt><big>(</big><em>value</em><big>)</big><a class="headerlink" href="#improb.decision.tree.Tree.__sub__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subtract a value from all final reward nodes.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>value</strong> (<tt class="xref py py-class docutils literal"><span class="pre">float</span></tt> or similar; see <a class="reference internal" href="../introduction.html#values"><em>Values</em></a>) &#8211; The value to subtract.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -168,7 +177,7 @@ get_norm_back_opt but without applying opt at the root of the tree.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Raise :</th><td class="field-body"><cite>exceptions.ValueError</cite> on mismatch</td>
+<tr class="field"><th class="field-name">Raise :</th><td class="field-body"><a class="reference external" href="http://docs.python.org/library/exceptions.html#exceptions.ValueError" title="(in Python v2.7)"><tt class="xref py py-exc docutils literal"><span class="pre">ValueError</span></tt></a> on mismatch</td>
 </tr>
 </tbody>
 </table>
@@ -177,23 +186,79 @@ get_norm_back_opt but without applying opt at the root of the tree.</p>
 <dl class="method">
 <dt id="improb.decision.tree.Tree.get_norm_back_opt">
 <tt class="descname">get_norm_back_opt</tt><big>(</big><em>opt=None</em>, <em>event=True</em><big>)</big><a class="headerlink" href="#improb.decision.tree.Tree.get_norm_back_opt" title="Permalink to this definition">¶</a></dt>
-<dd><p>Yield optimal solution by normal form backward induction,
-as (gamble, tree) pairs, where the tree represents the normal
-form decision corresponding to the gamble.</p>
+<dd><p>Like <a class="reference internal" href="#improb.decision.tree.Tree.get_norm_opt" title="improb.decision.tree.Tree.get_norm_opt"><tt class="xref py py-meth docutils literal"><span class="pre">get_norm_opt()</span></tt></a>, but uses normal form backward
+induction, which is more efficient.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">If <em>opt</em> does not satisfy certain properties, the result
+can be different from <a class="reference internal" href="#improb.decision.tree.Tree.get_norm_opt" title="improb.decision.tree.Tree.get_norm_opt"><tt class="xref py py-meth docutils literal"><span class="pre">get_norm_opt()</span></tt></a>.</p>
+</div>
 </dd></dl>
 
 <dl class="method">
 <dt id="improb.decision.tree.Tree.get_norm_opt">
 <tt class="descname">get_norm_opt</tt><big>(</big><em>opt=None</em>, <em>event=True</em><big>)</big><a class="headerlink" href="#improb.decision.tree.Tree.get_norm_opt" title="Permalink to this definition">¶</a></dt>
-<dd><p>Normal form optimality with respect to a given optimality
-operator, conditional on the given event.</p>
+<dd><p>Get the optimal normal form decisions with respect to the
+optimality operator <em>opt</em>, conditional on <em>event</em>. This method
+does not use backward induction: it simply calculates all
+normal form decisions and then applies <em>opt</em> on them.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>opt</strong> (<a class="reference internal" href="opt.html#improb.decision.opt.Opt" title="improb.decision.opt.Opt"><tt class="xref py py-class docutils literal"><span class="pre">Opt</span></tt></a>) &#8211; The optimality operator (optional).</li>
+<li><strong>event</strong> (<tt class="xref py py-class docutils literal"><span class="pre">list</span></tt> or similar; see <a class="reference internal" href="../introduction.html#events"><em>Events</em></a>) &#8211; The event to condition on (optional).</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Optimal normal form decisions.</p>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">Yields (<a class="reference internal" href="../introduction.html#improb.Gamble" title="improb.Gamble"><tt class="xref py py-class docutils literal"><span class="pre">Gamble</span></tt></a>, <a class="reference internal" href="#improb.decision.tree.Tree" title="improb.decision.tree.Tree"><tt class="xref py py-class docutils literal"><span class="pre">Tree</span></tt></a>) pairs,
+where the tree is a normal form decision (i.e. a tree
+where each decision node has a single branch), and the
+gamble is the one induced by this tree.</p>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
 <dt id="improb.decision.tree.Tree.get_normal_form">
 <tt class="descname">get_normal_form</tt><big>(</big><big>)</big><a class="headerlink" href="#improb.decision.tree.Tree.get_normal_form" title="Permalink to this definition">¶</a></dt>
-<dd><p>Yield normal form as (gamble, tree) pairs, where the tree
-represents the normal form decision corresponding to the gamble.</p>
+<dd><p>Calculate all normal form decisions, and their
+corresponding gambles.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body">The normal form of the decision tree.</td>
+</tr>
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body">Yields (<a class="reference internal" href="../introduction.html#improb.Gamble" title="improb.Gamble"><tt class="xref py py-class docutils literal"><span class="pre">Gamble</span></tt></a>, <a class="reference internal" href="#improb.decision.tree.Tree" title="improb.decision.tree.Tree"><tt class="xref py py-class docutils literal"><span class="pre">Tree</span></tt></a>) pairs,
+where the tree is a normal form decision (i.e. a tree
+where each decision node has a single branch), and the
+gamble is the one induced by this tree.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="improb.decision.tree.Tree.get_number_type">
+<tt class="descname">get_number_type</tt><big>(</big><big>)</big><a class="headerlink" href="#improb.decision.tree.Tree.get_number_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the number type of the first reward node in the tree.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body">The number type.</td>
+</tr>
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body"><tt class="xref py py-class docutils literal"><span class="pre">str</span></tt></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
@@ -208,8 +273,30 @@ in the tree.</p>
 <dl class="class">
 <dt id="improb.decision.tree.Reward">
 <em class="property">class </em><tt class="descclassname">improb.decision.tree.</tt><tt class="descname">Reward</tt><big>(</big><em>reward</em>, <em>number_type=None</em><big>)</big><a class="headerlink" href="#improb.decision.tree.Reward" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#improb.decision.tree.Tree" title="improb.decision.tree.Tree"><tt class="xref py py-class docutils literal"><span class="pre">improb.decision.tree.Tree</span></tt></a>, <a class="reference external" href="http://mcmtroffaes.github.com/pycddlib/numbertype.html#cdd.NumberTypeable" title="(in pycddlib v1.0.2)"><tt class="docutils literal"><span class="pre">cdd.NumberTypeable</span></tt></a></p>
+<dd><p>Bases: <a class="reference internal" href="#improb.decision.tree.Tree" title="improb.decision.tree.Tree"><tt class="xref py py-class docutils literal"><span class="pre">improb.decision.tree.Tree</span></tt></a>, <a class="reference external" href="http://mcmtroffaes.github.com/pycddlib/numbertype.html#cdd.NumberTypeable" title="(in pycddlib v1.0.3)"><tt class="xref py py-class docutils literal"><span class="pre">cdd.NumberTypeable</span></tt></a></p>
 <p>A reward node.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>reward</strong> (<tt class="xref py py-class docutils literal"><span class="pre">float</span></tt> or similar; see <a class="reference internal" href="../introduction.html#values"><em>Values</em></a>) &#8211; The reward.</li>
+<li><strong>number_type</strong> (<tt class="xref py py-class docutils literal"><span class="pre">str</span></tt>) &#8211; The number type (optional). If omitted,
+<a class="reference external" href="http://mcmtroffaes.github.com/pycddlib/numbertype.html#cdd.get_number_type_from_value" title="(in pycddlib v1.0.3)"><tt class="xref py py-func docutils literal"><span class="pre">get_number_type_from_value()</span></tt></a> is used.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">Reward</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">pspace</span><span class="p">)</span>
+<span class="go">None</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+<span class="go">:5.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">get_normal_form</span><span class="p">())</span>
+<span class="go">[(5.0, Reward(5.0, number_type=&#39;float&#39;))]</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="class">
@@ -222,13 +309,31 @@ in the tree.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>data</strong> (<cite>collections.Mapping</cite>) &#8211; Mapping from decisions (i.e. strings, but any
-immutable object would work) to trees.</li>
+<li><strong>data</strong> (<tt class="xref py py-class docutils literal"><span class="pre">collections.Mapping</span></tt>) &#8211; Mapping from decisions (i.e. strings, but any
+immutable object would work) to trees (optional).</li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">Decision</span><span class="p">({</span><span class="s">&quot;d1&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
+<span class="gp">... </span>              <span class="s">&quot;d2&quot;</span><span class="p">:</span> <span class="mi">6</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">pspace</span><span class="p">)</span>
+<span class="go">None</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="c"># dict can change ordering</span>
+<span class="go">#--d2--:6.0</span>
+<span class="go">   |</span>
+<span class="go">   d1--:5.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">gamble</span><span class="p">,</span> <span class="n">normal_tree</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">get_normal_form</span><span class="p">()):</span>
+<span class="gp">... </span>    <span class="k">print</span><span class="p">(</span><span class="n">gamble</span><span class="p">)</span>
+<span class="go">5.0</span>
+<span class="go">6.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">gamble</span><span class="p">,</span> <span class="n">normal_tree</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">get_normal_form</span><span class="p">()):</span>
+<span class="gp">... </span>    <span class="k">print</span><span class="p">(</span><span class="n">normal_tree</span><span class="p">)</span>
+<span class="go">#--d1--:5.0</span>
+<span class="go">#--d2--:6.0</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="class">
@@ -242,27 +347,40 @@ immutable object would work) to trees.</li>
 <tbody valign="top">
 <tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>pspace</strong> (<tt class="xref py py-class docutils literal"><span class="pre">list</span></tt> or similar; see <a class="reference internal" href="../introduction.html#possibility-spaces"><em>Possibility Spaces</em></a>) &#8211; The possibility space.</li>
-<li><strong>data</strong> (<cite>collections.Mapping</cite>) &#8211; Mapping from events to trees (optional).</li>
+<li><strong>data</strong> (<tt class="xref py py-class docutils literal"><span class="pre">collections.Mapping</span></tt>) &#8211; Mapping from events to trees (optional).</li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">Chance</span><span class="p">(</span><span class="n">pspace</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">data</span><span class="o">=</span><span class="p">{(</span><span class="mi">0</span><span class="p">,):</span> <span class="mi">5</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,):</span> <span class="mi">6</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="o">.</span><span class="n">pspace</span>
+<span class="go">PSpace(2)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="o">.</span><span class="n">get_number_type</span><span class="p">()</span>
+<span class="go">&#39;float&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+<span class="go">O--(0)--:5.0</span>
+<span class="go">   |</span>
+<span class="go">   (1)--:6.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">gamble</span> <span class="k">for</span> <span class="n">gamble</span><span class="p">,</span> <span class="n">normal_tree</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">get_normal_form</span><span class="p">())</span>
+<span class="go">[Gamble(pspace=PSpace(2), mapping={0: 5.0, 1: 6.0})]</span>
+</pre></div>
+</div>
 <dl class="method">
 <dt id="improb.decision.tree.Chance.check_pspace">
 <tt class="descname">check_pspace</tt><big>(</big><big>)</big><a class="headerlink" href="#improb.decision.tree.Chance.check_pspace" title="Permalink to this definition">¶</a></dt>
 <dd><p>Events of the chance nodes must form the possibility space.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">Chance</span><span class="p">(</span><span class="n">pspace</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="n">data</span><span class="o">=</span><span class="p">{(</span><span class="mi">0</span><span class="p">,):</span> <span class="n">Reward</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">):</span> <span class="n">Reward</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">)})</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">Chance</span><span class="p">(</span><span class="n">pspace</span><span class="o">=</span><span class="s">&#39;ab&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;a&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s">&#39;ab&#39;</span><span class="p">:</span> <span class="mi">6</span><span class="p">})</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="o">.</span><span class="n">check_pspace</span><span class="p">()</span> 
 <span class="gt">Traceback (most recent call last):</span>
     <span class="o">...</span>
 <span class="nc">ValueError</span>: <span class="n-Identifier">...</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">Chance</span><span class="p">(</span><span class="n">pspace</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="n">data</span><span class="o">=</span><span class="p">{(</span><span class="mi">0</span><span class="p">,):</span> <span class="n">Reward</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">)})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">Chance</span><span class="p">(</span><span class="n">pspace</span><span class="o">=</span><span class="s">&#39;ab&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;a&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">})</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="o">.</span><span class="n">check_pspace</span><span class="p">()</span> 
 <span class="gt">Traceback (most recent call last):</span>
     <span class="o">...</span>
 <span class="nc">ValueError</span>: <span class="n-Identifier">...</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">Chance</span><span class="p">(</span><span class="n">pspace</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="n">data</span><span class="o">=</span><span class="p">{(</span><span class="mi">0</span><span class="p">,):</span> <span class="n">Reward</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,):</span> <span class="n">Reward</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">)})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">Chance</span><span class="p">(</span><span class="n">pspace</span><span class="o">=</span><span class="s">&#39;ab&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;a&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">:</span> <span class="mi">6</span><span class="p">})</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="o">.</span><span class="n">check_pspace</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -282,12 +400,12 @@ immutable object would work) to trees.</li>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">N</span> <span class="o">=</span> <span class="n">pspace</span><span class="o">.</span><span class="n">make_event</span><span class="p">(</span><span class="s">&#39;SWD&#39;</span><span class="p">,</span> <span class="s">&#39;N&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&quot;no&quot;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">O</span> <span class="o">=</span> <span class="n">pspace</span><span class="o">.</span><span class="n">make_event</span><span class="p">(</span><span class="s">&#39;SWD&#39;</span><span class="p">,</span> <span class="s">&#39;O&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&quot;open&quot;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">C</span> <span class="o">=</span> <span class="n">pspace</span><span class="o">.</span><span class="n">make_event</span><span class="p">(</span><span class="s">&#39;SWD&#39;</span><span class="p">,</span> <span class="s">&#39;C&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&quot;closed&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span> <span class="o">=</span> <span class="n">LowPoly</span><span class="p">(</span><span class="n">pspace</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">t0</span> <span class="o">=</span> <span class="n">Reward</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span> <span class="o">=</span> <span class="n">LowPoly</span><span class="p">(</span><span class="n">pspace</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t0</span> <span class="o">=</span> <span class="mi">0</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">t1</span> <span class="o">=</span> <span class="n">Chance</span><span class="p">(</span><span class="n">pspace</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">t1</span><span class="p">[</span><span class="n">S</span><span class="p">]</span> <span class="o">=</span> <span class="n">Reward</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">t1</span><span class="p">[</span><span class="n">W</span><span class="p">]</span> <span class="o">=</span> <span class="n">Reward</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">t1</span><span class="p">[</span><span class="n">D</span><span class="p">]</span> <span class="o">=</span> <span class="n">Reward</span><span class="p">(</span><span class="o">-</span><span class="mi">7</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t1</span><span class="p">[</span><span class="n">S</span><span class="p">]</span> <span class="o">=</span> <span class="mi">20</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t1</span><span class="p">[</span><span class="n">W</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t1</span><span class="p">[</span><span class="n">D</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">7</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">Decision</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="p">[</span><span class="s">&quot;not drill&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">t0</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="p">[</span><span class="s">&quot;drill&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">t1</span>
@@ -331,7 +449,7 @@ immutable object would work) to trees.</li>
 <span class="go">                                 wet---:5.0</span>
 <span class="go">                                 |</span>
 <span class="go">                                 dry---:-7.0</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span> <span class="o">=</span> <span class="n">LowPoly</span><span class="p">(</span><span class="n">pspace</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span> <span class="o">=</span> <span class="n">LowPoly</span><span class="p">(</span><span class="n">pspace</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="p">[</span><span class="n">N</span><span class="p">,</span> <span class="bp">True</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.183</span><span class="p">,</span> <span class="mf">0.222</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="p">[</span><span class="n">O</span><span class="p">,</span> <span class="bp">True</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.333</span><span class="p">,</span> <span class="mf">0.363</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="p">[</span><span class="n">C</span><span class="p">,</span> <span class="bp">True</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.444</span><span class="p">,</span> <span class="mf">0.454</span><span class="p">)</span>
@@ -370,11 +488,11 @@ immutable object would work) to trees.</li>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">R</span> <span class="o">=</span> <span class="n">pspace</span><span class="o">.</span><span class="n">make_event</span><span class="p">(</span><span class="s">&#39;rs&#39;</span><span class="p">,</span> <span class="s">&#39;R&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&#39;rain&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">S</span> <span class="o">=</span> <span class="n">pspace</span><span class="o">.</span><span class="n">make_event</span><span class="p">(</span><span class="s">&#39;rs&#39;</span><span class="p">,</span> <span class="s">&#39;S&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&#39;sunshine&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">t0</span> <span class="o">=</span> <span class="n">Chance</span><span class="p">(</span><span class="n">pspace</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">t0</span><span class="p">[</span><span class="n">R</span><span class="p">]</span> <span class="o">=</span> <span class="n">Reward</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">t0</span><span class="p">[</span><span class="n">S</span><span class="p">]</span> <span class="o">=</span> <span class="n">Reward</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t0</span><span class="p">[</span><span class="n">R</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t0</span><span class="p">[</span><span class="n">S</span><span class="p">]</span> <span class="o">=</span> <span class="mi">15</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">t1</span> <span class="o">=</span> <span class="n">Chance</span><span class="p">(</span><span class="n">pspace</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">t1</span><span class="p">[</span><span class="n">R</span><span class="p">]</span> <span class="o">=</span> <span class="n">Reward</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">t1</span><span class="p">[</span><span class="n">S</span><span class="p">]</span> <span class="o">=</span> <span class="n">Reward</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t1</span><span class="p">[</span><span class="n">R</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t1</span><span class="p">[</span><span class="n">S</span><span class="p">]</span> <span class="o">=</span> <span class="mi">20</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">Decision</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="p">[</span><span class="s">&quot;take waterproof&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">t0</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="p">[</span><span class="s">&quot;no waterproof&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">t1</span>
@@ -408,7 +526,7 @@ immutable object would work) to trees.</li>
 <span class="go">                     no waterproof----O--rain------:5.0</span>
 <span class="go">                                         |</span>
 <span class="go">                                         sunshine--:20.0</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span> <span class="o">=</span> <span class="n">LowPoly</span><span class="p">(</span><span class="n">pspace</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span> <span class="o">=</span> <span class="n">LowPoly</span><span class="p">(</span><span class="n">pspace</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="p">[</span><span class="n">R_</span> <span class="o">&amp;</span> <span class="n">R</span><span class="p">,</span> <span class="bp">True</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.42</span> <span class="o">*</span> <span class="mf">0.9</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="p">[</span><span class="n">R_</span> <span class="o">&amp;</span> <span class="n">S</span><span class="p">,</span> <span class="bp">True</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.18</span> <span class="o">*</span> <span class="mf">0.9</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="p">[</span><span class="n">S_</span> <span class="o">&amp;</span> <span class="n">R</span><span class="p">,</span> <span class="bp">True</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.08</span> <span class="o">*</span> <span class="mf">0.9</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
@@ -529,7 +647,7 @@ pp. 118–123, 2005.</td></tr>
         <li class="right" >
           <a href="opt.html" title="Optimality Operators"
              >previous</a> |</li>
-        <li><a href="../index.html">improb v0.1.0 (beta) documentation</a> &raquo;</li>
+        <li><a href="../index.html">improb v0.1.0 documentation</a> &raquo;</li>
           <li><a href="../decision.html" >Decision Making</a> &raquo;</li> 
       </ul>
     </div>

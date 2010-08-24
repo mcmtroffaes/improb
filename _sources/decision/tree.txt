@@ -14,6 +14,8 @@ Decision Trees
    :members:
 
    .. automethod:: _get_norm_back_opt
+   .. automethod:: __add__
+   .. automethod:: __sub__
 
 .. autoclass:: Reward
    :show-inheritance:
@@ -41,12 +43,12 @@ Solving the decision tree for the oil catter example in
 >>> N = pspace.make_event('SWD', 'N', name="no")
 >>> O = pspace.make_event('SWD', 'O', name="open")
 >>> C = pspace.make_event('SWD', 'C', name="closed")
->>> lpr = LowPoly(pspace, number_type='float')
->>> t0 = Reward(0, number_type='float')
+>>> lpr = LowPoly(pspace)
+>>> t0 = 0
 >>> t1 = Chance(pspace)
->>> t1[S] = Reward(20, number_type='float')
->>> t1[W] = Reward(5, number_type='float')
->>> t1[D] = Reward(-7, number_type='float')
+>>> t1[S] = 20
+>>> t1[W] = 5
+>>> t1[D] = -7
 >>> t = Decision()
 >>> t["not drill"] = t0
 >>> t["drill"] = t1
@@ -90,7 +92,7 @@ Solving the decision tree for the oil catter example in
                                  wet---:5.0
                                  |
                                  dry---:-7.0
->>> lpr = LowPoly(pspace, number_type='float')
+>>> lpr = LowPoly(pspace)
 >>> lpr[N, True] = (0.183, 0.222)
 >>> lpr[O, True] = (0.333, 0.363)
 >>> lpr[C, True] = (0.444, 0.454)
@@ -129,11 +131,11 @@ Solving the lake district example:
 >>> R = pspace.make_event('rs', 'R', name='rain')
 >>> S = pspace.make_event('rs', 'S', name='sunshine')
 >>> t0 = Chance(pspace)
->>> t0[R] = Reward(10, number_type='float')
->>> t0[S] = Reward(15, number_type='float')
+>>> t0[R] = 10
+>>> t0[S] = 15
 >>> t1 = Chance(pspace)
->>> t1[R] = Reward(5, number_type='float')
->>> t1[S] = Reward(20, number_type='float')
+>>> t1[R] = 5
+>>> t1[S] = 20
 >>> t = Decision()
 >>> t["take waterproof"] = t0
 >>> t["no waterproof"] = t1
@@ -167,7 +169,7 @@ Solving the lake district example:
 		     no waterproof----O--rain------:5.0
 					 |
 					 sunshine--:20.0
->>> lpr = LowPoly(pspace, number_type='float')
+>>> lpr = LowPoly(pspace)
 >>> lpr[R_ & R, True] = (0.42 * 0.9, None)
 >>> lpr[R_ & S, True] = (0.18 * 0.9, None)
 >>> lpr[S_ & R, True] = (0.08 * 0.9, None)

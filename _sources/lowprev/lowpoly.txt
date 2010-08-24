@@ -13,6 +13,5 @@ Polyhedral Lower Previsions
    :show-inheritance:
 
    .. automethod:: __init__
-   .. automethod:: __iter__
 
 .. include:: ../../tests/lowprev.txt

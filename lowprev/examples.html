@@ -7,13 +7,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>More Examples &mdash; improb v0.1.0 (beta) documentation</title>
+    <title>More Examples &mdash; improb v0.1.0 documentation</title>
     <link rel="stylesheet" href="../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.1.0 (beta)',
+        VERSION:     '0.1.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -22,7 +22,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="improb v0.1.0 (beta) documentation" href="../index.html" />
+    <link rel="top" title="improb v0.1.0 documentation" href="../index.html" />
     <link rel="up" title="Lower Previsions" href="../lowprev.html" />
     <link rel="next" title="Set Functions" href="../setfunction.html" />
     <link rel="prev" title="Probability Measures" href="prob.html" /> 
@@ -43,7 +43,7 @@
         <li class="right" >
           <a href="prob.html" title="Probability Measures"
              accesskey="P">previous</a> |</li>
-        <li><a href="../index.html">improb v0.1.0 (beta) documentation</a> &raquo;</li>
+        <li><a href="../index.html">improb v0.1.0 documentation</a> &raquo;</li>
           <li><a href="../lowprev.html" accesskey="U">Lower Previsions</a> &raquo;</li> 
       </ul>
     </div>  
@@ -185,8 +185,8 @@ coherent lower probabilities on such space are 2-monotone).</p>
 <span class="gp">... </span>          <span class="k">for</span> <span class="n">omega</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n1</span><span class="p">)),</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n2</span><span class="p">)))]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">20</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="c"># construct a linear vacuous mixture</span>
-<span class="gp">... </span>    <span class="n">lprob</span> <span class="o">=</span> <span class="p">[</span><span class="n">Fraction</span><span class="p">(</span><span class="s">&#39;0.8&#39;</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">pspace</span><span class="p">)</span> <span class="k">for</span> <span class="n">omega</span> <span class="ow">in</span> <span class="n">pspace</span><span class="p">]</span>
-<span class="gp">... </span>    <span class="n">lpr</span> <span class="o">=</span> <span class="n">LinVac</span><span class="p">(</span><span class="n">pspace</span><span class="p">,</span> <span class="n">lprob</span><span class="o">=</span><span class="n">lprob</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">)</span> <span class="c"># no need for randomness</span>
+<span class="gp">... </span>    <span class="n">lprob</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.8</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">pspace</span><span class="p">)</span> <span class="k">for</span> <span class="n">omega</span> <span class="ow">in</span> <span class="n">pspace</span><span class="p">]</span>
+<span class="gp">... </span>    <span class="n">lpr</span> <span class="o">=</span> <span class="n">LinVac</span><span class="p">(</span><span class="n">pspace</span><span class="p">,</span> <span class="n">lprob</span><span class="o">=</span><span class="n">lprob</span><span class="p">)</span> <span class="c"># no need for randomness</span>
 <span class="gp">... </span>    <span class="n">opt</span> <span class="o">=</span> <span class="n">OptLowPrevMax</span><span class="p">(</span><span class="n">lpr</span><span class="p">)</span>
 <span class="gp">... </span>    <span class="c"># construct gambles:</span>
 <span class="gp">... </span>    <span class="c"># gambles[w1][d][w2] gives the gain of the w1-d-w2 path</span>
@@ -267,7 +267,7 @@ coherent lower probabilities on such space are 2-monotone).</p>
 <span class="go">w1=1, d=0: 0.005 1.005</span>
 <span class="go">w1=1, d=1: 2.015 1.015</span>
 <span class="go">w1=1, d=2: 0.025 2.025</span>
-<span class="go">lpr=1/5 1/5 1/5 1/5</span>
+<span class="go">lpr=0.2 0.2 0.2 0.2</span>
 <span class="go">[(0, 1), (2, 1), (2, 2)]</span>
 <span class="go">[(0, 1), (0, 2), (2, 1), (2, 2)]</span>
 </pre></div>
@@ -426,7 +426,7 @@ into an extensive form?</p>
         <li class="right" >
           <a href="prob.html" title="Probability Measures"
              >previous</a> |</li>
-        <li><a href="../index.html">improb v0.1.0 (beta) documentation</a> &raquo;</li>
+        <li><a href="../index.html">improb v0.1.0 documentation</a> &raquo;</li>
           <li><a href="../lowprev.html" >Lower Previsions</a> &raquo;</li> 
       </ul>
     </div>

@@ -34,16 +34,23 @@ or ``'1/3'``---these are internally converted to their exact
 representation if you work with fractions, or their approximate
 representation if you work with floats.
 
-The constructors of lower previsions and gambles have a mandatory
+The constructors of lower previsions and gambles have an optional
 *number_type* keyword argument: if it is ``'float'`` then float
 arithmetic is used, and if it is ``'fraction'`` then rational
 arithmetic is used.
+
+If you do not specify a *number_type* on construction, then
+``'float'`` is used, unless all values are :class:`fractions.Fraction`
+or :class:`str`.
 
 .. seealso::
 
     :class:`cdd.NumberTypeable`
         A general purpose class for objects which admit different
         numerical representations.
+
+    :func:`cdd.get_number_type_from_value`
+        Determine the number type from values.
 
 .. _possibility-spaces:
 
