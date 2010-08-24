@@ -25,6 +25,7 @@ Intended Audience :: End Users/Desktop
 Intended Audience :: Science/Research
 Topic :: Scientific/Engineering :: Mathematics
 Programming Language :: Python
+Programming Language :: Python :: 2
 Operating System :: OS Independent"""
 
 from setuptools import setup
