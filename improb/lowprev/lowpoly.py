@@ -641,9 +641,18 @@ class LowPoly(LowPrev):
         :return: The extreme points.
         :rtype: Yields a :class:`tuple` for each extreme point.
         """
+        event = self.pspace.make_event(event)
         poly = cdd.Polyhedron(self.get_matrix({}, event))
+        verts = set()
         for vert in poly.get_generators():
-            yield vert[1:]
+            if event.is_true():
+                yield vert[1:]
+            else:
+                vert = tuple(vert[i + 1] if omega in event else 0
+                             for i, omega in enumerate(self.pspace))
+                if vert not in verts:
+                    yield vert
+                verts.add(vert)
 
     def get_coherent(self, algorithm='linprog'):
         """Return a coherent version, using linear programming."""
