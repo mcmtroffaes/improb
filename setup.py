@@ -1,4 +1,4 @@
-"""improb is a Python module for working with imprecise probabilities."""
+"""Setup script for improb."""
 
 # improb is a Python module for working with imprecise probabilities
 # Copyright (c) 2008-2010, Matthias Troffaes
@@ -31,7 +31,7 @@ Operating System :: OS Independent"""
 from setuptools import setup
 from improb import __version__
 
-doclines = __doc__.split("\n")
+doclines = open('README.rst').read().split('\n')
 
 setup(
     name = "improb",
