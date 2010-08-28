@@ -1,9 +1,9 @@
-include README.TXT
-include INSTALL.TXT
+include README.rst
+include INSTALL.rst
 include AUTHORS.TXT
 include LICENSE.TXT
 include TODO.TXT
-include CHANGELOG.TXT
+include CHANGELOG.rst
 include AUTHORS.TXT
 include THANKS.TXT
 graft docs/_build/html
