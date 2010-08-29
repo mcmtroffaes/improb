@@ -13,4 +13,4 @@ Decision Making
    decision/opt
    decision/tree
 
-.. autofunction:: print_solution
+.. autofunction:: print_rst_solution
