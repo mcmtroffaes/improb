@@ -1,3 +1,7 @@
+.. testsetup::
+
+    from improb.decision import print_rst_solution
+
 .. module:: improb.decision
 
 Decision Making
@@ -8,3 +12,5 @@ Decision Making
 
    decision/opt
    decision/tree
+
+.. autofunction:: print_solution
