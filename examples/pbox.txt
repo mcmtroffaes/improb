@@ -1,0 +1,49 @@
+The next example shows that additivity over full components is not
+sufficient for being a p-box.
+
+>>> from improb.lowprev.lowpoly import LowPoly
+>>> n = 3
+>>> lpr = LowPoly(n, number_type='fraction')
+>>> lpr.set_lower([1,0,0], '0.1')
+>>> lpr.set_lower([0,1,0], '0.1')
+>>> lpr.set_lower([0,0,1], '0.1')
+>>> lpr.set_lower([1,1,0], '0.2')
+>>> lpr.set_lower([0,1,1], '0.2')
+>>> lpr.set_lower([1,0,1], '0.2')
+>>> # note: lpr is additive over full components
+>>> for prob in sorted(lpr.get_credal_set()):
+...     print(" ".join(str(p) for p in prob))
+1/10 1/10 4/5
+1/10 4/5 1/10
+4/5 1/10 1/10
+>>> # construct p-box
+>>> pbox = LowPoly(n, number_type='fraction')
+>>> for i in xrange(n):
+...     gamble = [1 if j <= i else 0 for j in xrange(n)]
+...     pbox.set_lower(gamble, lpr.get_lower(gamble))
+...     pbox.set_upper(gamble, lpr.get_upper(gamble))
+>>> print(pbox)
+0 1 2
+1 0 0 | 0 1 2 : [1/10, 4/5 ]
+1 1 0 | 0 1 2 : [1/5 , 9/10]
+1 1 1 | 0 1 2 : [1   , 1   ]
+>>> # check credal set: two extra elements!
+>>> for prob in sorted(pbox.get_credal_set()):
+...     print(" ".join(str(p) for p in prob))
+1/10 1/10 4/5
+1/10 4/5 1/10
+1/5 0 4/5
+4/5 0 1/5
+4/5 1/10 1/10
+>>> # gamble which 'detects' these extra elements
+>>> print(lpr.get_lower([0,1,0]))
+1/10
+>>> print(pbox.get_lower([0,1,0]))
+0
+>>> # prove that violates the p-box expression of natural extension
+>>> lpr.get_lower([0,1,0]) != max(0, lpr.get_lower([1,1,0]) - lpr.get_upper([1,0,0]))
+True
+>>> print(lpr.get_lower([0,1,0]))
+1/10
+>>> print(lpr.get_lower([1,1,0]) - lpr.get_upper([1,0,0]))
+-3/5
