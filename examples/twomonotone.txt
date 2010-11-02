@@ -1,0 +1,59 @@
+The independent natural extension of completely monotone marginals is
+in general not even 2-monotone:
+
+>>> from improb import PSpace
+>>> from improb.lowprev.lowpoly import LowPoly
+>>> from improb.lowprev.lowprob import LowProb
+>>> pspace = PSpace("AB", "XY")
+>>> A = pspace.make_event("A", "XY", name="A")
+>>> B = pspace.make_event("B", "XY", name="B")
+>>> X = pspace.make_event("AB", "X", name="X")
+>>> Y = pspace.make_event("AB", "Y", name="Y")
+>>> lpr = LowPoly(pspace, number_type='fraction')
+>>> lpr.set_lower(A, '0.4', event=X)
+>>> lpr.set_lower(A, '0.4', event=Y)
+>>> lpr.set_lower(B, '0.4', event=X)
+>>> lpr.set_lower(B, '0.4', event=Y)
+>>> lpr.set_lower(X, '0.3', event=A)
+>>> lpr.set_lower(X, '0.3', event=B)
+>>> lpr.set_lower(Y, '0.5', event=A)
+>>> lpr.set_lower(Y, '0.5', event=B)
+>>> lpr = LowProb(pspace, lprob=dict((event, lpr.get_lower(event)) for event in pspace.subsets()), number_type='fraction')
+>>> lpr.is_n_monotone(monotonicity=2)
+False
+>>> # find violating constraint
+>>> for constraint in lpr.get_constraints_n_monotone(lpr.pspace, 2):
+...     # check the constraint
+...     constraint = list(constraint)
+...     if lpr.number_cmp(
+...         sum(coeff * lpr[event, True][0]
+...             for event, coeff in constraint)) < 0:
+...         print("\n\n".join("{0}\ncoeff: {1}\nlpr: {2}".format(event, coeff, lpr[event, True][0]) for event, coeff in constraint if coeff != 0))
+...         break
+('A', 'X') : 0
+('A', 'Y') : 1
+('B', 'X') : 0
+('B', 'Y') : 0
+coeff: 1
+lpr: 1/5
+<BLANKLINE>
+('A', 'X') : 1
+('A', 'Y') : 1
+('B', 'X') : 0
+('B', 'Y') : 0
+coeff: -1
+lpr: 2/5
+<BLANKLINE>
+('A', 'X') : 0
+('A', 'Y') : 1
+('B', 'X') : 1
+('B', 'Y') : 0
+coeff: -1
+lpr: 2/5
+<BLANKLINE>
+('A', 'X') : 1
+('A', 'Y') : 1
+('B', 'X') : 1
+('B', 'Y') : 0
+coeff: 1
+lpr: 29/50
