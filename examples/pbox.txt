@@ -7,9 +7,6 @@ sufficient for being a p-box.
 >>> lpr.set_lower([1,0,0], '0.1')
 >>> lpr.set_lower([0,1,0], '0.1')
 >>> lpr.set_lower([0,0,1], '0.1')
->>> lpr.set_lower([1,1,0], '0.2')
->>> lpr.set_lower([0,1,1], '0.2')
->>> lpr.set_lower([1,0,1], '0.2')
 >>> # note: lpr is additive over full components
 >>> for prob in sorted(lpr.get_credal_set()):
 ...     print(" ".join(str(p) for p in prob))
