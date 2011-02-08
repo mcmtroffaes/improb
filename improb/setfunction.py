@@ -251,8 +251,8 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
            KeyError: Event(pspace=PSpace(['a', 'b', 'c']), elements=set(['c']))
         """
         gamble = self.pspace.make_gamble(gamble)
-        values = sorted(set(gamble.values())) # set to get unique values
-        coeffs = (current - previous # v0, v1-v0, ...
+        values = sorted(set(gamble.values()))  # set to get unique values
+        coeffs = (current - previous  # v0, v1-v0, ...
                   for current, previous
                   in itertools.izip(values, [0] + values))
         level = lambda t: (key for key, value in gamble.items() if value >= t)
