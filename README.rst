@@ -2,7 +2,8 @@ improb is a Python module for working with imprecise probabilities.
 
 The library supports arbitrary finitely generated conditional lower
 previsions, belief functions, linear-vacuous mixtures, probability
-measures, n-monotone lower probabilities, and Mobius transforms.
+measures, n-monotone lower probabilities, Mobius transforms, and
+Choquet integration.
 
 Various decision criteria, such as Gamma-maximin, Gamma-maximax,
 interval dominance, and maximality, are implemented. For sequential
