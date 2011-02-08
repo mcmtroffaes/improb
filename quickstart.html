@@ -7,13 +7,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Getting Started &mdash; improb v0.1.0 documentation</title>
+    <title>Getting Started &mdash; improb v0.1.1 (beta) documentation</title>
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.1.0',
+        VERSION:     '0.1.1 (beta)',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -22,7 +22,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="improb v0.1.0 documentation" href="index.html" />
+    <link rel="top" title="improb v0.1.1 (beta) documentation" href="index.html" />
     <link rel="next" title="Introduction" href="introduction.html" />
     <link rel="prev" title="Welcome to improb’s documentation!" href="index.html" /> 
   </head>
@@ -42,7 +42,7 @@
         <li class="right" >
           <a href="index.html" title="Welcome to improb’s documentation!"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">improb v0.1.0 documentation</a> &raquo;</li> 
+        <li><a href="index.html">improb v0.1.1 (beta) documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -56,6 +56,19 @@
 <div class="section" id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
 <p>improb is a Python module for working with imprecise probabilities.</p>
+<p>The library supports arbitrary finitely generated conditional lower
+previsions, belief functions, linear-vacuous mixtures, probability
+measures, n-monotone lower probabilities, and Mobius transforms.</p>
+<p>Various decision criteria, such as Gamma-maximin, Gamma-maximax,
+interval dominance, and maximality, are implemented. For sequential
+decision problems, the library has a convenient interface for
+constructing decision trees of any size, and has algorithms for
+solving them by normal form, or by normal form backward induction.</p>
+<ul class="simple">
+<li>Download: <a class="reference external" href="http://pypi.python.org/pypi/improb/#downloads">http://pypi.python.org/pypi/improb/#downloads</a></li>
+<li>Documentation: <a class="reference external" href="http://packages.python.org/improb/">http://packages.python.org/improb/</a></li>
+<li>Development: <a class="reference external" href="http://github.com/mcmtroffaes/improb/">http://github.com/mcmtroffaes/improb/</a></li>
+</ul>
 </div>
 <div class="section" id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
@@ -65,14 +78,23 @@
 </div>
 <div class="section" id="building-from-source">
 <h3>Building From Source<a class="headerlink" href="#building-from-source" title="Permalink to this headline">¶</a></h3>
-<p>To install from the latest source code, clone it with <a class="reference external" href="http://git-scm.com">Git</a> by running:</p>
+<p><a class="reference external" href="http://pypi.python.org/pypi/improb/#downloads">Download</a> and extract the source <tt class="docutils literal"><span class="pre">.zip</span></tt>. On Windows, start the command line, and run the setup script from within the extracted folder:</p>
+<div class="highlight-python"><pre>cd ....\improb-x.x.x
+C:\PythonXX\python.exe setup.py install</pre>
+</div>
+<p>On Linux, start a terminal and run:</p>
+<div class="highlight-python"><pre>cd ..../improb-x.x.x
+python setup.py build
+su -c 'python setup.py install'</pre>
+</div>
+</div>
+<div class="section" id="building-from-git">
+<h3>Building From Git<a class="headerlink" href="#building-from-git" title="Permalink to this headline">¶</a></h3>
+<p>To install the <em>latest</em> code, clone it with <a class="reference external" href="http://git-scm.com">Git</a> by running:</p>
 <div class="highlight-python"><pre>git clone git://github.com/mcmtroffaes/improb</pre>
 </div>
 <p>You can also browse the source code on GitHub: <a class="reference external" href="http://github.com/mcmtroffaes/improb">mcmtroffaes/improb</a>.</p>
 <p>Then simply run the <tt class="file docutils literal"><span class="pre">build.sh</span></tt> script: this will build the library, install it, generate the documentation, and run all the doctests. Note that you need <a class="reference external" href="http://sphinx.pocoo.org/">Sphinx</a> to generate the documentation and to run the doctests.</p>
-<p>If you merely want to install the library from source, just run:</p>
-<div class="highlight-python"><pre>python setup.py install</pre>
-</div>
 </div>
 </div>
 </div>
@@ -90,6 +112,7 @@
 <li><a class="reference internal" href="#installation">Installation</a><ul>
 <li><a class="reference internal" href="#automatic-installer">Automatic Installer</a></li>
 <li><a class="reference internal" href="#building-from-source">Building From Source</a></li>
+<li><a class="reference internal" href="#building-from-git">Building From Git</a></li>
 </ul>
 </li>
 </ul>
@@ -139,12 +162,12 @@
         <li class="right" >
           <a href="index.html" title="Welcome to improb’s documentation!"
              >previous</a> |</li>
-        <li><a href="index.html">improb v0.1.0 documentation</a> &raquo;</li> 
+        <li><a href="index.html">improb v0.1.1 (beta) documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright 2010, Matthias C. M. Troffaes.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
     </div>
   </body>
 </html>

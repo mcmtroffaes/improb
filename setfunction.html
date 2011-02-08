@@ -7,13 +7,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Set Functions &mdash; improb v0.1.0 documentation</title>
+    <title>Set Functions &mdash; improb v0.1.1 (beta) documentation</title>
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.1.0',
+        VERSION:     '0.1.1 (beta)',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -22,7 +22,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="improb v0.1.0 documentation" href="index.html" />
+    <link rel="top" title="improb v0.1.1 (beta) documentation" href="index.html" />
     <link rel="next" title="Decision Making" href="decision.html" />
     <link rel="prev" title="More Examples" href="lowprev/examples.html" /> 
   </head>
@@ -42,7 +42,7 @@
         <li class="right" >
           <a href="lowprev/examples.html" title="More Examples"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">improb v0.1.0 documentation</a> &raquo;</li> 
+        <li><a href="index.html">improb v0.1.1 (beta) documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -105,6 +105,63 @@ possibility space.</p>
 <span class="go">a   c : 2</span>
 <span class="go">a b c : 31/10</span>
 </pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="improb.setfunction.SetFunction.get_choquet">
+<tt class="descname">get_choquet</tt><big>(</big><em>gamble</em><big>)</big><a class="headerlink" href="#improb.setfunction.SetFunction.get_choquet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the Choquet integral of the given gamble.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>gamble</strong> &#8211; <a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">dict</span></tt></a> or similar; see <a class="reference internal" href="introduction.html#gambles"><em>Gambles</em></a></td>
+</tr>
+</tbody>
+</table>
+<p>The Choquet integral of a set function <img class="math" src="_images/math/f37bba504894945c07a32f5496d74299a37aa51c.png" alt="s"/> is given by
+the formula:</p>
+<div class="math">
+<p><img src="_images/math/0d809708839c47a746d39111cd5218fbd02e5bfe.png" alt="\inf(f)s(\Omega) +
+\int_{\inf(f)}^{\sup(f)}
+s(\{\omega\in\Omega:f(\omega)\geq t\})\mathrm{d}t" /></p>
+</div><p>for any gamble <img class="math" src="_images/math/bb2c93730dbb48558bb3c4738c956c4e8f816437.png" alt="f"/> (note that it is usually assumed that
+<img class="math" src="_images/math/ea3fc8bec1ea8fbcc50594e7ad00ef8a3853c904.png" alt="s(\emptyset)=0"/>). For the discrete case dealt with here,
+this becomes</p>
+<div class="math">
+<p><img src="_images/math/b224779d1ae9f5b5a8c300cd820c1add88f3bba6.png" alt="v_0 s(A_0) +
+\sum_{i=1}^{n-1} (v_i-v_{i-1})s(A_i)," /></p>
+</div><p>where <img class="math" src="_images/math/85ffd98b4eaea58a8db38fd0047e3a1d7c5661a0.png" alt="v_i"/> are the
+<em>unique</em> values of <img class="math" src="_images/math/bb2c93730dbb48558bb3c4738c956c4e8f816437.png" alt="f"/> sorted in increasing order
+and <img class="math" src="_images/math/565f44aa56208290108f3cc6b9dae926ca1da3a1.png" alt="A_i=\{\omega\in\Omega:f(\omega)\geq v_i\}"/> are the
+level sets induced.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">SetFunction</span><span class="p">(</span><span class="n">pspace</span><span class="o">=</span><span class="s">&#39;abc&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+<span class="gp">... </span>                                    <span class="s">&#39;a&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#39;c&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+<span class="gp">... </span>                                    <span class="s">&#39;ab&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">5</span><span class="p">,</span> <span class="s">&#39;bc&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">5</span><span class="p">,</span> <span class="s">&#39;ca&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">5</span><span class="p">,</span>
+<span class="gp">... </span>                                    <span class="s">&#39;abc&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">get_choquet</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+<span class="go">1.5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">get_choquet</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+<span class="go">1.5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">get_choquet</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+<span class="go">1.0</span>
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p>The set function must be defined for all level sets <img class="math" src="_images/math/2744600189f7f1df31756f2022b2d5212ef1c767.png" alt="A_i"/>
+induced by the argument gamble.</p>
+<div class="last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">SetFunction</span><span class="p">(</span><span class="n">pspace</span><span class="o">=</span><span class="s">&#39;abc&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;ab&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">5</span><span class="p">,</span> <span class="s">&#39;bc&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">5</span><span class="p">,</span> <span class="s">&#39;ca&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">5</span><span class="p">,</span>
+<span class="gp">... </span>                                    <span class="s">&#39;abc&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">get_choquet</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+<span class="go">1.5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">get_choquet</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+<span class="gt">Traceback (most recent call last):</span>
+    <span class="o">...</span>
+<span class="nc">KeyError</span>: <span class="n-Identifier">Event(pspace=PSpace([&#39;a&#39;, &#39;b&#39;, &#39;c&#39;]), elements=set([&#39;c&#39;]))</span>
+</pre></div>
+</div>
 </div>
 </dd></dl>
 
@@ -416,12 +473,12 @@ below.</p>
         <li class="right" >
           <a href="lowprev/examples.html" title="More Examples"
              >previous</a> |</li>
-        <li><a href="index.html">improb v0.1.0 documentation</a> &raquo;</li> 
+        <li><a href="index.html">improb v0.1.1 (beta) documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright 2010, Matthias C. M. Troffaes.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
     </div>
   </body>
 </html>
