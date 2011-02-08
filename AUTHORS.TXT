@@ -4,4 +4,4 @@ Main author:
 
 Contributors:
 
-* Erik Quaeghebeur (Erik.Quaeghebeur@ugent.be)
+* Erik Quaeghebeur (Erik.Quaeghebeur@UGent.be)
