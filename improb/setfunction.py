@@ -217,12 +217,12 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
 
         .. math::
 
-           v_0 s(\Omega) +
+           v_0 s(A_0) +
            \sum_{i=1}^{n-1} (v_i-v_{i-1})s(A_i),
 
-        where :math:`v` is the length-:math:`n` vector of
-        \emph{unique} values of :math:`f` sorted in increasing order
-        and :math:`A_i=\{\omega\in\Omega:f(\omega)\geq v_i\}` the
+        where :math:`v_i` are the
+        *unique* values of :math:`f` sorted in increasing order
+        and :math:`A_i=\{\omega\in\Omega:f(\omega)\geq v_i\}` are the
         level sets induced.
 
         >>> s = SetFunction(pspace='abc', data={'': 0,
@@ -247,7 +247,7 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
            1.5
            >>> s.get_choquet([1, 2, 3])
            Traceback (most recent call last):
-             ...
+               ...
            KeyError: Event(pspace=PSpace(['a', 'b', 'c']), elements=set(['c']))
         """
         gamble = self.pspace.make_gamble(gamble)
