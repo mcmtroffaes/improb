@@ -1,1 +1,7 @@
-Matthias Troffaes (matthias.troffaes@gmail.com)
+Main author:
+
+* Matthias Troffaes (matthias.troffaes@gmail.com)
+
+Contributors:
+
+* Erik Quaeghebeur (Erik.Quaeghebeur@ugent.be)
