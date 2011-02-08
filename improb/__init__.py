@@ -447,6 +447,8 @@ class Gamble(collections.Mapping, collections.Hashable, cdd.NumberTypeable):
     a : 1/3
     b : 4/3
     c : 8/3
+    >>> [f1 * 2, f1 + 2, f1 - 2] == [2 * f1, 2 + f1, -(2 - f1)]
+    True
     >>> f2 = Gamble(pspace, {'a': 5, 'b': 8, 'c': 7}, number_type='fraction')
     >>> print(f1 + f2)
     a : 6
@@ -481,6 +483,10 @@ class Gamble(collections.Mapping, collections.Hashable, cdd.NumberTypeable):
     Traceback (most recent call last):
         ...
     TypeError: ...
+    >>> [f1 * event, f1 + event] == [event * f1, event + f1]
+    True
+    >>> event - f1  # set-nature of gamble f1 overrides __rsub__ gamble operator
+    Event(pspace=PSpace(['a', 'b', 'c']), elements=set([]))
     """
     def __init__(self, pspace, data, number_type=None):
         """Construct a gamble on the given possibility space.
@@ -624,6 +630,10 @@ class Gamble(collections.Mapping, collections.Hashable, cdd.NumberTypeable):
     def __neg__(self):
         return Gamble(self.pspace, [-value for value in self.itervalues()],
                       number_type=self.number_type)
+
+    __radd__ = __add__
+    __rsub__ = lambda self, other: self.__sub__(other).__neg__()
+    __rmul__ = __mul__
 
 
 class Event(collections.Set, collections.Hashable):
