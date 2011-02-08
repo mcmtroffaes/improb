@@ -251,13 +251,14 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
            KeyError: Event(pspace=PSpace(['a', 'b', 'c']), elements=set(['c']))
         """
         gamble = self.pspace.make_gamble(gamble)
-        values = sorted(set(gamble.values()))  # set to get unique values
-        coeffs = (current - previous for current, previous  # v0, v1-v0, ...
-                                     in itertools.izip(values, [0] + values))
+        values = sorted(set(gamble.values())) # set to get unique values
+        coeffs = (current - previous # v0, v1-v0, ...
+                  for current, previous
+                  in itertools.izip(values, [0] + values))
         level = lambda t: (key for key, value in gamble.items() if value >= t)
         events = (Event(gamble.pspace, level(value)) for value in values)
-        return sum(coeff * self[event] for coeff, event
-                                       in itertools.izip(coeffs, events))
+        return sum(coeff * self[event]
+                   for coeff, event in itertools.izip(coeffs, events))
 
     def is_bba_n_monotone(self, monotonicity=None):
         """Is the set function, as basic belief assignment,
