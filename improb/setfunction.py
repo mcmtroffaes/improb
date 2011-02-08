@@ -202,13 +202,14 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
 
         :parameter gamble: |gambletype|
 
-        The Choquet integral of a set function :math:`s` is given by the
-        formula:
+        The Choquet integral of a set function :math:`s` is given by
+        the formula:
 
         .. math::
 
           \inf(f)s(\Omega) +
-          \int_{\inf(f)}^{\sup(f)}s(\{\omega\in\Omega:f(\omega)\geq t\})\mathrm{d}t
+          \int_{\inf(f)}^{\sup(f)}
+          s(\{\omega\in\Omega:f(\omega)\geq t\})\mathrm{d}t
 
         for any gamble :math:`f` (note that it is usually assumed that
         :math:`s(\emptyset)=0`). For the discrete case dealt with here,
@@ -219,10 +220,10 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
            v_0 s(\Omega) +
            \sum_{i=1}^{n-1} (v_i-v_{i-1})s(A_i),
 
-        where :math:`v` is the length-:math:`n` vector of values of :math:`f` 
-        sorted in increasing order
-        and :math:`A_i=\{\omega\in\Omega:f(\omega)\geq v_i\}` the level sets
-        induced.
+        where :math:`v` is the length-:math:`n` vector of
+        \emph{unique} values of :math:`f` sorted in increasing order
+        and :math:`A_i=\{\omega\in\Omega:f(\omega)\geq v_i\}` the
+        level sets induced.
 
         >>> s = SetFunction(pspace='abc', data={'': 0,
         ...                                     'a': 0, 'b': 0, 'c': 0,
@@ -250,10 +251,13 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
            KeyError: Event(pspace=PSpace(['a', 'b', 'c']), elements=set(['c']))
         """
         gamble = self.pspace.make_gamble(gamble)
-        v = sorted(frozenset(gamble.values())) # 'sorted' may be replaceable by 'list'
-        supp = lambda value: [key for key in gamble.keys() if gamble[key]>=value]
-        A = [Event(gamble.pspace, supp(value)) for value in v]
-        return v[0]*self[A[0]] + sum([(v[i]-v[i-1])*self[A[i]] for i in xrange(1,len(v))])
+        values = sorted(set(gamble.values()))  # set to get unique values
+        coeffs = (current - previous for current, previous  # v0, v1-v0, ...
+                                     in itertools.izip(values, [0] + values))
+        level = lambda t: (key for key, value in gamble.items() if value >= t)
+        events = (Event(gamble.pspace, level(value)) for value in values)
+        return sum(coeff * self[event] for coeff, event
+                                       in itertools.izip(coeffs, events))
 
     def is_bba_n_monotone(self, monotonicity=None):
         """Is the set function, as basic belief assignment,
