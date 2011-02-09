@@ -485,8 +485,10 @@ class Gamble(collections.Mapping, collections.Hashable, cdd.NumberTypeable):
     TypeError: ...
     >>> [f1 * event, f1 + event] == [event * f1, event + f1]
     True
-    >>> event - f1  # set-nature of gamble f1 overrides __rsub__ gamble operator
-    Event(pspace=PSpace(['a', 'b', 'c']), elements=set([]))
+    >>> print(event - f1)
+    a : 0
+    b : -4
+    c : -7
     """
     def __init__(self, pspace, data, number_type=None):
         """Construct a gamble on the given possibility space.
