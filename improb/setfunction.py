@@ -283,8 +283,8 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
             # check empty set and sum
             if self.number_cmp(self[False]) != 0:
                 return False
-            if self.number_cmp(sum(self[event] for event in self.pspace.subsets()),
-                               1) != 0:
+            if self.number_cmp(
+                sum(self[event] for event in self.pspace.subsets()), 1) != 0:
                 return False
         # iterate over all constraints
         for constraint in self.get_constraints_bba_n_monotone(
