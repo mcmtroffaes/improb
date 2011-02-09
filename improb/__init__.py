@@ -801,3 +801,11 @@ class Event(collections.Set, collections.Hashable):
 
     def is_singleton(self):
         return len(self) == 1
+
+    def __sub__(self, other):
+        # override this to make sure we only do set difference!
+        if isinstance(other, collections.Set):
+            return collections.Set.__sub__(self, other)
+        else:
+            # e.g. a Gamble: will be handled by Gamble.__rsub__
+            return NotImplemented
