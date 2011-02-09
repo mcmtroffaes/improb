@@ -580,3 +580,64 @@ class LowProb(LowPoly):
                 lprob=dict((event, vert[1 + index])
                            for index, event in enumerate(pspace.subsets())),
                 number_type='fraction')
+
+    def precise_part(self):
+        """Extract the precise part and its relative weight.
+
+        Every lower probability :math:`\underline{P}` can be written as a convex
+        mixture :math:`\lambda P+(1-\lambda)\underline{Q}` of an additive
+        'precise' part :math:`P` and an 'imprecise' part :math:`\underline{Q}`.
+        We return the tuple :math:`(P,\lambda)`, where :math:`P` is a
+        :class:`~improb.lowprev.prob.Prob`.
+
+        .. warning::
+
+            The lower probability must be defined for all events. If needed,
+            call :meth:`~improb.lowprev.lowpoly.LowPoly.extend` first.
+        """
+        raise NotImplementedError
+
+    def imprecise_part(self):
+        """Extract the imprecise part and its relative weight.
+
+        Every lower probability :math:`\underline{P}` can be written as a convex
+        mixture :math:`\lambda P+(1-\lambda)\underline{Q}` of an additive
+        'precise' part :math:`P` and an 'imprecise' part :math:`\underline{Q}`.
+        We return the tuple :math:`(\underline{Q},1-\lambda)`.
+
+        .. warning::
+
+            The lower probability must be defined for all events. If needed,
+            call :meth:`~improb.lowprev.lowpoly.LowPoly.extend` first.
+        """
+        raise NotImplementedError
+
+    def outer_approx(self, algorithm='linvac'):
+        """Generate a linear-vacuous outer approximation.
+
+        This algorithm replaces the lower probability's imprecise part
+        :math:`\underline{Q}` by the  vacuous lower prevision :math:`\min` to
+        generate a simple outer approximation.
+
+        .. warning::
+
+            The lower probability must be defined for all events. If needed,
+            call :meth:`~improb.lowprev.lowpoly.LowPoly.extend` first.
+        """
+        raise NotImplementedError
+
+    def outer_approx(self, algorithm='irm'):
+        """Generate a completely monotone outer approximation.
+
+        This algorithm replaces the lower probability's imprecise part
+        :math:`\underline{Q}` by a completely monotone lower prevision
+        :math:`\underline{R}` that is obtained by taking the zeta transform of
+        the basic belief assignment generated using the IRM algorithm of
+        Hall & Lawry.
+
+        .. warning::
+
+            The lower probability must be defined for all events. If needed,
+            call :meth:`~improb.lowprev.lowpoly.LowPoly.extend` first.
+        """
+        raise NotImplementedError
