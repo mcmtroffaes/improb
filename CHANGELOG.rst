@@ -6,6 +6,13 @@ Version 0.1.1 (in development)
 * Added SetFunction.get_choquet to calculate the Choquet integral
   (contributed by Erik Quaeghebeur).
 
+* Added __radd__, __rmul__, and __rsub__ for Gamble (contributed by
+  Erik Quaeghebeur).
+
+* Event.__sub__ now only does set difference with a collections.Set
+  (so Event minus Gamble will be a Gamble via Gamble.__radd__, but
+  Event minus Event is an Event).
+
 Version 0.1.0 (24 August 2010)
 ------------------------------
 
