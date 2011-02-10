@@ -672,6 +672,10 @@ class Event(collections.Set, collections.Hashable):
     d : 1
     e : 1
     f : 1
+    >>> Event(pspace, 'abz')
+    Traceback (most recent call last):
+        ...
+    ValueError: event has element (z) not in possibility space
     """
     def __init__(self, pspace, data=False, name=None):
         """Construct an event on the given possibility space.
