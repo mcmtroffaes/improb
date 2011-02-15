@@ -584,56 +584,95 @@ class LowProb(LowPoly):
     def precise_part(self):
         """Extract the precise part and its relative weight.
 
-        Every lower probability :math:`\underline{P}` can be written as a convex
-        mixture :math:`\lambda P+(1-\lambda)\underline{Q}` of an additive
-        'precise' part :math:`P` and an 'imprecise' part :math:`\underline{Q}`.
+        Every coherent lower probability :math:`\underline{P}` can be written
+        as a unique convex mixture :math:`\lambda P+(1-\lambda)\underline{Q}`
+        of an additive 'precise' part :math:`P` and an 'imprecise' part
+        :math:`\underline{Q}` that is zero on singletons.
         We return the tuple :math:`(P,\lambda)`, where :math:`P` is a
         :class:`~improb.lowprev.prob.Prob`.
 
         .. warning::
 
-            The lower probability must be defined for all events. If needed,
-            call :meth:`~improb.lowprev.lowpoly.LowPoly.extend` first.
+            The lower probability must be defined for all singletons. If
+            needed, call :meth:`~improb.lowprev.lowpoly.LowPoly.extend` first.
+
+        >>> lprob = LowProb(pspace, number_type='fraction')
+        >>> event = lambda A: Event(pspace, A)
+        >>> lprob.set_lower(event('a'), '1/8')
+        >>> lprob.set_lower(event('b'), '1/7')
+        >>> lprob.set_lower(event('c'), '1/6')
+        >>> lprob.set_lower(event('ac'), '3/8')
+        >>> lprob.extend()
+        >>> print(lprob)
+              : 0
+        a     : 1/8
+          b   : 1/7
+            c : 1/6
+        a b   : 15/56
+        a   c : 3/8
+          b c : 13/42
+        a b c : 1
+        >>> prob, coeff = lprob.precise_part()
+        >>> print(prob)
+        a : 21/73
+        b : 24/73
+        c : 28/73
+        >>> coeff
+        Fraction(73, 168)
         """
-        raise NotImplementedError
+        pspace = self.pspace
+        norm = sum(self.get_lower(event) for event in pspace.subsets(size=1))
+        from improb.lowprev.prob import Prob
+        return (Prob(pspace=pspace,
+                     prob=[self.get_lower(event)/norm
+                           for event in pspace.subsets(size=1)],
+                     number_type=self.number_type),
+                norm)
 
     def imprecise_part(self):
         """Extract the imprecise part and its relative weight.
 
-        Every lower probability :math:`\underline{P}` can be written as a convex
-        mixture :math:`\lambda P+(1-\lambda)\underline{Q}` of an additive
-        'precise' part :math:`P` and an 'imprecise' part :math:`\underline{Q}`.
+        .. warning::
+
+            Not implemented yet!
+
+        Every coherent lower probability :math:`\underline{P}` can be written
+        as a unique convex mixture :math:`\lambda P+(1-\lambda)\underline{Q}`
+        of an additive 'precise' part :math:`P` and an 'imprecise' part
+        :math:`\underline{Q}` that is zero on singletons.
         We return the tuple :math:`(\underline{Q},1-\lambda)`.
 
         .. warning::
 
-            The lower probability must be defined for all events. If needed,
-            call :meth:`~improb.lowprev.lowpoly.LowPoly.extend` first.
+            The lower probability must be defined for all singletons. If
+            needed, call :meth:`~improb.lowprev.lowpoly.LowPoly.extend` first.
         """
         raise NotImplementedError
 
-    def outer_approx(self, algorithm='linvac'):
+    def outer_approx(self, algorithm=None):
         """Generate a linear-vacuous outer approximation.
-
-        This algorithm replaces the lower probability's imprecise part
-        :math:`\underline{Q}` by the  vacuous lower prevision :math:`\min` to
-        generate a simple outer approximation.
 
         .. warning::
 
-            The lower probability must be defined for all events. If needed,
-            call :meth:`~improb.lowprev.lowpoly.LowPoly.extend` first.
-        """
-        raise NotImplementedError
-
-    def outer_approx(self, algorithm='irm'):
-        """Generate a completely monotone outer approximation.
+            Not implemented yet!
 
         This algorithm replaces the lower probability's imprecise part
-        :math:`\underline{Q}` by a completely monotone lower prevision
-        :math:`\underline{R}` that is obtained by taking the zeta transform of
-        the basic belief assignment generated using the IRM algorithm of
-        Hall & Lawry.
+        :math:`\underline{Q}` by a lower probability :math:`\underline{R}`
+        determined by the ``algorithm`` argument:
+
+        ``None``
+            returns the original lower probability.
+
+        ``'linvac'``
+            replaces :math:`\underline{Q}` by the vacuous lower
+            probability :math:`\underline{R}=\min` to generate a simple outer
+            approximation.
+
+        ``'irm'``
+            replaces :math:`\underline{Q}` by a completely monotone lower
+            probability :math:`\underline{R}` that is obtained by taking the
+            zeta transform of the basic belief assignment generated using the
+            IRM algorithm of Hall & Lawry.
 
         .. warning::
 
