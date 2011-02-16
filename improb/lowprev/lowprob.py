@@ -585,12 +585,32 @@ class LowProb(LowPoly):
     def _scalar(self, other, oper):
         """
         :raises: :exc:`~exceptions.TypeError` if other is not a scalar
+
+        .. doctest::
+
+            >>> from improb import PSpace, Event
+            >>> pspace = PSpace('abc')
+            >>> ev = lambda A: Event(pspace, A)
+            >>> from improb.lowprev.lowprob import LowProb
+            >>> lprob = LowProb(pspace, 
+                                lprob={ev('a'): '1/8', ev('b'): '1/7', ev('c'): '1/6'},
+                                number_type='fraction')
+            >>> lprob.extend()
+            >>> print(1-.5*lprob*1.5-.5)
+                  : 1/2
+            a     : 13/32
+              b   : 11/28
+                c : 3/8
+            a b   : 67/224
+            a   c : 9/32
+              b c : 15/56
+            a b c : -1/4
         """
         other = self.make_number(other)
         return LowProb(self.pspace,
-                       [(key, (oper(value, other), None))
-                        for key in self.iterkeys()
-                        for value in self.itervalues()], # not the value we want!!!
+                       lprev=dict([(gamble, oper(lprev, other))
+                                   for (gamble, event), (lprev, uprev)
+                                   in self.iteritems()]),
                        number_type=self.number_type)
 
     def _pointwise(self, other, oper):
@@ -598,20 +618,18 @@ class LowProb(LowPoly):
         :raises: :exc:`~exceptions.ValueError` if possibility spaces or domain
             do not match
         """
-        if isinstance(other, LowPrev):
+        if isinstance(other, LowProb):
             if self.pspace != other.pspace:
                 raise ValueError("possibility space mismatch")
             if self.keys() != other.keys():
                 raise ValueError("domain mismatch")
             if self.number_type != other.number_type:
                 raise ValueError("number type mismatch")
-            return LowPrev(
-                self.pspace,
-                [(key, (oper(value, other), None))
-                 for key in self.iterkeys()
-                 for value, other_value
-                 in itertools.izip(self.itervalues(), other.itervalues())],  # not the values we want!!!
-                number_type=self.number_type)
+            return LowProb(self.pspace,
+                           lprev=dict([(gamble, oper(lprev, ***)) # need to get right value out of other!
+                                       for (gamble, event), (lprev, uprev)
+                                       in self.iteritems()]), # self/other order may differ!
+                           number_type=self.number_type)
         else:
             # will raise a type error if operand is not scalar
             return self._scalar(other, oper)
@@ -621,9 +639,7 @@ class LowProb(LowPoly):
     __mul__ = lambda self, other: self._pointwise(other, self.NumberType.__mul__)
     __truediv__ = lambda self, other: self._scalar(other, self.NumberType.__truediv__)
 
-    def __neg__(self):
-        return Gamble(self.pspace, [-value for value in self.itervalues()],
-                      number_type=self.number_type)
+    __neg__ = lambda self: self * (-1)
 
     __radd__ = __add__
     __rsub__ = lambda self, other: self.__sub__(other).__neg__()
