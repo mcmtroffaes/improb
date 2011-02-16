@@ -581,6 +581,55 @@ class LowProb(LowPoly):
                            for index, event in enumerate(pspace.subsets())),
                 number_type='fraction')
 
+#***
+    def _scalar(self, other, oper):
+        """
+        :raises: :exc:`~exceptions.TypeError` if other is not a scalar
+        """
+        other = self.make_number(other)
+        return LowProb(self.pspace,
+                       [(key, (oper(value, other), None))
+                        for key in self.iterkeys()
+                        for value in self.itervalues()], # not the value we want!!!
+                       number_type=self.number_type)
+
+    def _pointwise(self, other, oper):
+        """
+        :raises: :exc:`~exceptions.ValueError` if possibility spaces or domain
+            do not match
+        """
+        if isinstance(other, LowPrev):
+            if self.pspace != other.pspace:
+                raise ValueError("possibility space mismatch")
+            if self.keys() != other.keys():
+                raise ValueError("domain mismatch")
+            if self.number_type != other.number_type:
+                raise ValueError("number type mismatch")
+            return LowPrev(
+                self.pspace,
+                [(key, (oper(value, other), None))
+                 for key in self.iterkeys()
+                 for value, other_value
+                 in itertools.izip(self.itervalues(), other.itervalues())],  # not the values we want!!!
+                number_type=self.number_type)
+        else:
+            # will raise a type error if operand is not scalar
+            return self._scalar(other, oper)
+
+    __add__ = lambda self, other: self._pointwise(other, self.NumberType.__add__)
+    __sub__ = lambda self, other: self._pointwise(other, self.NumberType.__sub__)
+    __mul__ = lambda self, other: self._pointwise(other, self.NumberType.__mul__)
+    __truediv__ = lambda self, other: self._scalar(other, self.NumberType.__truediv__)
+
+    def __neg__(self):
+        return Gamble(self.pspace, [-value for value in self.itervalues()],
+                      number_type=self.number_type)
+
+    __radd__ = __add__
+    __rsub__ = lambda self, other: self.__sub__(other).__neg__()
+    __rmul__ = __mul__
+#***
+
     def precise_part(self):
         """Extract the precise part and its relative weight.
 
