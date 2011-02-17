@@ -581,17 +581,13 @@ class LowProb(LowPoly):
                            for index, event in enumerate(pspace.subsets())),
                 number_type='fraction')
 
-#***
     def _scalar(self, other, oper):
         """
         :raises: :exc:`~exceptions.TypeError` if other is not a scalar
 
         .. doctest::
 
-            >>> from improb import PSpace, Event
-            >>> pspace = PSpace('abc')
             >>> ev = lambda A: Event(pspace, A)
-            >>> from improb.lowprev.lowprob import LowProb
             >>> lprob = LowProb(pspace, 
                                 lprob={ev('a'): '1/8', ev('b'): '1/7', ev('c'): '1/6'},
                                 number_type='fraction')
@@ -617,18 +613,57 @@ class LowProb(LowPoly):
         """
         :raises: :exc:`~exceptions.ValueError` if possibility spaces or domain
             do not match
+
+        .. doctest::
+
+            >>> ev = lambda A: Event(pspace, A)
+            >>> lprob = LowProb(pspace,
+                                lprob={ev('a'): '1/8', ev('b'): '1/7', ev('c'): '1/6'},
+                                number_type='fraction')
+            >>> lprob.extend()
+            >>> (lprob * lprob).is_coherent()
+            True
+            >>> print(lprob + lprob)
+                  : 0
+            a     : 1/4
+              b   : 2/7
+                c : 1/3
+            a b   : 15/28
+            a   c : 7/12
+              b c : 13/21
+            a b c : 2
+
+        .. warning::
+
+            In the current implementation, nonscalar 'other' should avoid sure
+            loss, or it will be detected:
+
+            >>> lprob + 2*lprob
+            Traceback (most recent call last):
+                ...
+            ValueError: lower prevision incurs sure loss:
+                  : 0
+            a     : 1/4
+              b   : 2/7
+                c : 1/3
+            a b   : 15/28
+            a   c : 7/12
+              b c : 13/21
+            a b c : 2
+
         """
         if isinstance(other, LowProb):
             if self.pspace != other.pspace:
                 raise ValueError("possibility space mismatch")
-            if self.keys() != other.keys():
+            if set(self.keys()) != set(other.keys()): # order can also differ!
                 raise ValueError("domain mismatch")
             if self.number_type != other.number_type:
                 raise ValueError("number type mismatch")
             return LowProb(self.pspace,
-                           lprev=dict([(gamble, oper(lprev, ***)) # need to get right value out of other!
+                           lprev=dict([(gamble,
+                                        oper(lprev, other.get_lower(gamble)))
                                        for (gamble, event), (lprev, uprev)
-                                       in self.iteritems()]), # self/other order may differ!
+                                       in self.iteritems()]),
                            number_type=self.number_type)
         else:
             # will raise a type error if operand is not scalar
@@ -644,7 +679,6 @@ class LowProb(LowPoly):
     __radd__ = __add__
     __rsub__ = lambda self, other: self.__sub__(other).__neg__()
     __rmul__ = __mul__
-#***
 
     def precise_part(self):
         """Extract the precise part and its relative weight.
