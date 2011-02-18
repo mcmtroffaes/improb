@@ -7,23 +7,15 @@ Example adapted from [#robinson1977]_ (page 443):
 >>> lpr = LowPoly('abcd', number_type='fraction')
 >>> lpr.set_upper([1, '2/3', 0, 2], '1/2')
 >>> lpr.set_upper([0, 1, 3, 0], '3/2')
->>> print(lpr)
- a   b   c   d 
-0   1   3   0   | a b c d : [   , 3/2]
-1   2/3 0   2   | a b c d : [   , 1/2]
->>> lpr.get_upper([1,3,3,1])
-3
+>>> lpr.get_upper([0,2,2,0])
+2
 >>> list(lpr.get_credal_set())
 [(Fraction(1, 2), 0, Fraction(1, 2), 0), (0, Fraction(3, 4), Fraction(1, 4), 0)]
 >>> lpr = LowPoly('abcd', number_type='fraction')
 >>> lpr.set_upper([1, '0.67', 0, 2], '1/2')
 >>> lpr.set_upper([0, 1, 3, 0], '3/2')
->>> print(lpr)
-  a      b      c      d   
-0      1      3      0      | a b c d : [   , 3/2]
-1      67/100 0      2      | a b c d : [   , 1/2]
->>> lpr.get_upper([1,3,3,1])
-2
+>>> lpr.get_upper([0,2,2,0])
+1
 >>> list(lpr.get_credal_set())
 [(Fraction(1, 2), 0, Fraction(1, 2), 0)]
 
