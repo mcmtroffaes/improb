@@ -1,7 +1,9 @@
 Instability of Natural Extension
 --------------------------------
 
-Example adapted from [#robinson1977]_ (page 443):
+Example adapted from [#robinson1977]_ (page 443).
+
+Original model:
 
 >>> from improb.lowprev.lowpoly import LowPoly
 >>> lpr = LowPoly('abcd', number_type='fraction')
@@ -11,13 +13,35 @@ Example adapted from [#robinson1977]_ (page 443):
 2
 >>> list(lpr.get_credal_set())
 [(Fraction(1, 2), 0, Fraction(1, 2), 0), (0, Fraction(3, 4), Fraction(1, 4), 0)]
+
+Perturbated model:
+
 >>> lpr = LowPoly('abcd', number_type='fraction')
->>> lpr.set_upper([1, '0.67', 0, 2], '1/2')
+>>> lpr.set_upper([1, '0.66667', 0, 2], '1/2')
 >>> lpr.set_upper([0, 1, 3, 0], '3/2')
 >>> lpr.get_upper([0,2,2,0])
 1
 >>> list(lpr.get_credal_set())
 [(Fraction(1, 2), 0, Fraction(1, 2), 0)]
+
+Existence of incurring sure loss perturbation of original model:
+
+>>> lpr = LowPoly('abcd', number_type='fraction')
+>>> lpr.set_upper([1, '2/3', 0, 2], '0.49999')
+>>> lpr.set_upper([0, 1, 3, 0], '3/2')
+>>> lpr.is_avoiding_sure_loss()
+False
+
+Small vacuous mixture of the perturbated (still instable) model (alpha
+is 0.999):
+
+>>> lpr = LowPoly('abcd', number_type='fraction')
+>>> lpr.set_upper([1, '0.66667', 0, 2], '0.5015')
+>>> lpr.set_upper([0, 1, 3, 0], '1.5015')
+>>> lpr.get_upper([0,2,2,0])
+2
+
+So vacuous mixture is not stable!
 
 .. rubric:: Footnotes
 
