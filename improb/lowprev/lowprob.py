@@ -587,6 +587,7 @@ class LowProb(LowPoly):
 
         .. doctest::
 
+            >>> pspace = PSpace('abc')
             >>> ev = lambda A: Event(pspace, A)
             >>> lprob = LowProb(pspace, 
                                 lprob={ev('a'): '1/8', ev('b'): '1/7', ev('c'): '1/6'},
@@ -616,6 +617,7 @@ class LowProb(LowPoly):
 
         .. doctest::
 
+            >>> pspace = PSpace('abc')
             >>> ev = lambda A: Event(pspace, A)
             >>> lprob = LowProb(pspace,
                                 lprob={ev('a'): '1/8', ev('b'): '1/7', ev('c'): '1/6'},
@@ -632,25 +634,6 @@ class LowProb(LowPoly):
             a   c : 7/12
               b c : 13/21
             a b c : 2
-
-        .. warning::
-
-            In the current implementation, nonscalar 'other' should avoid sure
-            loss, or it will be detected:
-
-            >>> lprob + 2*lprob
-            Traceback (most recent call last):
-                ...
-            ValueError: lower prevision incurs sure loss:
-                  : 0
-            a     : 1/4
-              b   : 2/7
-                c : 1/3
-            a b   : 15/28
-            a   c : 7/12
-              b c : 13/21
-            a b c : 2
-
         """
         if isinstance(other, LowProb):
             if self.pspace != other.pspace:
@@ -661,7 +644,7 @@ class LowProb(LowPoly):
                 raise ValueError("number type mismatch")
             return LowProb(self.pspace,
                            lprev=dict([(gamble,
-                                        oper(lprev, other.get_lower(gamble)))
+                                        oper(lprev, other[gamble, True][0]))
                                        for (gamble, event), (lprev, uprev)
                                        in self.iteritems()]),
                            number_type=self.number_type)
