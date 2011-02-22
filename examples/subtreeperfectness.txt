@@ -119,6 +119,7 @@ into an extensive form?
 >>> for i in range(20):
 ...     # construct a lower prevision
 ...     lpr = LowProb.make_random(pspace=pspace, zero=False)
+...     opt = OptLowPrevMax(lpr)
 ...     # construct gambles:
 ...     # gambles[w1][d][w2] gives the gain of the w1-d-w2 path
 ...     gambles = [[[random.randint(0, 5) for w2 in range(n2)]

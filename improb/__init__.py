@@ -672,6 +672,10 @@ class Event(collections.Set, collections.Hashable):
     d : 1
     e : 1
     f : 1
+    >>> Event(pspace, 'abz')
+    Traceback (most recent call last):
+        ...
+    ValueError: event has element (z) not in possibility space
     """
     def __init__(self, pspace, data=False, name=None):
         """Construct an event on the given possibility space.
@@ -683,10 +687,16 @@ class Event(collections.Set, collections.Hashable):
         :param name: The name of the event (used for pretty printing).
         :type name: :class:`str`
         """
+        def validated(omega):
+            if omega in pspace:
+                return omega
+            else:
+                raise ValueError(
+                    "event has element ({0}) not in possibility space"
+                    .format(omega))
         self._pspace = PSpace.make(pspace)
         if isinstance(data, collections.Iterable):
-            self._data = frozenset(omega for omega in data
-                                   if omega in self.pspace)
+            self._data = frozenset(validated(omega) for omega in data)
         elif data is True:
             self._data = frozenset(self.pspace)
         elif data is False:
