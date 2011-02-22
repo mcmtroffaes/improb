@@ -198,6 +198,8 @@ class LowProb(LowPoly):
             number_type=self.number_type)
 
     def extend(self, keys=None, lower=True, upper=True, algorithm='linprog'):
+        # lowprobs have no upper, so ignore
+        upper = False
         if keys is None:
             LowPoly.extend(
                 self,
