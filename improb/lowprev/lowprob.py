@@ -69,6 +69,13 @@ class LowProb(LowPoly):
     0   2 : 0
       1 2 : 3/20
     0 1 2 : 7/10
+    >>> lpr = LowProb(3, lprob={(0, 1): '0.1', (1, 2): '0.2', (2,): '0.05'})
+    >>> lpr.extend([(lpr.pspace.make_event((0, 2)), True)])
+    >>> print(lpr)
+        2 : 1/20
+    0 1   : 1/10
+    0   2 : 1/20
+      1 2 : 1/5
     """
 
     def _clear_cache(self):
@@ -190,7 +197,8 @@ class LowProb(LowPoly):
                       for event in self.pspace.subsets()),
             number_type=self.number_type)
 
-    def extend(self, keys=None, lower=True, upper=True, algorithm='linprog'):
+    # lowprobs have no upper, so default to upper=False
+    def extend(self, keys=None, lower=True, upper=False, algorithm='linprog'):
         if keys is None:
             LowPoly.extend(
                 self,
