@@ -17,8 +17,8 @@ Version 0.1.1 (in development)
   elements that are not in the possibility space, instead of silently
   omitting them (fixes issue #3, reported by Erik Quaeghebeur).
 
-* LowProb.extend now ignores the upper argument (or rather, it is
-  forced to False), as it would always raise a ValueError instead.
+* LowProb.extend now has default upper=False argument, as it would
+  raise a ValueError instead.
 
 Version 0.1.0 (24 August 2010)
 ------------------------------
