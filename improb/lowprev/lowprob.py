@@ -720,25 +720,69 @@ class LowProb(LowPoly):
     def imprecise_part(self):
         """Extract the imprecise part and its relative weight.
 
-        .. warning::
-
-            Not implemented yet!
-
         Every coherent lower probability :math:`\underline{P}` can be written
         as a unique convex mixture :math:`\lambda P+(1-\lambda)\underline{Q}`
         of an additive 'precise' part :math:`P` and an 'imprecise' part
         :math:`\underline{Q}` that is zero on singletons.
         We return the tuple :math:`(\underline{Q},1-\lambda)`.
 
+        >>> pspace = PSpace('abc')
+        >>> ev = lambda A: Event(pspace, A)
+        >>> lprob = LowProb(pspace,
+        ...                 lprob={ev('a'): '1/8', ev('b'): '1/7', ev('c'): '1/6'},
+        ...                 number_type='fraction')
+        >>> print(lprob)
+        a     : 1/8
+          b   : 1/7
+            c : 1/6
+        >>> lprob.extend()
+        >>> print(lprob)
+              : 0
+        a     : 1/8
+          b   : 1/7
+            c : 1/6
+        a b   : 15/56
+        a   c : 7/24
+          b c : 13/42
+        a b c : 1
+        >>> lprob.set_lower(ev('ac'), '1/3')
+        >>> prob, coeff  = lprob.precise_part()
+        >>> print(prob)
+        a : 21/73
+        b : 24/73
+        c : 28/73
+        >>> print(coeff)
+        73/168
+        >>> improb, cocoeff  = lprob.imprecise_part()
+        >>> print(cocoeff)
+        95/168
+        >>> print(improb)
+              : 0
+        a     : 0
+          b   : 0
+            c : 0
+        a b   : 0
+        a   c : 7/95
+          b c : 0
+        a b c : 1
+        >>> coeff + cocoeff == 1
+        True
+
         .. warning::
 
             The lower probability must be defined for all singletons. If
             needed, call :meth:`~improb.lowprev.lowpoly.LowPoly.extend` first.
         """
-        raise NotImplementedError
+        prob, coeff = self.precise_part()
+        prob = LowProb(self.pspace, mapping=dict((gamble, (lprev, None))
+                                                 for gamble, (lprev, uprev)
+                                                 in prob.iteritems()),
+                       number_type=prob.number_type)
+        prob.extend(self.iterkeys(), upper=False)
+        return ((1 / (1 - coeff)) * (self - coeff * prob), 1 - coeff)
 
     def outer_approx(self, algorithm=None):
-        """Generate a linear-vacuous outer approximation.
+        """Generate an outer approximation.
 
         .. warning::
 
