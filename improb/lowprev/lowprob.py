@@ -677,6 +677,8 @@ class LowProb(LowPoly):
         We return the tuple :math:`(P,\lambda)`, where :math:`P` is a
         :class:`~improb.lowprev.prob.Prob`.
 
+        #TODO: deal with LowProbs without a precise part
+
         >>> pspace = PSpace('abc')
         >>> lprob = LowProb(pspace, number_type='fraction')
         >>> event = lambda A: Event(pspace, A)
@@ -719,6 +721,8 @@ class LowProb(LowPoly):
 
     def imprecise_part(self):
         """Extract the imprecise part and its relative weight.
+
+        #TODO: deal with LowProbs without a(n im)precise part
 
         Every coherent lower probability :math:`\underline{P}` can be written
         as a unique convex mixture :math:`\lambda P+(1-\lambda)\underline{Q}`
@@ -784,10 +788,6 @@ class LowProb(LowPoly):
     def outer_approx(self, algorithm=None):
         """Generate an outer approximation.
 
-        .. warning::
-
-            Not implemented yet!
-
         This algorithm replaces the lower probability's imprecise part
         :math:`\underline{Q}` by a lower probability :math:`\underline{R}`
         determined by the ``algorithm`` argument:
@@ -816,5 +816,32 @@ class LowProb(LowPoly):
         elif algorithm == 'linvac':
             prob, coeff = self.precise_part()
             return prob.get_linvac(1 - coeff)
+        elif algorithm == 'irm':
+            pspace = self.pspace
+            bba = SetFunction(pspace)
+            def mass_below(event):
+                subevents = pspace.subsets(event, full=False, empty=False)
+                return sum(bba[subevent] for subevent in subevents)
+            def basin_for_negmass(event):
+                mass = 0
+                index = len(event)
+                while bba[event] + mass < 0:
+                    index -= 1
+                    subevents = pspace.subsets(event, size=index)
+                    mass += sum(bba[subevent] for subevent in subsevents)
+                return (index, mass)
+            lprob = self.set_function
+            for cardinality in range(1,len(self.pspace) + 1):
+                for event in pspace.subsets(size=cardinality):
+                    bba[event] = lprob[event] - mass_below(event)
+                    if bba[event] < 0:
+                        index, mass = basin_for_negmass(event)
+                        subevents = chain(pspace.subsets(event, size=index)
+                                          for k in range(index, cardinality))
+                        for subevent in subevents:
+                            bba[subevent] = (bba[subevent]
+                                             * (1 + (bba[event] / mass)))
+                        bba[event] = 0
+            return bba
         else:
             raise NotImplementedError
