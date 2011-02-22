@@ -634,6 +634,10 @@ class LowProb(LowPoly):
             a   c : 7/12
               b c : 13/21
             a b c : 2
+            >>> lprob / 2
+            Traceback (most recent call last):
+                ...
+            TypeError: unsupported operand type(s) for /: 'LowProb' and 'int'
         """
         if isinstance(other, LowProb):
             if self.pspace != other.pspace:
@@ -673,11 +677,7 @@ class LowProb(LowPoly):
         We return the tuple :math:`(P,\lambda)`, where :math:`P` is a
         :class:`~improb.lowprev.prob.Prob`.
 
-        .. warning::
-
-            The lower probability must be defined for all singletons. If
-            needed, call :meth:`~improb.lowprev.lowpoly.LowPoly.extend` first.
-
+        >>> pspace = PSpace('abc')
         >>> lprob = LowProb(pspace, number_type='fraction')
         >>> event = lambda A: Event(pspace, A)
         >>> lprob.set_lower(event('a'), '1/8')
@@ -701,6 +701,12 @@ class LowProb(LowPoly):
         c : 28/73
         >>> coeff
         Fraction(73, 168)
+
+        .. warning::
+
+            The lower probability must be defined for all singletons. If
+            needed, call :meth:`~improb.lowprev.lowpoly.LowPoly.extend` first.
+
         """
         pspace = self.pspace
         norm = sum(self.get_lower(event) for event in pspace.subsets(size=1))
