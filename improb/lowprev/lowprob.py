@@ -22,7 +22,7 @@ from __future__ import division, absolute_import, print_function
 import cdd
 import collections
 from fractions import Fraction
-import itertools
+from itertools import chain
 import random
 
 from improb import PSpace, Gamble, Event
@@ -826,7 +826,8 @@ class LowProb(LowPoly):
             return prob.get_linvac(1 - coeff)
         elif algorithm == 'irm':
             pspace = self.pspace
-            bba = SetFunction(pspace)
+            bba = SetFunction(pspace, number_type=self.number_type)
+            bba[Event(pspace, set([]))] = 0
             def mass_below(event):
                 subevents = pspace.subsets(event, full=False, empty=False)
                 return sum(bba[subevent] for subevent in subevents)
@@ -836,7 +837,7 @@ class LowProb(LowPoly):
                 while bba[event] + mass < 0:
                     index -= 1
                     subevents = pspace.subsets(event, size=index)
-                    mass += sum(bba[subevent] for subevent in subsevents)
+                    mass += sum(bba[subevent] for subevent in subevents)
                 return (index, mass)
             lprob = self.set_function
             for cardinality in range(1,len(self.pspace) + 1):
@@ -844,12 +845,14 @@ class LowProb(LowPoly):
                     bba[event] = lprob[event] - mass_below(event)
                     if bba[event] < 0:
                         index, mass = basin_for_negmass(event)
-                        subevents = chain(pspace.subsets(event, size=index)
-                                          for k in range(index, cardinality))
+                        subevents = chain.from_iterable(
+                                        pspace.subsets(event, size=k)
+                                            for k in range(index, cardinality))
                         for subevent in subevents:
                             bba[subevent] = (bba[subevent]
                                              * (1 + (bba[event] / mass)))
                         bba[event] = 0
-            return bba
+            return LowProb(pspace, lprob=dict((event, bba.get_zeta(event)) 
+                                              for event in bba.iterkeys()))
         else:
             raise NotImplementedError
