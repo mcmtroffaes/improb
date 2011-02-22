@@ -811,4 +811,10 @@ class LowProb(LowPoly):
             The lower probability must be defined for all events. If needed,
             call :meth:`~improb.lowprev.lowpoly.LowPoly.extend` first.
         """
-        raise NotImplementedError
+        if algorithm == None:
+            return self
+        elif algorithm == 'linvac':
+            prob, coeff = self.precise_part()
+            return prob.get_linvac(1 - coeff)
+        else:
+            raise NotImplementedError
