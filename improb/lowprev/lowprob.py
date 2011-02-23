@@ -22,7 +22,7 @@ from __future__ import division, absolute_import, print_function
 import cdd
 import collections
 from fractions import Fraction
-from itertools import chain
+from itertools import chain, izip
 import random
 
 from improb import PSpace, Gamble, Event
@@ -800,9 +800,9 @@ class LowProb(LowPoly):
             ``None``, ``'linvac'``, or ``'irm'``
         :rtype: :class:`~improb.lowprev.lowprob.LowProb`
 
-        This method replaces the lower probability's imprecise part
-        :math:`\underline{Q}` by a lower probability :math:`\underline{R}`
-        determined by the ``algorithm`` argument:
+        This method replaces the lower probability :math:`\underline{P}` by
+        a lower probability :math:`\underline{R}` determined by the
+        ``algorithm`` argument:
 
         ``None``
             returns the original lower probability.
@@ -826,12 +826,12 @@ class LowProb(LowPoly):
             True
 
         ``'linvac'``
-            replaces :math:`\underline{Q}` by the vacuous lower
-            probability :math:`\underline{R}=\min` to generate a simple outer
-            approximation.
+            replaces the imprecise part :math:`\underline{Q}` by the vacuous
+            lower probability :math:`\underline{R}=\min` to generate a simple
+            outer approximation.
 
         ``'irm'``
-            replaces :math:`\underline{Q}` by a completely monotone lower
+            replaces :math:`\underline{P}` by a completely monotone lower
             probability :math:`\underline{R}` that is obtained by using the
             IRM algorithm of Hall & Lawry [#hall2004]_. The Moebius transform
             of a lower probability that is not completely monotone contains
@@ -995,6 +995,136 @@ class LowProb(LowPoly):
                 needed, call :meth:`~improb.lowprev.lowpoly.LowPoly.extend`
                 first.
 
+        ``'lpbelfunc'``
+            replaces :math:`\underline{P}` by a completely monotone lower
+            probability :math:`\underline{R}_\mu` that is obtained via the zeta
+            transform of the basic belief assignment :math:`\mu`, a solution of
+            the following optimization (linear programming) problem:
+
+            .. math::
+
+                \min\{
+                \sum_{A\subseteq\Omega}(\underline{P}(A)-\underline{R}_\mu(A)):
+                \mu(A)\geq0, \sum_{B\subseteq\Omega}\mu(B)=1,
+                \underline{R}_\mu(A)\leq\underline{P}(A), A\subseteq\Omega
+                \},
+
+            which, because constants in the objective function do not influence
+            the solution and because
+            :math:`\underline{R}_\mu(A)=\sum_{B\subseteq A}\mu(B)`,
+            is equivalent to:
+
+            .. math::
+
+                \max\{
+                \sum_{B\subseteq\Omega}2^{|\Omega|-|B|}\mu(B):
+                \mu(A)\geq0, \sum_{B\subseteq\Omega}\mu(B)=1,
+                \sum_{B\subseteq A}\mu(B)
+                 \leq\underline{P}(A), A\subseteq\Omega
+                \},
+
+            the version that is implemented.
+
+            We apply this to Example 2 from Hall & Lawry's 2004 paper
+            [#hall2004]_, which we also used for ``'irm'``:
+
+            >>> pspace = PSpace('ABCD')
+            >>> ev = lambda event: Event(pspace, event)
+            >>> lprob = LowProb(pspace, lprob={ev(''): 0, ev('ABCD'): 1,
+            ...                                ev('A'): .0895, ev('B'): .2743,
+            ...                                ev('C'): .2668, ev('D'): .1063,
+            ...                              ev('AB'): .3947, ev('AC'): .4506,
+            ...                              ev('AD'): .2959, ev('BC'): .5837,
+            ...                              ev('BD'): .4835, ev('CD'): .4079,
+            ...                            ev('ABC'): .7248, ev('ABD'): .6224,
+            ...                            ev('ACD'): .6072, ev('BCD'): .7502})
+            >>> belfunc = lprob.outer_approx('lpbelfunc')
+            >>> belfunc.is_completely_monotone()
+            True
+            >>> print(lprob)
+                    : 0.0
+            A       : 0.0895
+              B     : 0.2743
+                C   : 0.2668
+                  D : 0.1063
+            A B     : 0.3947
+            A   C   : 0.4506
+            A     D : 0.2959
+              B C   : 0.5837
+              B   D : 0.4835
+                C D : 0.4079
+            A B C   : 0.7248
+            A B   D : 0.6224
+            A   C D : 0.6072
+              B C D : 0.7502
+            A B C D : 1.0
+            >>> print(belfunc)
+                    : 0.0
+            A       : 0.0895
+              B     : 0.2743
+                C   : 0.2668
+                  D : 0.1063
+            A B     : 0.3638
+            A   C   : 0.4079
+            A     D : 0.28835
+              B C   : 0.5837
+              B   D : 0.44035
+                C D : 0.37355
+            A B C   : 0.7248
+            A B   D : 0.6224
+            A   C D : 0.6072
+              B C D : 0.7502
+            A B C D : 1.0
+            >>> print(lprob.mobius)
+                    : 0.0
+            A       : 0.0895
+              B     : 0.2743
+                C   : 0.2668
+                  D : 0.1063
+            A B     : 0.0309
+            A   C   : 0.0943
+            A     D : 0.1001
+              B C   : 0.0426
+              B   D : 0.1029
+                C D : 0.0348
+            A B C   : -0.0736
+            A B   D : -0.0816
+            A   C D : -0.0846
+              B C D : -0.0775
+            A B C D : 0.1748
+            >>> print(belfunc.mobius)
+                    : 0.0
+            A       : 0.0895
+              B     : 0.2743
+                C   : 0.2668
+                  D : 0.1063
+            A B     : 0.0
+            A   C   : 0.0516
+            A     D : 0.09255
+              B C   : 0.0426
+              B   D : 0.05975
+                C D : 0.00045
+            A B C   : 0.0
+            A B   D : 1.11022302463e-16
+            A   C D : 0.0
+              B C D : 0.0
+            A B C D : 0.01615
+            >>> sum(lprev for (lprev, uprev)
+            ...           in (lprob - belfunc).itervalues())/(2 ** len(pspace))
+            0.0099156249999999939
+
+            .. note::
+
+                This algorithm is *not* invariant under permutation of the
+                possibility space or changes in the LP-solver:
+                there may be a nontrivial convex set of optimal solutions.
+
+            .. warning::
+
+                The lower probability must be defined for all events. If
+                needed, call :meth:`~improb.lowprev.lowpoly.LowPoly.extend`
+                first.
+
         """
         if algorithm == None:
             return self
@@ -1031,5 +1161,33 @@ class LowProb(LowPoly):
                         bba[event] = 0
             return LowProb(pspace, lprob=dict((event, bba.get_zeta(event)) 
                                               for event in bba.iterkeys()))
+        elif algorithm == 'lpbelfunc':
+            lprob = self.set_function
+            pspace = lprob.pspace
+            number_type = lprob.number_type
+            n = 2 ** len(pspace)
+            mat = cdd.Matrix(list(chain(
+                      [[-1] + n * [1], [1] + n * [-1]],
+                      [[0] + [int(event == other)
+                              for other in pspace.subsets()]
+                       for event in pspace.subsets()],
+                      [[lprob[event]] + [-int(other <= event)
+                                         for other in pspace.subsets()]
+                       for event in pspace.subsets()]
+                  )), number_type=number_type)
+            mat.obj_type = cdd.LPObjType.MAX
+            mat.obj_func = (0,) + tuple(2 ** (len(pspace) - len(event))
+                                        for event in pspace.subsets())
+            lp = cdd.LinProg(mat)
+            lp.solve()
+            if lp.status == cdd.LPStatusType.OPTIMAL:
+                bba = SetFunction(pspace,
+                                  data=dict(izip(list(pspace.subsets()),
+                                                 list(lp.primal_solution))),
+                                  number_type=number_type)
+                return LowProb(pspace, lprob=dict((event, bba.get_zeta(event))
+                                                  for event in bba.iterkeys()))
+            else:
+                raise RuntimeError('No optimal solution found.')
         else:
             raise NotImplementedError
