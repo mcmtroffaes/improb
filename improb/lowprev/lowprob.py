@@ -796,12 +796,34 @@ class LowProb(LowPoly):
     def outer_approx(self, algorithm=None):
         """Generate an outer approximation.
 
-        This algorithm replaces the lower probability's imprecise part
+        :parameter algorithm: a :class:`~string` denoting the algorithm used:
+            ``None``, ``'linvac'``, or ``'irm'``
+        :rtype: :class:`~improb.lowprev.lowprob.LowProb`
+
+        This method replaces the lower probability's imprecise part
         :math:`\underline{Q}` by a lower probability :math:`\underline{R}`
         determined by the ``algorithm`` argument:
 
         ``None``
             returns the original lower probability.
+
+            >>> pspace = PSpace('abc')
+            >>> ev = lambda A: Event(pspace, A)
+            >>> lprob = LowProb(pspace,
+            ...             lprob={ev('ab'): .5, ev('ac'): .5, ev('bc'): .5},
+            ...             number_type='fraction')
+            >>> lprob.extend()
+            >>> print(lprob)
+                  : 0
+            a     : 0
+              b   : 0
+                c : 0
+            a b   : 1/2
+            a   c : 1/2
+              b c : 1/2
+            a b c : 1
+            >>> lprob == lprob.outer_approx()
+            True
 
         ``'linvac'``
             replaces :math:`\underline{Q}` by the vacuous lower
@@ -810,14 +832,169 @@ class LowProb(LowPoly):
 
         ``'irm'``
             replaces :math:`\underline{Q}` by a completely monotone lower
-            probability :math:`\underline{R}` that is obtained by taking the
-            zeta transform of the basic belief assignment generated using the
-            IRM algorithm of Hall & Lawry.
+            probability :math:`\underline{R}` that is obtained by using the
+            IRM algorithm of Hall & Lawry [#hall2004]_. The Moebius transform
+            of a lower probability that is not completely monotone contains
+            negative belief asignments. Consider such a lower probability and
+            an event with such a negative belief assignment. The approximation
+            consists of removing this negative assignment and compensating for
+            this by correspondingly reducing the positive masses for events
+            below it; for details, see the paper.
 
-        .. warning::
+            The following example illustrates the procedure:
 
-            The lower probability must be defined for all events. If needed,
-            call :meth:`~improb.lowprev.lowpoly.LowPoly.extend` first.
+            >>> pspace = PSpace('abc')
+            >>> ev = lambda A: Event(pspace, A)
+            >>> lprob = LowProb(pspace,
+            ...             lprob={ev('ab'): .5, ev('ac'): .5, ev('bc'): .5},
+            ...             number_type='fraction')
+            >>> lprob.extend()
+            >>> print(lprob)
+                  : 0
+            a     : 0
+              b   : 0
+                c : 0
+            a b   : 1/2
+            a   c : 1/2
+              b c : 1/2
+            a b c : 1
+            >>> lprob.is_completely_monotone()
+            False
+            >>> print(lprob.mobius)
+                  : 0
+            a     : 0
+              b   : 0
+                c : 0
+            a b   : 1/2
+            a   c : 1/2
+              b c : 1/2
+            a b c : -1/2
+            >>> belfunc = lprob.outer_approx('irm')
+            >>> print(belfunc.mobius)
+                  : 0
+            a     : 0
+              b   : 0
+                c : 0
+            a b   : 1/3
+            a   c : 1/3
+              b c : 1/3
+            a b c : 0
+            >>> print(belfunc)
+                  : 0
+            a     : 0
+              b   : 0
+                c : 0
+            a b   : 1/3
+            a   c : 1/3
+              b c : 1/3
+            a b c : 1
+            >>> belfunc.is_completely_monotone()
+            True
+
+            The next is Example 2 from Hall & Lawry's 2004 paper [#hall2004]_:
+
+            >>> pspace = PSpace('ABCD')
+            >>> ev = lambda event: Event(pspace, event)
+            >>> lprob = LowProb(pspace, lprob={ev(''): 0, ev('ABCD'): 1,
+            ...                                ev('A'): .0895, ev('B'): .2743,
+            ...                                ev('C'): .2668, ev('D'): .1063,
+            ...                              ev('AB'): .3947, ev('AC'): .4506,
+            ...                              ev('AD'): .2959, ev('BC'): .5837,
+            ...                              ev('BD'): .4835, ev('CD'): .4079,
+            ...                            ev('ABC'): .7248, ev('ABD'): .6224,
+            ...                            ev('ACD'): .6072, ev('BCD'): .7502})
+            >>> lprob.is_avoiding_sure_loss()
+            True
+            >>> lprob.is_coherent()
+            False
+            >>> lprob.is_completely_monotone()
+            False
+            >>> belfunc = lprob.outer_approx('irm')
+            >>> belfunc.is_completely_monotone()
+            True
+            >>> print(lprob)
+                    : 0.0
+            A       : 0.0895
+              B     : 0.2743
+                C   : 0.2668
+                  D : 0.1063
+            A B     : 0.3947
+            A   C   : 0.4506
+            A     D : 0.2959
+              B C   : 0.5837
+              B   D : 0.4835
+                C D : 0.4079
+            A B C   : 0.7248
+            A B   D : 0.6224
+            A   C D : 0.6072
+              B C D : 0.7502
+            A B C D : 1.0
+            >>> print(belfunc)
+                    : 0.0
+            A       : 0.0895
+              B     : 0.2743
+                C   : 0.2668
+                  D : 0.1063
+            A B     : 0.375789766751
+            A   C   : 0.405080300695
+            A     D : 0.259553087227
+              B C   : 0.560442004097
+              B   D : 0.43812301076
+                C D : 0.399034985143
+            A B C   : 0.710712071543
+            A B   D : 0.603365864737
+            A   C D : 0.601068373065
+              B C D : 0.7502
+            A B C D : 1.0
+            >>> print(lprob.mobius)
+                    : 0.0
+            A       : 0.0895
+              B     : 0.2743
+                C   : 0.2668
+                  D : 0.1063
+            A B     : 0.0309
+            A   C   : 0.0943
+            A     D : 0.1001
+              B C   : 0.0426
+              B   D : 0.1029
+                C D : 0.0348
+            A B C   : -0.0736
+            A B   D : -0.0816
+            A   C D : -0.0846
+              B C D : -0.0775
+            A B C D : 0.1748
+            >>> print(belfunc.mobius)
+                    : 0.0
+            A       : 0.0895
+              B     : 0.2743
+                C   : 0.2668
+                  D : 0.1063
+            A B     : 0.0119897667507
+            A   C   : 0.0487803006948
+            A     D : 0.0637530872268
+              B C   : 0.019342004097
+              B   D : 0.0575230107598
+                C D : 0.0259349851432
+            A B C   : 3.33066907388e-16
+            A B   D : -1.11022302463e-16
+            A   C D : -1.11022302463e-16
+              B C D : 0.0
+            A B C D : 0.0357768453276
+            >>> sum(lprev for (lprev, uprev)
+            ...           in (lprob - belfunc).itervalues())/(2 ** len(pspace))
+            0.013595658498933991
+
+            .. note::
+
+                This algorithm is *not* invariant under permutation of the
+                possibility space.
+
+            .. warning::
+
+                The lower probability must be defined for all events. If
+                needed, call :meth:`~improb.lowprev.lowpoly.LowPoly.extend`
+                first.
+
         """
         if algorithm == None:
             return self
