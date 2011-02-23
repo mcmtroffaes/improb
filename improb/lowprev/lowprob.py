@@ -683,9 +683,8 @@ class LowProb(LowPoly):
         of an additive 'precise' part :math:`P` and an 'imprecise' part
         :math:`\underline{Q}` that is zero on singletons.
         We return the tuple :math:`(P,\lambda)`, where :math:`P` is a
-        :class:`~improb.lowprev.prob.Prob`.
-
-        #TODO: deal with LowProbs without a precise part
+        :class:`~improb.lowprev.prob.Prob`. In case :math:`\lambda=0` we return
+        the tuple (``None``, 0).
 
         >>> pspace = PSpace('abc')
         >>> lprob = LowProb(pspace, number_type='fraction')
@@ -721,16 +720,17 @@ class LowProb(LowPoly):
         pspace = self.pspace
         norm = sum(self.get_lower(event) for event in pspace.subsets(size=1))
         from improb.lowprev.prob import Prob
-        return (Prob(pspace=pspace,
-                     prob=[self.get_lower(event)/norm
-                           for event in pspace.subsets(size=1)],
-                     number_type=self.number_type),
-                norm)
+        if norm == 0:
+            return (Prob(pspace=pspace,number_type=self.number_type), 0)
+        else:
+            return (Prob(pspace=pspace,
+                         prob=[self.get_lower(event)/norm
+                               for event in pspace.subsets(size=1)],
+                         number_type=self.number_type),
+                    norm)
 
     def imprecise_part(self):
         """Extract the imprecise part and its relative weight.
-
-        #TODO: deal with LowProbs without a(n im)precise part
 
         Every coherent lower probability :math:`\underline{P}` can be written
         as a unique convex mixture :math:`\lambda P+(1-\lambda)\underline{Q}`
@@ -786,12 +786,15 @@ class LowProb(LowPoly):
             needed, call :meth:`~improb.lowprev.lowpoly.LowPoly.extend` first.
         """
         prob, coeff = self.precise_part()
-        prob = LowProb(self.pspace, mapping=dict((gamble, (lprev, None))
-                                                 for gamble, (lprev, uprev)
-                                                 in prob.iteritems()),
-                       number_type=prob.number_type)
-        prob.extend(self.iterkeys(), upper=False)
-        return ((1 / (1 - coeff)) * (self - coeff * prob), 1 - coeff)
+        if coeff == 0:
+            return self
+        else:
+            prob = LowProb(self.pspace, mapping=dict((gamble, (lprev, None))
+                                                    for gamble, (lprev, uprev)
+                                                    in prob.iteritems()),
+                          number_type=prob.number_type)
+            prob.extend(self.iterkeys(), upper=False)
+            return ((1 / (1 - coeff)) * (self - coeff * prob), 1 - coeff)
 
     def outer_approx(self, algorithm=None):
         """Generate an outer approximation.
