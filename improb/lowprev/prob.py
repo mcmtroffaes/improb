@@ -77,13 +77,14 @@ class Prob(LinVac):
         # check that values are non-negative and sum to one
         if any(self.number_cmp(value[0], value[1]) != 0
                for value in self.itervalues()):
-            oops("probabilities must be precise")
+            return oops("probabilities must be precise")
         if any(self.number_cmp(value[0], 0) == -1
                for value in self.itervalues()):
-            oops("probabilities must be non-negative")
+            return oops("probabilities must be non-negative")
         if self.number_cmp(
             sum(value[0] for value in self.itervalues()), 1) != 0:
-            oops("probabilities must sum to one")
+            return oops("probabilities must sum to one")
+        return True
 
     def get_linvac(self, epsilon):
         """Convert probability into a linear vacuous mixture:
