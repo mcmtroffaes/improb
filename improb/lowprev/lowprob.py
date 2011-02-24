@@ -1135,6 +1135,7 @@ class LowProb(LowPoly):
             prob, coeff = self.precise_part()
             return prob.get_linvac(1 - coeff)
         elif algorithm == 'irm':
+            # Initialize the algorithm
             pspace = self.pspace
             bba = SetFunction(pspace, number_type=self.number_type)
             bba[Event(pspace, set([]))] = 0
@@ -1150,6 +1151,10 @@ class LowProb(LowPoly):
                     mass += sum(bba[subevent] for subevent in subevents)
                 return (index, mass)
             lprob = self.set_function
+            # The algoritm itself:
+            # we climb the algebra of events, calculating the belief assignment
+            # for each and compensate negative ones by proportionally reducing
+            # the assignments in the smallest basin of subevents needed
             for cardinality in range(1,len(self.pspace) + 1):
                 for event in pspace.subsets(size=cardinality):
                     bba[event] = lprob[event] - mass_below(event)
@@ -1165,10 +1170,12 @@ class LowProb(LowPoly):
             return LowProb(pspace, lprob=dict((event, bba.get_zeta(event)) 
                                               for event in bba.iterkeys()))
         elif algorithm == 'lpbelfunc':
+            # Initialize he algorithm
             lprob = self.set_function
             pspace = lprob.pspace
             number_type = lprob.number_type
             n = 2 ** len(pspace)
+            # Set up the linear program
             mat = cdd.Matrix(list(chain(
                       [[-1] + n * [1], [1] + n * [-1]],
                       [[0] + [int(event == other)
@@ -1182,6 +1189,7 @@ class LowProb(LowPoly):
             mat.obj_func = (0,) + tuple(2 ** (len(pspace) - len(event))
                                         for event in pspace.subsets())
             lp = cdd.LinProg(mat)
+            # Solve the linear program and check the solution
             lp.solve()
             if lp.status == cdd.LPStatusType.OPTIMAL:
                 bba = SetFunction(pspace,
