@@ -29,6 +29,16 @@ class LinVac(BelFunc):
     Assessments on non-singletons, and conditional assessments, raise
     a `~exceptions.ValueError`.
 
+    >>> from improb.lowprev.linvac import LinVac
+    >>> lpr = LinVac(3, lprob={(0,): '0.2'})
+    >>> print(lpr)
+    0     : 1/5
+    >>> lpr.extend(algorithm='linprog')
+    >>> print(lpr)
+    0     : 1/5
+      1   : 0
+        2 : 0
+
     >>> from improb.lowprev.prob import Prob
     >>> lpr = Prob(3, prob=['0.2', '0.3', '0.5']).get_linvac('0.1')
     >>> print(lpr.get_lower([1,0,0]))
@@ -94,7 +104,7 @@ class LinVac(BelFunc):
             algorithm = 'linvac'
         # other algorithms?
         if algorithm != 'linvac':
-            BelFunc.get_lower(self, gamble, event, algorithm)
+            return BelFunc.get_lower(self, gamble, event, algorithm)
         gamble = self.make_gamble(gamble)
         event = self.pspace.make_event(event)
         epsilon = 1 - sum(self[{omega: 1}, True][0] for omega in self.pspace)
@@ -105,3 +115,6 @@ class LinVac(BelFunc):
             (sum(self[{omega: 1}, True][0] for omega in event)
              + epsilon)
             )
+
+    def get_extend_domain(self):
+        return ((event, True) for event in self.pspace.subsets(size=1))

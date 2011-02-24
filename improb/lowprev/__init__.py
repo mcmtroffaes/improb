@@ -129,3 +129,10 @@ class LowPrev(collections.MutableMapping, cdd.NumberTypeable):
         other_gamble = self.make_gamble(other_gamble)
         return self.number_cmp(
             self.get_lower(gamble - other_gamble, event, algorithm)) == 1
+
+    @abstractmethod
+    def get_extend_domain(self):
+        """Get largest possible domain to which the lower prevision
+        can be extended.
+        """
+        raise NotImplementedError
