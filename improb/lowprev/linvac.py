@@ -23,8 +23,11 @@ from improb import PSpace, Gamble, Event
 from improb.lowprev.belfunc import BelFunc
 
 class LinVac(BelFunc):
-    """Linear-vacuous mixture, implemented as an unconditional lower
-    probability on singletons.
+    """Linear-vacuous mixture, implemented as a
+    :class:`~improb.lowprev.belfunc.BelFunc` whose natural extension
+    is calculated via a much simpler formula; see :meth:`get_lower`.
+    Assessments on non-singletons, and conditional assessments, raise
+    a `~exceptions.ValueError`.
 
     >>> from improb.lowprev.prob import Prob
     >>> lpr = Prob(3, prob=['0.2', '0.3', '0.5']).get_linvac('0.1')

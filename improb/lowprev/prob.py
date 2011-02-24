@@ -28,7 +28,9 @@ from improb.lowprev.linvac import LinVac
 from improb.lowprev.lowpoly import LowPoly
 
 class Prob(LinVac):
-    """A probability measure.
+    """A probability measure, implemented as a
+    :class:`~improb.lowprev.linvac.LinVac` whose natural extension is
+    calculated via expectation; see :meth:`get_precise`.
 
     >>> p = Prob(5, prob=['0.1', '0.2', '0.3', '0.05', '0.35'])
     >>> print(p)
