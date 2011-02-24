@@ -800,7 +800,7 @@ class LowProb(LowPoly):
         """Generate an outer approximation.
 
         :parameter algorithm: a :class:`~string` denoting the algorithm used:
-            ``None``, ``'linvac'``, ``'irm'``, or ``lpbelfunc``
+            ``None``, ``'linvac'``, ``'irm'``, ``'iminrm'``, or ``'lpbelfunc'``
         :rtype: :class:`~improb.lowprev.lowprob.LowProb`
 
         This method replaces the lower probability :math:`\underline{P}` by
@@ -838,7 +838,7 @@ class LowProb(LowPoly):
             probability :math:`\underline{R}` that is obtained by using the
             IRM algorithm of Hall & Lawry [#hall2004]_. The Moebius transform
             of a lower probability that is not completely monotone contains
-            negative belief asignments. Consider such a lower probability and
+            negative belief assignments. Consider such a lower probability and
             an event with such a negative belief assignment. The approximation
             consists of removing this negative assignment and compensating for
             this by correspondingly reducing the positive masses for events
@@ -990,6 +990,110 @@ class LowProb(LowPoly):
             .. note::
 
                 This algorithm is *not* invariant under permutation of the
+                possibility space.
+
+            .. warning::
+
+                The lower probability must be defined for all events. If
+                needed, call :meth:`~improb.lowprev.lowpoly.LowPoly.extend`
+                first.
+
+        ``'iminrm'``
+            replaces :math:`\underline{P}` by a completely monotone lower
+            probability :math:`\underline{R}` that is obtained by using an
+            algorithm by Quaeghebeur that is as of yet unpublished.
+
+            We apply it to Example 2 from Hall & Lawry's 2004 paper
+            [#hall2004]_:
+
+            >>> pspace = PSpace('ABCD')
+            >>> ev = lambda event: Event(pspace, event)
+            >>> lprob = LowProb(pspace, lprob={ev(''): 0, ev('ABCD'): 1,
+            ...                                ev('A'): .0895, ev('B'): .2743,
+            ...                                ev('C'): .2668, ev('D'): .1063,
+            ...                              ev('AB'): .3947, ev('AC'): .4506,
+            ...                              ev('AD'): .2959, ev('BC'): .5837,
+            ...                              ev('BD'): .4835, ev('CD'): .4079,
+            ...                            ev('ABC'): .7248, ev('ABD'): .6224,
+            ...                            ev('ACD'): .6072, ev('BCD'): .7502})
+            >>> belfunc = lprob.outer_approx('iminrm')
+            >>> belfunc.is_completely_monotone()
+            True
+            >>> print(lprob)
+                    : 0.0
+            A       : 0.0895
+              B     : 0.2743
+                C   : 0.2668
+                  D : 0.1063
+            A B     : 0.3947
+            A   C   : 0.4506
+            A     D : 0.2959
+              B C   : 0.5837
+              B   D : 0.4835
+                C D : 0.4079
+            A B C   : 0.7248
+            A B   D : 0.6224
+            A   C D : 0.6072
+              B C D : 0.7502
+            A B C D : 1.0
+            >>> print(belfunc)
+                    : 0.0
+            A       : 0.0895
+              B     : 0.2743
+                C   : 0.2668
+                  D : 0.1063
+            A B     : 0.381007057096
+            A   C   : 0.411644226231
+            A     D : 0.26007767078
+              B C   : 0.562748716673
+              B   D : 0.4404197271
+                C D : 0.394394926787
+            A B C   : 0.7248
+            A B   D : 0.6224
+            A   C D : 0.6072
+              B C D : 0.7502
+            A B C D : 1.0
+            >>> print(lprob.mobius)
+                    : 0.0
+            A       : 0.0895
+              B     : 0.2743
+                C   : 0.2668
+                  D : 0.1063
+            A B     : 0.0309
+            A   C   : 0.0943
+            A     D : 0.1001
+              B C   : 0.0426
+              B   D : 0.1029
+                C D : 0.0348
+            A B C   : -0.0736
+            A B   D : -0.0816
+            A   C D : -0.0846
+              B C D : -0.0775
+            A B C D : 0.1748
+            >>> print(belfunc.mobius)
+                    : 0.0
+            A       : 0.0895
+              B     : 0.2743
+                C   : 0.2668
+                  D : 0.1063
+            A B     : 0.0172070570962
+            A   C   : 0.0553442262305
+            A     D : 0.0642776707797
+              B C   : 0.0216487166733
+              B   D : 0.0598197271
+                C D : 0.0212949267869
+            A B C   : 2.22044604925e-16
+            A B   D : 0.0109955450242
+            A   C D : 0.00368317620293
+              B C D : 3.66294398528e-05
+            A B C D : 0.00879232466651
+            >>> sum(lprev for (lprev, uprev)
+            ...           in (lprob - belfunc).itervalues())/(2 ** len(pspace))
+            0.010375479708342836
+
+            .. note::
+
+                This algorithm *is* invariant under permutation of the
                 possibility space.
 
             .. warning::
@@ -1169,7 +1273,7 @@ class LowProb(LowPoly):
                         bba[event] = 0
             return LowProb(pspace, lprob=dict((event, bba.get_zeta(event)) 
                                               for event in bba.iterkeys()))
-        elif algorithm == 'imrm':
+        elif algorithm == 'iminrm':
             # Initialize the algorithm
             pspace = self.pspace
             number_type = self.number_type
@@ -1189,7 +1293,6 @@ class LowProb(LowPoly):
                 return (index, mass)
             lprob = self.set_function
             # The algorithm itself:
-            #***
             cardinality = 1
             while cardinality <= len(pspace):
                 temp_bba = SetFunction(pspace, number_type=number_type)
@@ -1202,14 +1305,20 @@ class LowProb(LowPoly):
                     cardinality += 1
                 else:
                     minindex = min(pair[0] for pair in offenders.itervalues())
-                    for event in offenders if offenders[event][0] == minindex:
-                        local_mass = mass_below(event, cardinality=minindex)
-                        scalef = (offenders[event][1] + bba[event])/ local_mass
-                        for subevent in pspace.subsets(event, size=minindex)
-                            temp_bba[subevent] = max(temp_bba[subevent],
-                                                    scalef * bba[subevent])
+                    for event in offenders:
+                        if offenders[event][0] == minindex:
+                            mass = mass_below(event, cardinality=minindex)
+                            scalef = (offenders[event][1] + bba[event]) / mass
+                            for subevent in pspace.subsets(event,
+                                                           size=minindex):
+                                if subevent not in temp_bba:
+                                    temp_bba[subevent] = 0
+                                temp_bba[subevent] = max(temp_bba[subevent],
+                                                         scalef * bba[subevent])
                     for event, value in temp_bba.iteritems():
                         bba[event] = value
+            return LowProb(pspace, lprob=dict((event, bba.get_zeta(event))
+                                              for event in bba.iterkeys()))
         elif algorithm == 'lpbelfunc':
             # Initialize the algorithm
             lprob = self.set_function
