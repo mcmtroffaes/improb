@@ -25,6 +25,10 @@ Version 0.1.1 (in development)
   keys are not specified (or are None) when calling LowPrev.extend
   (addresses in part issue #4, reported by Erik Quaeghebeur).
 
+* Prob.extend now has a 'linear' algorithm to spread remaining mass
+  over undefined singletons uniformly (addresses in part issue #4,
+  reported by Erik Quaeghebeur).
+
 Version 0.1.0 (24 August 2010)
 ------------------------------
 

@@ -49,6 +49,11 @@ class Prob(LinVac):
     0 : 2/5
     1 : undefined
     2 : undefined
+    >>> p.extend()
+    >>> print(p)
+    0 : 2/5
+    1 : 3/10
+    2 : 3/10
     """
 
     def __str__(self):
@@ -178,3 +183,28 @@ class Prob(LinVac):
             probs = [fractions.Fraction(prob, division) for prob in probs]
         # return the probability
         return cls(pspace=pspace, number_type=number_type, prob=probs)
+
+    # probs have an upper, so default to upper=True
+    def extend(self, keys=None, lower=True, upper=True, algorithm='linear'):
+        # default algorithm
+        if algorithm is None:
+            algorithm = 'linear'
+        # other algorithms?
+        if algorithm != 'linear':
+            LinVac.extend(self, keys, lower, upper, algorithm)
+            return
+        # number of undefined singletons?
+        num_undefined = len(self.pspace) - len(self)
+        if num_undefined == 0:
+            # nothing to do
+            return
+        # sum probabilities over all defined singletons
+        mass = sum(self.get(({omega: 1}, True), (0, 0))[0]
+                   for omega in self.pspace)
+        # distribute remaining probability over remaining events
+        remaining_mass = (1 - mass) / num_undefined
+        value = (remaining_mass, remaining_mass)
+        for omega in self.pspace:
+            key = ({omega: 1}, True)
+            if key not in self:
+                self[key] = value
