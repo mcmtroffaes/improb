@@ -29,6 +29,16 @@ import fractions
 import itertools
 import numbers
 
+def _str_keys_values(keys, values):
+    """Turn dictionary with *keys* and *values* into a string.
+    Warning: *keys* must be a list.
+    """
+    maxlen_keys = max(len(str(key)) for key in keys)
+    return "\n".join(
+        "{0: <{1}} : {2}".format(
+            key, maxlen_keys, value)
+        for key, value in itertools.izip(keys, values))
+
 class PSpace(collections.Set, collections.Hashable):
     """An immutable possibility space, derived from
     :class:`collections.Set` and :class:`collections.Hashable`. This
@@ -587,11 +597,9 @@ class Gamble(collections.Mapping, collections.Hashable, cdd.NumberTypeable):
         sun    : 4.0
         clouds : 20.0
         """
-        maxlen_pspace = max(len(str(omega)) for omega in self.pspace)
-        return "\n".join(
-            "{0: <{1}} : {2}".format(
-                omega, maxlen_pspace, self.number_str(value))
-            for omega, value in self.iteritems())
+        return _str_keys_values(
+            self.pspace,
+            (self.number_str(value) for value in self.itervalues()))
 
     def _scalar(self, other, oper):
         """
@@ -750,11 +758,9 @@ class Event(collections.Set, collections.Hashable):
         sun    : 0
         clouds : 1
         """
-        maxlen_pspace = max(len(str(omega)) for omega in self.pspace)
-        return "\n".join(
-            "{0: <{1}} : {2}".format(
-                omega, maxlen_pspace, 1 if omega in self else 0)
-            for omega in self.pspace)
+        return _str_keys_values(
+            self.pspace,
+            (1 if omega in self else 0 for omega in self.pspace))
 
     def complement(self):
         """Calculate the complement of the event.

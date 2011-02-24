@@ -23,7 +23,7 @@ import math
 import random
 import fractions
 
-from improb import PSpace, Gamble, Event
+from improb import PSpace, Gamble, Event, _str_keys_values
 from improb.lowprev.linvac import LinVac
 from improb.lowprev.lowpoly import LowPoly
 
@@ -46,12 +46,16 @@ class Prob(LinVac):
 
     >>> p = Prob(3, prob={(0,): '0.4'})
     >>> print(p)
+    0 : 2/5
+    1 : undefined
+    2 : undefined
     """
 
     def __str__(self):
-        return str(
-            self.make_gamble(
-                [self[{omega: 1}, True][0] for omega in self.pspace]))
+        return _str_keys_values(
+            self.pspace,
+            (self.get(({omega: 1}, True), ("undefined", "undefined"))[0]
+             for omega in self.pspace))
 
     def _make_value(self, value):
         lprev, uprev = LowPoly._make_value(self, value)
