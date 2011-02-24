@@ -43,6 +43,9 @@ class Prob(LinVac):
     53/20
     >>> print(p.get_precise([2, 4, 3, 8, 1], [0, 1]))
     10/3
+
+    >>> p = Prob(3, prob={(0,): '0.4'})
+    >>> print(p)
     """
 
     def __str__(self):
