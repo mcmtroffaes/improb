@@ -800,7 +800,7 @@ class LowProb(LowPoly):
         """Generate an outer approximation.
 
         :parameter algorithm: a :class:`~string` denoting the algorithm used:
-            ``None``, ``'linvac'``, or ``'irm'``
+            ``None``, ``'linvac'``, ``'irm'``, or ``lpbelfunc``
         :rtype: :class:`~improb.lowprev.lowprob.LowProb`
 
         This method replaces the lower probability :math:`\underline{P}` by
@@ -1155,7 +1155,7 @@ class LowProb(LowPoly):
             # we climb the algebra of events, calculating the belief assignment
             # for each and compensate negative ones by proportionally reducing
             # the assignments in the smallest basin of subevents needed
-            for cardinality in range(1,len(self.pspace) + 1):
+            for cardinality in range(1,len(pspace) + 1):
                 for event in pspace.subsets(size=cardinality):
                     bba[event] = lprob[event] - mass_below(event)
                     if bba[event] < 0:
@@ -1169,8 +1169,49 @@ class LowProb(LowPoly):
                         bba[event] = 0
             return LowProb(pspace, lprob=dict((event, bba.get_zeta(event)) 
                                               for event in bba.iterkeys()))
+        elif algorithm == 'imrm':
+            # Initialize the algorithm
+            pspace = self.pspace
+            number_type = self.number_type
+            bba = SetFunction(pspace, number_type=number_type)
+            bba[Event(pspace, set([]))] = 0
+            def mass_below(event, cardinality=None):
+                subevents = pspace.subsets(event, full=False, empty=False,
+                                           size=cardinality)
+                return sum(bba[subevent] for subevent in subevents)
+            def basin_for_negmass(event):
+                mass = 0
+                index = len(event)
+                while bba[event] + mass < 0:
+                    index -= 1
+                    subevents = pspace.subsets(event, size=index)
+                    mass += sum(bba[subevent] for subevent in subevents)
+                return (index, mass)
+            lprob = self.set_function
+            # The algorithm itself:
+            #***
+            cardinality = 1
+            while cardinality <= len(pspace):
+                temp_bba = SetFunction(pspace, number_type=number_type)
+                for event in pspace.subsets(size=cardinality):
+                    bba[event] = lprob[event] - mass_below(event)
+                offenders = dict((event, basin_for_negmass(event))
+                                 for event in pspace.subsets(size=cardinality)
+                                 if bba[event] < 0)
+                if len(offenders) == 0:
+                    cardinality += 1
+                else:
+                    minindex = min(pair[0] for pair in offenders.itervalues())
+                    for event in offenders if offenders[event][0] == minindex:
+                        local_mass = mass_below(event, cardinality=minindex)
+                        scalef = (offenders[event][1] + bba[event])/ local_mass
+                        for subevent in pspace.subsets(event, size=minindex)
+                            temp_bba[subevent] = max(temp_bba[subevent],
+                                                    scalef * bba[subevent])
+                    for event, value in temp_bba.iteritems():
+                        bba[event] = value
         elif algorithm == 'lpbelfunc':
-            # Initialize he algorithm
+            # Initialize the algorithm
             lprob = self.set_function
             pspace = lprob.pspace
             number_type = lprob.number_type
