@@ -33,7 +33,7 @@ class LinVac(BelFunc):
     >>> lpr = LinVac(3, lprob={(0,): '0.2'})
     >>> print(lpr)
     0     : 1/5
-    >>> lpr.extend(algorithm='linprog')
+    >>> lpr.extend()
     >>> print(lpr)
     0     : 1/5
       1   : 0
