@@ -119,7 +119,7 @@ class Prob(LinVac):
             algorithm = 'linear'
         # other algorithms?
         if algorithm != 'linear':
-            LinVac.get_lower(self, gamble, event, algorithm)
+            return LinVac.get_lower(self, gamble, event, algorithm)
         self.is_valid(raise_error=True)
         gamble = self.make_gamble(gamble)
         if event is True or (isinstance(event, Event) and event.is_true()):
