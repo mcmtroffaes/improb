@@ -409,7 +409,7 @@ class PSpace(collections.Set, collections.Hashable):
         elif isinstance(size, (int, long)):
             size_range = (size,)
         else:
-            raise ValueError('invalid size')
+            raise TypeError('invalid size')
         for subset_size in size_range:
             for subset in itertools.combinations(event - contains, subset_size):
                 yield Event(self, subset) | contains
