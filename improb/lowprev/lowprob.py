@@ -1423,6 +1423,7 @@ class LowProb(LowPoly):
                                                          scalef * bba[subevent])
                     for event, value in temp_bba.iteritems():
                         bba[event] = value
+                    cardinality = minindex + 1
             return LowProb(pspace, lprob=dict((event, bba.get_zeta(event))
                                               for event in bba.iterkeys()))
         elif algorithm == 'imaxminrm':
@@ -1469,6 +1470,7 @@ class LowProb(LowPoly):
                                                    (1 - scalef) * bba[subevent])
                     event = max(bba_diff.iteritems(), key=itemgetter(1))[0]
                     bba[event] -= bba_diff[event]
+                    cardinality = minindex + 1
             return LowProb(pspace, lprob=dict((event, bba.get_zeta(event))
                                               for event in bba.iterkeys()))
         elif algorithm == 'lpbelfunc':
