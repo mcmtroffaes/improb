@@ -1098,7 +1098,7 @@ class LowProb(LowPoly):
                 The lower probability must be defined for all events. If
                 needed, call :meth:`~improb.lowprev.lowpoly.LowPoly.extend`
                 first.
-                
+
         ``'imaxminrm'``
             replaces :math:`\underline{P}` by a completely monotone lower
             probability :math:`\underline{R}` that is obtained by using an
