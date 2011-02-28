@@ -23,12 +23,14 @@ import math
 import random
 import fractions
 
-from improb import PSpace, Gamble, Event
+from improb import PSpace, Gamble, Event, _str_keys_values
 from improb.lowprev.linvac import LinVac
 from improb.lowprev.lowpoly import LowPoly
 
 class Prob(LinVac):
-    """A probability measure.
+    """A probability measure, implemented as a
+    :class:`~improb.lowprev.linvac.LinVac` whose natural extension is
+    calculated via expectation; see :meth:`get_precise`.
 
     >>> p = Prob(5, prob=['0.1', '0.2', '0.3', '0.05', '0.35'])
     >>> print(p)
@@ -41,12 +43,24 @@ class Prob(LinVac):
     53/20
     >>> print(p.get_precise([2, 4, 3, 8, 1], [0, 1]))
     10/3
+
+    >>> p = Prob(3, prob={(0,): '0.4'})
+    >>> print(p)
+    0 : 2/5
+    1 : undefined
+    2 : undefined
+    >>> p.extend()
+    >>> print(p)
+    0 : 2/5
+    1 : 3/10
+    2 : 3/10
     """
 
     def __str__(self):
-        return str(
-            self.make_gamble(
-                [self[{omega: 1}, True][0] for omega in self.pspace]))
+        return _str_keys_values(
+            self.pspace,
+            (self.get(({omega: 1}, True), ("undefined", "undefined"))[0]
+             for omega in self.pspace))
 
     def _make_value(self, value):
         lprev, uprev = LowPoly._make_value(self, value)
@@ -63,13 +77,14 @@ class Prob(LinVac):
         # check that values are non-negative and sum to one
         if any(self.number_cmp(value[0], value[1]) != 0
                for value in self.itervalues()):
-            oops("probabilities must be precise")
+            return oops("probabilities must be precise")
         if any(self.number_cmp(value[0], 0) == -1
                for value in self.itervalues()):
-            oops("probabilities must be non-negative")
+            return oops("probabilities must be non-negative")
         if self.number_cmp(
             sum(value[0] for value in self.itervalues()), 1) != 0:
-            oops("probabilities must sum to one")
+            return oops("probabilities must sum to one")
+        return True
 
     def get_linvac(self, epsilon):
         """Convert probability into a linear vacuous mixture:
@@ -110,7 +125,7 @@ class Prob(LinVac):
             algorithm = 'linear'
         # other algorithms?
         if algorithm != 'linear':
-            LinVac.get_lower(self, gamble, event, algorithm)
+            return LinVac.get_lower(self, gamble, event, algorithm)
         self.is_valid(raise_error=True)
         gamble = self.make_gamble(gamble)
         if event is True or (isinstance(event, Event) and event.is_true()):
@@ -169,3 +184,28 @@ class Prob(LinVac):
             probs = [fractions.Fraction(prob, division) for prob in probs]
         # return the probability
         return cls(pspace=pspace, number_type=number_type, prob=probs)
+
+    # probs have an upper, so default to upper=True
+    def extend(self, keys=None, lower=True, upper=True, algorithm='linear'):
+        # default algorithm
+        if algorithm is None:
+            algorithm = 'linear'
+        # other algorithms?
+        if algorithm != 'linear':
+            LinVac.extend(self, keys, lower, upper, algorithm)
+            return
+        # number of undefined singletons?
+        num_undefined = len(self.pspace) - len(self)
+        if num_undefined == 0:
+            # nothing to do
+            return
+        # sum probabilities over all defined singletons
+        mass = sum(self.get(({omega: 1}, True), (0, 0))[0]
+                   for omega in self.pspace)
+        # distribute remaining probability over remaining events
+        remaining_mass = (1 - mass) / num_undefined
+        value = (remaining_mass, remaining_mass)
+        for omega in self.pspace:
+            key = ({omega: 1}, True)
+            if key not in self:
+                self[key] = value

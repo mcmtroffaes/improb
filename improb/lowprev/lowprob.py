@@ -197,17 +197,12 @@ class LowProb(LowPoly):
                       for event in self.pspace.subsets()),
             number_type=self.number_type)
 
+    def get_extend_domain(self):
+        return ((event, True) for event in self.pspace.subsets())
+
     # lowprobs have no upper, so default to upper=False
     def extend(self, keys=None, lower=True, upper=False, algorithm='linprog'):
-        if keys is None:
-            LowPoly.extend(
-                self,
-                ((event, True) for event in self.pspace.subsets()),
-                lower=True,
-                upper=False,
-                algorithm=algorithm)
-        else:
-            LowPoly.extend(self, keys, lower, upper, algorithm)
+        LowPoly.extend(self, keys, lower, upper, algorithm)
 
     def is_completely_monotone(self):
         """Checks whether the lower probability is completely monotone

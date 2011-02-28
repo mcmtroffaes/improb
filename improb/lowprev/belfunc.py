@@ -23,9 +23,10 @@ from improb import PSpace, Gamble, Event
 from improb.lowprev.lowprob import LowProb
 
 class BelFunc(LowProb):
-    """This identical to :class:`~improb.lowprev.lowprob.LowProb`,
-    except that it uses the Mobius transform to calculate the natural
-    extension.
+    """A belief function, implemented as a
+    :class:`~improb.lowprev.lowprob.LowProb`, except that it uses the
+    Mobius transform to calculate the natural extension; see
+    :meth:`get_lower`.
     """
 
     def get_lower(self, gamble, event=True, algorithm='mobius'):
