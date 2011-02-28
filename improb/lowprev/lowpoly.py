@@ -680,8 +680,8 @@ class LowPoly(LowPrev):
         (gamble/event pairs), using linear programming.
 
         :param keys: The gamble/event pairs to extend. If :const:`None`, then
-            extends to the full domain (for
-            :class:`~improb.lowprev.lowpoly.LowPoly` this raises a
+            extends to the full domain, given by :meth:`get_extend_domain`
+            (for :class:`~improb.lowprev.lowpoly.LowPoly` this raises a
             :exc:`~exceptions.ValueError`, however some derived
             classes implement this if they have a finite domain).
         :type keys: :class:`collections.Iterable`
@@ -729,8 +729,7 @@ class LowPoly(LowPrev):
         0 0 1 |     z : [1    , 1    ]
         """
         if keys is None:
-            raise ValueError(
-                'cannot extend to full domain: specify keys')
+            keys = self.get_extend_domain()
         for gamble, event in keys:
             try:
                 lprev, uprev = self[gamble, event]
@@ -780,6 +779,10 @@ class LowPoly(LowPrev):
                 self.get_upper(gamble, event, algorithm)) != 0:
                 return False
         return True
+
+    def get_extend_domain(self):
+        raise ValueError(
+            'cannot extend to full domain: specify keys')
 
     #def optimize(self):
     #    """Removes redundant assessments."""
