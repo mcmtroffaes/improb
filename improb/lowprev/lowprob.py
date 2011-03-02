@@ -1317,53 +1317,6 @@ class LowProb(LowPoly):
                     cardinality = minindex + 1
             return LowProb(pspace, lprob=dict((event, bba.get_zeta(event))
                                               for event in bba.iterkeys()))
-        elif algorithm == 'imaxminrm':
-            # Initialize the algorithm
-            pspace = self.pspace
-            number_type = self.number_type
-            bba = SetFunction(pspace, number_type=number_type)
-            bba[Event(pspace, set([]))] = 0
-            def mass_below(event, cardinality=None):
-                subevents = pspace.subsets(event, full=False, empty=False,
-                                           size=cardinality)
-                return sum(bba[subevent] for subevent in subevents)
-            def basin_for_negmass(event):
-                mass = 0
-                index = len(event)
-                while bba[event] + mass < 0:
-                    index -= 1
-                    subevents = pspace.subsets(event, size=index)
-                    mass += sum(bba[subevent] for subevent in subevents)
-                return (index, mass)
-            lprob = self.set_function
-            # The algorithm itself:
-            cardinality = 1
-            while cardinality <= len(pspace):
-                bba_diff = SetFunction(pspace, number_type=number_type)
-                for event in pspace.subsets(size=cardinality):
-                    bba[event] = lprob[event] - mass_below(event)
-                offenders = dict((event, basin_for_negmass(event))
-                                 for event in pspace.subsets(size=cardinality)
-                                 if bba[event] < 0)
-                if len(offenders) == 0:
-                    cardinality += 1
-                else:
-                    minindex = min(pair[0] for pair in offenders.itervalues())
-                    for event in offenders:
-                        if offenders[event][0] == minindex:
-                            mass = mass_below(event, cardinality=minindex)
-                            scalef = (offenders[event][1] + bba[event]) / mass
-                            for subevent in pspace.subsets(event,
-                                                           size=minindex):
-                                if subevent not in bba_diff:
-                                    bba_diff[subevent] = bba[subevent]
-                                bba_diff[subevent] = min(bba_diff[subevent],
-                                                   (1 - scalef) * bba[subevent])
-                    event = max(bba_diff.iteritems(), key=itemgetter(1))[0]
-                    bba[event] -= bba_diff[event]
-                    cardinality = minindex + 1
-            return LowProb(pspace, lprob=dict((event, bba.get_zeta(event))
-                                              for event in bba.iterkeys()))
         elif algorithm == 'lpbelfunc':
             # Initialize the algorithm
             lprob = self.set_function
