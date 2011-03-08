@@ -796,8 +796,7 @@ class LowProb(LowPoly):
         """Generate an outer approximation.
 
         :parameter algorithm: a :class:`~string` denoting the algorithm used:
-            ``None``, ``'linvac'``, ``'irm'``, ``'imrm'``,, ``'imaxminrm'``
-            or ``'lpbelfunc'``
+            ``None``, ``'linvac'``, ``'irm'``, ``'imrm'``, or ``'lpbelfunc'``
         :rtype: :class:`~improb.lowprev.lowprob.LowProb`
 
         This method replaces the lower probability :math:`\underline{P}` by
