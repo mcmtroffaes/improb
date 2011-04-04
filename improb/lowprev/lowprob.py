@@ -1216,8 +1216,9 @@ class LowProb(LowPoly):
               B C D : 0.0
             A B C D : 0.01615
             >>> sum(lprev for (lprev, uprev)
-            ...           in (lprob - belfunc).itervalues())/(2 ** len(pspace))
-            0.0099156249999999939
+            ...           in (lprob - belfunc).itervalues())/(2 ** len(pspace)
+            ...     ) # doctest: +ELLIPSIS
+            0.00991562...
 
             .. note::
 
