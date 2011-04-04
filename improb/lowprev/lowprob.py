@@ -585,6 +585,7 @@ class LowProb(LowPoly):
                            for index, event in enumerate(pspace.subsets())),
                 number_type='fraction')
 
+    # TODO move to LowPoly
     def _scalar(self, other, oper):
         """
         :raises: :exc:`~exceptions.TypeError` if other is not a scalar
@@ -614,6 +615,7 @@ class LowProb(LowPoly):
                                    in self.iteritems()]),
                        number_type=self.number_type)
 
+    # TODO move to LowPoly
     def _pointwise(self, other, oper):
         """
         :raises: :exc:`~exceptions.ValueError` if possibility spaces or domain
@@ -660,6 +662,7 @@ class LowProb(LowPoly):
             # will raise a type error if operand is not scalar
             return self._scalar(other, oper)
 
+    # TODO move to LowPoly
     __add__ = lambda self, other: self._pointwise(other, self.NumberType.__add__)
     __sub__ = lambda self, other: self._pointwise(other, self.NumberType.__sub__)
     __mul__ = lambda self, other: self._pointwise(other, self.NumberType.__mul__)
@@ -671,7 +674,7 @@ class LowProb(LowPoly):
     __rsub__ = lambda self, other: self.__sub__(other).__neg__()
     __rmul__ = __mul__
 
-    def precise_part(self):
+    def get_precise_part(self):
         """Extract the precise part and its relative weight.
 
         Every coherent lower probability :math:`\underline{P}` can be written
@@ -699,7 +702,7 @@ class LowProb(LowPoly):
         a   c : 3/8
           b c : 13/42
         a b c : 1
-        >>> prob, coeff = lprob.precise_part()
+        >>> prob, coeff = lprob.get_precise_part()
         >>> print(prob)
         a : 21/73
         b : 24/73
@@ -725,7 +728,7 @@ class LowProb(LowPoly):
                          number_type=self.number_type),
                     norm)
 
-    def imprecise_part(self):
+    def get_imprecise_part(self):
         """Extract the imprecise part and its relative weight.
 
         Every coherent lower probability :math:`\underline{P}` can be written
@@ -754,14 +757,14 @@ class LowProb(LowPoly):
           b c : 13/42
         a b c : 1
         >>> lprob.set_lower(ev('ac'), '1/3')
-        >>> prob, coeff  = lprob.precise_part()
+        >>> prob, coeff  = lprob.get_precise_part()
         >>> print(prob)
         a : 21/73
         b : 24/73
         c : 28/73
         >>> print(coeff)
         73/168
-        >>> improb, cocoeff  = lprob.imprecise_part()
+        >>> improb, cocoeff  = lprob.get_imprecise_part()
         >>> print(cocoeff)
         95/168
         >>> print(improb)
@@ -781,7 +784,7 @@ class LowProb(LowPoly):
             The lower probability must be defined for all singletons. If
             needed, call :meth:`~improb.lowprev.lowpoly.LowPoly.extend` first.
         """
-        prob, coeff = self.precise_part()
+        prob, coeff = self.get_precise_part()
         if coeff == 0:
             return self
         else:
@@ -792,7 +795,7 @@ class LowProb(LowPoly):
             prob.extend(self.iterkeys(), upper=False)
             return ((1 / (1 - coeff)) * (self - coeff * prob), 1 - coeff)
 
-    def outer_approx(self, algorithm=None):
+    def get_outer_approx(self, algorithm=None):
         """Generate an outer approximation.
 
         :parameter algorithm: a :class:`~string` denoting the algorithm used:
@@ -821,7 +824,7 @@ class LowProb(LowPoly):
             a   c : 1/2
               b c : 1/2
             a b c : 1
-            >>> lprob == lprob.outer_approx()
+            >>> lprob == lprob.get_outer_approx()
             True
 
         ``'linvac'``
@@ -868,7 +871,7 @@ class LowProb(LowPoly):
             a   c : 1/2
               b c : 1/2
             a b c : -1/2
-            >>> belfunc = lprob.outer_approx('irm')
+            >>> belfunc = lprob.get_outer_approx('irm')
             >>> print(belfunc.mobius)
                   : 0
             a     : 0
@@ -908,7 +911,7 @@ class LowProb(LowPoly):
             False
             >>> lprob.is_completely_monotone()
             False
-            >>> belfunc = lprob.outer_approx('irm')
+            >>> belfunc = lprob.get_outer_approx('irm')
             >>> belfunc.is_completely_monotone()
             True
             >>> print(lprob)
@@ -1012,7 +1015,7 @@ class LowProb(LowPoly):
             ...                              ev('BD'): .4835, ev('CD'): .4079,
             ...                            ev('ABC'): .7248, ev('ABD'): .6224,
             ...                            ev('ACD'): .6072, ev('BCD'): .7502})
-            >>> belfunc = lprob.outer_approx('imrm')
+            >>> belfunc = lprob.get_outer_approx('imrm')
             >>> belfunc.is_completely_monotone()
             True
             >>> print(lprob)
@@ -1141,7 +1144,7 @@ class LowProb(LowPoly):
             ...                              ev('BD'): .4835, ev('CD'): .4079,
             ...                            ev('ABC'): .7248, ev('ABD'): .6224,
             ...                            ev('ACD'): .6072, ev('BCD'): .7502})
-            >>> belfunc = lprob.outer_approx('lpbelfunc')
+            >>> belfunc = lprob.get_outer_approx('lpbelfunc')
             >>> belfunc.is_completely_monotone()
             True
             >>> print(lprob)
@@ -1232,7 +1235,7 @@ class LowProb(LowPoly):
         if algorithm == None:
             return self
         elif algorithm == 'linvac':
-            prob, coeff = self.precise_part()
+            prob, coeff = self.get_precise_part()
             return prob.get_linvac(1 - coeff)
         elif algorithm == 'irm':
             # Initialize the algorithm
