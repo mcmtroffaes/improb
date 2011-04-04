@@ -81,11 +81,11 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
 
     def __repr__(self):
         """
-        >>> SetFunction(pspace=3, data={(): 1, (0, 2): 2.1, (0, 1, 2): '1/3'}) # doctest: +NORMALIZE_WHITESPACE
+        >>> SetFunction(pspace=3, data={(): 1, (0, 2): 2.1, (0, 1, 2): '1/3'}) # doctest: +NORMALIZE_WHITESPACE, +ELLIPSIS
         SetFunction(pspace=PSpace(3),
                     data={(): 1.0,
-                          (0, 2): 2.1000000000000001,
-                          (0, 1, 2): 0.33333333333333331},
+                          (0, 2): 2.1,
+                          (0, 1, 2): 0.333...},
                     number_type='float')
         >>> SetFunction(pspace=3, data={(): '1.0', (0, 2): '2.1', (0, 1, 2): '1/3'}) # doctest: +NORMALIZE_WHITESPACE
         SetFunction(pspace=PSpace(3),
