@@ -595,8 +595,8 @@ class LowProb(LowPoly):
             >>> pspace = PSpace('abc')
             >>> ev = lambda A: Event(pspace, A)
             >>> lprob = LowProb(pspace, 
-                                lprob={ev('a'): '1/8', ev('b'): '1/7', ev('c'): '1/6'},
-                                number_type='fraction')
+            ...                 lprob={ev('a'): '1/8', ev('b'): '1/7', ev('c'): '1/6'},
+            ...                 number_type='fraction')
             >>> lprob.extend()
             >>> print(1-.5*lprob*1.5-.5)
                   : 1/2
@@ -626,8 +626,8 @@ class LowProb(LowPoly):
             >>> pspace = PSpace('abc')
             >>> ev = lambda A: Event(pspace, A)
             >>> lprob = LowProb(pspace,
-                                lprob={ev('a'): '1/8', ev('b'): '1/7', ev('c'): '1/6'},
-                                number_type='fraction')
+            ...                 lprob={ev('a'): '1/8', ev('b'): '1/7', ev('c'): '1/6'},
+            ...                 number_type='fraction')
             >>> lprob.extend()
             >>> (lprob * lprob).is_coherent()
             True
@@ -640,10 +640,15 @@ class LowProb(LowPoly):
             a   c : 7/12
               b c : 13/21
             a b c : 2
-            >>> lprob / 2
-            Traceback (most recent call last):
-                ...
-            TypeError: unsupported operand type(s) for /: 'LowProb' and 'int'
+            >>> print(lprob / 2)
+                  : 0
+            a     : 1/16
+              b   : 1/14
+                c : 1/12
+            a b   : 15/112
+            a   c : 7/48
+              b c : 13/84
+            a b c : 1/2
         """
         if isinstance(other, LowProb):
             if self.pspace != other.pspace:
@@ -1007,14 +1012,15 @@ class LowProb(LowPoly):
 
             >>> pspace = PSpace('ABCD')
             >>> ev = lambda event: Event(pspace, event)
-            >>> lprob = LowProb(pspace, lprob={ev(''): 0, ev('ABCD'): 1,
-            ...                                ev('A'): .0895, ev('B'): .2743,
-            ...                                ev('C'): .2668, ev('D'): .1063,
-            ...                              ev('AB'): .3947, ev('AC'): .4506,
-            ...                              ev('AD'): .2959, ev('BC'): .5837,
-            ...                              ev('BD'): .4835, ev('CD'): .4079,
-            ...                            ev('ABC'): .7248, ev('ABD'): .6224,
-            ...                            ev('ACD'): .6072, ev('BCD'): .7502})
+            >>> lprob = LowProb(pspace, lprob={
+            ...     ev(''): 0, ev('ABCD'): 1,
+            ...     ev('A'): .0895, ev('B'): .2743,
+            ...     ev('C'): .2668, ev('D'): .1063,
+            ...     ev('AB'): .3947, ev('AC'): .4506,
+            ...     ev('AD'): .2959, ev('BC'): .5837,
+            ...     ev('BD'): .4835, ev('CD'): .4079,
+            ...     ev('ABC'): .7248, ev('ABD'): .6224,
+            ...     ev('ACD'): .6072, ev('BCD'): .7502})
             >>> belfunc = lprob.get_outer_approx('imrm')
             >>> belfunc.is_completely_monotone()
             True
