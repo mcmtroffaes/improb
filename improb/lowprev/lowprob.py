@@ -1233,7 +1233,7 @@ class LowProb(LowPoly):
                 first.
 
         """
-        if algorithm == None:
+        if algorithm is None:
             return self
         elif algorithm == 'linvac':
             prob, coeff = self.get_precise_part()
@@ -1242,7 +1242,7 @@ class LowProb(LowPoly):
             # Initialize the algorithm
             pspace = self.pspace
             bba = SetFunction(pspace, number_type=self.number_type)
-            bba[Event(pspace, set([]))] = 0
+            bba[False] = 0
             def mass_below(event):
                 subevents = pspace.subsets(event, full=False, empty=False)
                 return sum(bba[subevent] for subevent in subevents)
@@ -1278,7 +1278,7 @@ class LowProb(LowPoly):
             pspace = self.pspace
             number_type = self.number_type
             bba = SetFunction(pspace, number_type=number_type)
-            bba[Event(pspace, set([]))] = 0
+            bba[False] = 0
             def mass_below(event, cardinality=None):
                 subevents = pspace.subsets(event, full=False, empty=False,
                                            size=cardinality)
