@@ -593,9 +593,8 @@ class LowProb(LowPoly):
         .. doctest::
 
             >>> pspace = PSpace('abc')
-            >>> ev = lambda A: Event(pspace, A)
             >>> lprob = LowProb(pspace, 
-            ...                 lprob={ev('a'): '1/8', ev('b'): '1/7', ev('c'): '1/6'},
+            ...                 lprob={'a': '1/8', 'b': '1/7', 'c': '1/6'},
             ...                 number_type='fraction')
             >>> lprob.extend()
             >>> print(1-.5*lprob*1.5-.5)
@@ -624,9 +623,8 @@ class LowProb(LowPoly):
         .. doctest::
 
             >>> pspace = PSpace('abc')
-            >>> ev = lambda A: Event(pspace, A)
             >>> lprob = LowProb(pspace,
-            ...                 lprob={ev('a'): '1/8', ev('b'): '1/7', ev('c'): '1/6'},
+            ...                 lprob={'a': '1/8', 'b': '1/7', 'c': '1/6'},
             ...                 number_type='fraction')
             >>> lprob.extend()
             >>> (lprob * lprob).is_coherent()
@@ -743,9 +741,8 @@ class LowProb(LowPoly):
         We return the tuple :math:`(\underline{Q},1-\lambda)`.
 
         >>> pspace = PSpace('abc')
-        >>> ev = lambda A: Event(pspace, A)
         >>> lprob = LowProb(pspace,
-        ...                 lprob={ev('a'): '1/8', ev('b'): '1/7', ev('c'): '1/6'},
+        ...                 lprob={'a': '1/8', 'b': '1/7', 'c': '1/6'},
         ...                 number_type='fraction')
         >>> print(lprob)
         a     : 1/8
@@ -761,7 +758,7 @@ class LowProb(LowPoly):
         a   c : 7/24
           b c : 13/42
         a b c : 1
-        >>> lprob.set_lower(ev('ac'), '1/3')
+        >>> lprob.set_lower(Event(pspace, 'ac'), '1/3')
         >>> prob, coeff  = lprob.get_precise_part()
         >>> print(prob)
         a : 21/73
@@ -815,9 +812,8 @@ class LowProb(LowPoly):
             returns the original lower probability.
 
             >>> pspace = PSpace('abc')
-            >>> ev = lambda A: Event(pspace, A)
             >>> lprob = LowProb(pspace,
-            ...             lprob={ev('ab'): .5, ev('ac'): .5, ev('bc'): .5},
+            ...             lprob={'ab': .5, 'ac': .5, 'bc': .5},
             ...             number_type='fraction')
             >>> lprob.extend()
             >>> print(lprob)
@@ -851,9 +847,8 @@ class LowProb(LowPoly):
             The following example illustrates the procedure:
 
             >>> pspace = PSpace('abc')
-            >>> ev = lambda A: Event(pspace, A)
             >>> lprob = LowProb(pspace,
-            ...             lprob={ev('ab'): .5, ev('ac'): .5, ev('bc'): .5},
+            ...             lprob={'ab': .5, 'ac': .5, 'bc': .5},
             ...             number_type='fraction')
             >>> lprob.extend()
             >>> print(lprob)
@@ -901,15 +896,14 @@ class LowProb(LowPoly):
             The next is Example 2 from Hall & Lawry's 2004 paper [#hall2004]_:
 
             >>> pspace = PSpace('ABCD')
-            >>> ev = lambda event: Event(pspace, event)
-            >>> lprob = LowProb(pspace, lprob={ev(''): 0, ev('ABCD'): 1,
-            ...                                ev('A'): .0895, ev('B'): .2743,
-            ...                                ev('C'): .2668, ev('D'): .1063,
-            ...                              ev('AB'): .3947, ev('AC'): .4506,
-            ...                              ev('AD'): .2959, ev('BC'): .5837,
-            ...                              ev('BD'): .4835, ev('CD'): .4079,
-            ...                            ev('ABC'): .7248, ev('ABD'): .6224,
-            ...                            ev('ACD'): .6072, ev('BCD'): .7502})
+            >>> lprob = LowProb(pspace, lprob={'': 0, 'ABCD': 1,
+            ...                                'A': .0895, 'B': .2743,
+            ...                                'C': .2668, 'D': .1063,
+            ...                                'AB': .3947, 'AC': .4506,
+            ...                                'AD': .2959, 'BC': .5837,
+            ...                                'BD': .4835, 'CD': .4079,
+            ...                                'ABC': .7248, 'ABD': .6224,
+            ...                                'ACD': .6072, 'BCD': .7502})
             >>> lprob.is_avoiding_sure_loss()
             True
             >>> lprob.is_coherent()
@@ -1011,16 +1005,15 @@ class LowProb(LowPoly):
             [#hall2004]_:
 
             >>> pspace = PSpace('ABCD')
-            >>> ev = lambda event: Event(pspace, event)
             >>> lprob = LowProb(pspace, lprob={
-            ...     ev(''): 0, ev('ABCD'): 1,
-            ...     ev('A'): .0895, ev('B'): .2743,
-            ...     ev('C'): .2668, ev('D'): .1063,
-            ...     ev('AB'): .3947, ev('AC'): .4506,
-            ...     ev('AD'): .2959, ev('BC'): .5837,
-            ...     ev('BD'): .4835, ev('CD'): .4079,
-            ...     ev('ABC'): .7248, ev('ABD'): .6224,
-            ...     ev('ACD'): .6072, ev('BCD'): .7502})
+            ...     '': 0, 'ABCD': 1,
+            ...     'A': .0895, 'B': .2743,
+            ...     'C': .2668, 'D': .1063,
+            ...     'AB': .3947, 'AC': .4506,
+            ...     'AD': .2959, 'BC': .5837,
+            ...     'BD': .4835, 'CD': .4079,
+            ...     'ABC': .7248, 'ABD': .6224,
+            ...     'ACD': .6072, 'BCD': .7502})
             >>> belfunc = lprob.get_outer_approx('imrm')
             >>> belfunc.is_completely_monotone()
             True
@@ -1141,15 +1134,14 @@ class LowProb(LowPoly):
             [#hall2004]_, which we also used for ``'irm'``:
 
             >>> pspace = PSpace('ABCD')
-            >>> ev = lambda event: Event(pspace, event)
-            >>> lprob = LowProb(pspace, lprob={ev(''): 0, ev('ABCD'): 1,
-            ...                                ev('A'): .0895, ev('B'): .2743,
-            ...                                ev('C'): .2668, ev('D'): .1063,
-            ...                              ev('AB'): .3947, ev('AC'): .4506,
-            ...                              ev('AD'): .2959, ev('BC'): .5837,
-            ...                              ev('BD'): .4835, ev('CD'): .4079,
-            ...                            ev('ABC'): .7248, ev('ABD'): .6224,
-            ...                            ev('ACD'): .6072, ev('BCD'): .7502})
+            >>> lprob = LowProb(pspace, lprob={'': 0, 'ABCD': 1,
+            ...                                'A': .0895, 'B': .2743,
+            ...                                'C': .2668, 'D': .1063,
+            ...                                'AB': .3947, 'AC': .4506,
+            ...                                'AD': .2959, 'BC': .5837,
+            ...                                'BD': .4835, 'CD': .4079,
+            ...                                'ABC': .7248, 'ABD': .6224,
+            ...                                'ACD': .6072, 'BCD': .7502})
             >>> belfunc = lprob.get_outer_approx('lpbelfunc')
             >>> belfunc.is_completely_monotone()
             True
