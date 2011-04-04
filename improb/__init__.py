@@ -489,7 +489,7 @@ class Gamble(collections.Mapping, collections.Hashable, cdd.NumberTypeable):
     a : 1
     b : 0
     c : 8
-    >>> print(f1 / event)
+    >>> print(f1 / event) # doctest: +ELLIPSIS
     Traceback (most recent call last):
         ...
     TypeError: ...
