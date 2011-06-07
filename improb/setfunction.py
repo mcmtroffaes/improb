@@ -267,7 +267,7 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
                 events.insert(i, set()) # set, not Event (must be mutable)
                 i += 1
             # update level sets
-            for j in xrange(0, i):
+            for j in xrange(i):
                 events[j].add(key)
         # calculate the sum
         coeffs = (current - previous  # v0, v1-v0, ...
