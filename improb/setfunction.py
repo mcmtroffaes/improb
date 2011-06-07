@@ -19,6 +19,7 @@
 
 from __future__ import division, absolute_import, print_function
 
+import bisect
 import cdd
 import collections
 import itertools
@@ -251,13 +252,27 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
            KeyError: Event(pspace=PSpace(['a', 'b', 'c']), elements=set(['c']))
         """
         gamble = self.pspace.make_gamble(gamble)
-        values = sorted(set(gamble.itervalues()))  # set to get unique values
+        # construct list of values and level sets
+        # we use the bisect algorithm to sort the values
+        # this allows us to construct level sets at the same time
+        values = []
+        events = []
+        for key, value in gamble.iteritems():
+            # find index i such that values[j] <= value for j < i
+            # and values[j] > value for i >= j
+            i = bisect.bisect_right(values, value)
+            if i == 0 or values[i - 1] != value:
+                # value does not yet exist, so update values
+                values.insert(i, value)
+                events.insert(i, set()) # set, not Event (must be mutable)
+                i += 1
+            # update level sets
+            for j in xrange(0, i):
+                events[j].add(key)
+        # calculate the sum
         coeffs = (current - previous  # v0, v1-v0, ...
                   for current, previous
                   in itertools.izip(values, [0] + values))
-        level = lambda t: (key for key, value in gamble.iteritems()
-                           if value >= t)
-        events = (Event(gamble.pspace, level(value)) for value in values)
         return sum(coeff * self[event]
                    for coeff, event in itertools.izip(coeffs, events))
 

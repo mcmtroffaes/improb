@@ -29,6 +29,9 @@ Version 0.1.1 (in development)
   over undefined singletons uniformly (addresses in part issue #4,
   reported by Erik Quaeghebeur).
 
+* Improved Choquet integral calculation so level sets are constructed
+  at the same time that the values are ordered.
+
 Version 0.1.0 (24 August 2010)
 ------------------------------
 
