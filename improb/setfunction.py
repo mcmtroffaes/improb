@@ -261,7 +261,7 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
         previous_value = 0
         for key, value in items:
             coeff = value - previous_value
-            if coeff > 0:
+            if coeff != 0:
                 result += coeff * self[event]
             previous_value = value
             event.remove(key)
