@@ -273,7 +273,7 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
         return result
 
     def get_bba_choquet(self, gamble):
-        """Calculate the Choquet integral of the set function as a
+        r"""Calculate the Choquet integral of the set function as a
         basic belief assignment.
 
         :parameter gamble: |gambletype|
