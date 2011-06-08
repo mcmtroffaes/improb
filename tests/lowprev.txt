@@ -307,7 +307,7 @@ True
 Marginal Extension
 ~~~~~~~~~~~~~~~~~~
 
-Finding coherent lower and upper bounds for the oil catter example in
+Finding coherent lower and upper bounds for the oil wildcatter example in
 [#kikuti2005]_:
 
 >>> # lower previsions over s, given t

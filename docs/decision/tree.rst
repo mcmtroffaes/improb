@@ -32,7 +32,7 @@ Decision Trees
 Examples
 --------
 
-Solving the decision tree for the oil catter example in
+Solving the decision tree for the oil wildcatter example in
 [#kikuti2005]_:
 
 >>> # specify the decision tree
