@@ -124,6 +124,9 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
         """An :class:`~improb.PSpace` representing the possibility space."""
         return self._pspace
 
+    def make_gamble(self, gamble):
+        return self.pspace.make_gamble(gamble, self.number_type)
+
     def get_mobius(self, event):
         """Calculate the value of the Mobius transform of the given
         event. The Mobius transform of a set function :math:`s` is
@@ -256,7 +259,7 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
            KeyError: Event(pspace=PSpace(['a', 'b', 'c']), elements=set(['c']))
         """
         result = 0
-        gamble = self.pspace.make_gamble(gamble)
+        gamble = self.make_gamble(gamble)
         # sort the gamble's (key, value) pairs by value
         items = sorted(gamble.iteritems(), key=operator.itemgetter(1))
         event = set(self.pspace) # use set as mutable event
@@ -268,6 +271,40 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
             previous_value = value
             event.remove(key)
         return result
+
+    def get_bba_choquet(self, gamble):
+        """Calculate the Choquet integral of the set function as a
+        basic belief assignment.
+
+        :parameter gamble: |gambletype|
+
+        The Choquet integral of a set function :math:`s` is given by
+        the formula:
+
+        .. math::
+
+           \sum_{A\subseteq\Omega}
+           m(A)\inf_{\omega\in A}f(\omega)
+
+        where :math:`m` is the Mobius transform of :math:`s`.
+
+        .. warning::
+
+            In general,
+            :meth:`improb.setfunction.SetFunction.get_choquet` is far
+            more efficient.
+
+        .. seealso::
+
+            :meth:`improb.lowprev.lowprob.LowProb.is_completely_monotone`
+                To check for complete monotonicity.
+
+            :meth:`improb.setfunction.SetFunction.get_mobius`
+                Mobius transform of an arbitrary set function.
+        """
+        gamble = self.make_gamble(gamble)
+        return sum(self[event_] * min(gamble[omega] for omega in event_)
+                   for event_ in self.pspace.subsets(empty=False))
 
     def is_bba_n_monotone(self, monotonicity=None):
         """Is the set function, as basic belief assignment,

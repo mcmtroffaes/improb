@@ -76,10 +76,10 @@ Quick check::
   lpr.get_lower([2,0,1,1]) >= lpr([1,0,1,0])+lpr([1,0,0,1])=1
   bel.get_lower([2,0,1,1]) = 0.5*(1+1+0+0+0+0-1+0+0)=0.5
 
-However, it seems that the Mobius transform of a 2-monotone lower
-probability *can* be used to calculate its natural extension. The
-following simulation seems to confirm this for a space of size 3 (all
-coherent lower probabilities on such space are 2-monotone).
+However, the Mobius transform of a 2-monotone lower probability *can*
+be used to calculate its natural extension. The following simulation
+confirms this for a space of size 3 (all coherent lower probabilities
+on such space are 2-monotone).
 
 >>> import itertools
 >>> import random

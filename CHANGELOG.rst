@@ -32,6 +32,9 @@ Version 0.1.1 (in development)
 * Improved Choquet integral calculation so level sets are constructed
   at the same time that the values are ordered.
 
+* Added SetFunction.get_bba_choquet method to calculate Choquet
+  integral of a basic belief assignment.
+
 Version 0.1.0 (24 August 2010)
 ------------------------------
 

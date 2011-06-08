@@ -27,6 +27,11 @@ class BelFunc(LowProb):
     :class:`~improb.lowprev.lowprob.LowProb`, except that it uses the
     Mobius transform to calculate the natural extension; see
     :meth:`get_lower`.
+
+    .. seealso::
+
+        :meth:`improb.lowprev.lowprob.LowProb.is_completely_monotone`
+            To check for complete monotonicity.
     """
 
     def get_lower(self, gamble, event=True, algorithm='mobius'):
@@ -35,19 +40,11 @@ class BelFunc(LowProb):
         The default algorithm is to use the Mobius transform :math:`m`
         of the lower probability :math:`\underline{P}`:
 
-        .. math::
-
-           \underline{E}(f)=
-           \sum_{A\subseteq\Omega}
-           m(A)\inf_{\omega\in A}f(\omega)
-
         .. seealso::
 
-            :meth:`improb.lowprev.lowprob.LowProb.is_completely_monotone`
-                To check for complete monotonicity.
-
-            :meth:`improb.setfunction.SetFunction.get_mobius`
-                Mobius transform of an arbitrary set function.
+            :meth:`improb.setfunction.SetFunction.get_bba_choquet`
+                Find Choquet integral via Mobius transform of an
+                arbitrary set function.
 
         .. warning::
 
@@ -82,14 +79,15 @@ class BelFunc(LowProb):
            exception even if the assessments are not completely
            monotone, or even incoherent---the Mobius transform is in
            such case still defined, although some of the values of
-           :math:`m` will be negative (obviously, in such case,
-           :math:`\underline{E}` will be incoherent as well).
+           :math:`m` will be negative. In fact, if the assessments are
+           not 2-monotone, then :math:`\underline{E}` will be
+           incoherent as well.
 
            >>> bel = BelFunc(
            ...     pspace='abcd',
            ...     lprob={'ab': '0.2', 'bc': '0.2', 'abc': '0.2', 'b': '0.1'})
            >>> bel.extend()
-           >>> bel.is_completely_monotone() # (it is in fact not even 2-monotone)
+           >>> bel.is_n_monotone(2)
            False
            >>> # exact linear programming algorithm
            >>> bel.get_lower([1, 2, 1, 0], algorithm='linprog')
@@ -144,10 +142,7 @@ class BelFunc(LowProb):
         # other algorithm?
         if algorithm != 'mobius':
             return LowProb.get_lower(self, gamble, event, algorithm)
-        # do Mobius transform
-        gamble = self.make_gamble(gamble)
+        # do Mobius transform, and calculate lower expectation
         if event is not True:
             raise NotImplementedError
-        mobius = self.mobius
-        return sum(mobius[event_] * min(gamble[omega] for omega in event_)
-                   for event_ in self.pspace.subsets(empty=False))
+        return self.mobius.get_bba_choquet(gamble)
