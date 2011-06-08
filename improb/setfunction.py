@@ -246,6 +246,8 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
            ...                                     'abc': 1})
            >>> s.get_choquet([1, 2, 2])
            1.5
+           >>> s.get_choquet([-1, -1, -2])
+           -1.5
            >>> s.get_choquet([1, 2, 3])
            Traceback (most recent call last):
                ...
