@@ -253,20 +253,18 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
                ...
            KeyError: Event(pspace=PSpace(['a', 'b', 'c']), elements=set(['c']))
         """
+        result = 0
         gamble = self.pspace.make_gamble(gamble)
         # sort the gamble's (key, value) pairs by value
-        items = iter(sorted(gamble.iteritems(), key=operator.itemgetter(1)))
-        event = set(self.pspace) # level set; use set as mutable event
-        # first term
-        previous_key, previous_value = items.next()
-        result = previous_value * self[event]
-        # remaining terms
+        items = sorted(gamble.iteritems(), key=operator.itemgetter(1))
+        event = set(self.pspace) # use set as mutable event
+        previous_value = 0
         for key, value in items:
-            event.remove(previous_key)
             coeff = value - previous_value
             if coeff > 0:
                 result += coeff * self[event]
-            previous_key, previous_value = key, value
+            previous_value = value
+            event.remove(key)
         return result
 
     def is_bba_n_monotone(self, monotonicity=None):
@@ -515,7 +513,3 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
                 data=dict((event, vert[1 + index])
                            for index, event in enumerate(pspace.subsets())),
                 number_type='fraction')
-
-if __name__ == "__main__":
-    import doctest
-    doctest.testmod()
