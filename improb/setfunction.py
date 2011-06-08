@@ -283,7 +283,7 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
 
         .. math::
 
-           \sum_{A\subseteq\Omega}
+           \sum_{\emptyset\neq A\subseteq\Omega}
            m(A)\inf_{\omega\in A}f(\omega)
 
         where :math:`m` is the Mobius transform of :math:`s`.
