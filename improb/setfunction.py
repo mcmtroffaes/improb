@@ -19,10 +19,10 @@
 
 from __future__ import division, absolute_import, print_function
 
-import bisect
 import cdd
 import collections
 import itertools
+import operator
 
 from improb import PSpace, Gamble, Event
 
@@ -251,30 +251,19 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
                ...
            KeyError: Event(pspace=PSpace(['a', 'b', 'c']), elements=set(['c']))
         """
+        result = 0
         gamble = self.pspace.make_gamble(gamble)
-        # construct list of values and level sets
-        # we use the bisect algorithm to sort the values
-        # this allows us to construct level sets at the same time
-        values = []
-        events = []
-        for key, value in gamble.iteritems():
-            # find index i such that values[j] <= value for j < i
-            # and values[j] > value for i >= j
-            i = bisect.bisect_right(values, value)
-            if i == 0 or values[i - 1] != value:
-                # value does not yet exist, so update values
-                values.insert(i, value)
-                events.insert(i, set()) # set, not Event (must be mutable)
-                i += 1
-            # update level sets
-            for j in xrange(i):
-                events[j].add(key)
-        # calculate the sum
-        coeffs = (current - previous  # v0, v1-v0, ...
-                  for current, previous
-                  in itertools.izip(values, [0] + values))
-        return sum(coeff * self[event]
-                   for coeff, event in itertools.izip(coeffs, events))
+        # sort the gamble's (key, value) pairs by value
+        items = sorted(gamble.iteritems(), key=operator.itemgetter(1))
+        event = set(self.pspace) # use set as mutable event
+        previous_value = 0
+        for key, value in items:
+            coeff = value - previous_value
+            if coeff > 0:
+                result += coeff * self[event]
+            previous_value = value
+            event.remove(key)
+        return result
 
     def is_bba_n_monotone(self, monotonicity=None):
         """Is the set function, as basic belief assignment,
