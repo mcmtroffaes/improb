@@ -246,6 +246,8 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
            ...                                     'abc': 1})
            >>> s.get_choquet([1, 2, 2])
            1.5
+           >>> s.get_choquet([2, 2, 1])
+           1.5
            >>> s.get_choquet([-1, -1, -2])
            -1.5
            >>> s.get_choquet([1, 2, 3])
@@ -513,3 +515,7 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
                 data=dict((event, vert[1 + index])
                            for index, event in enumerate(pspace.subsets())),
                 number_type='fraction')
+
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()
