@@ -270,9 +270,7 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
         event = set(self.pspace) # use set as mutable event
         previous_value = 0
         for value, keys in items:
-            coeff = value - previous_value
-            if coeff != 0:
-                result += coeff * self[event]
+            result += (value - previous_value) * self[event]
             previous_value = value
             event -= keys
         return result
