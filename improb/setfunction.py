@@ -272,6 +272,27 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
             event.remove(key)
         return result
 
+    def _get_choquet_erik(self, gamble):
+        """Possibly faster implementation."""
+        result = 0
+        gamble = self.make_gamble(gamble)
+        # implementation note:
+        # dict.setdefault(v, set()) is faster than defaultdict(set)
+        gamble_inverse = {}
+        for key, value in gamble.iteritems():
+            gamble_inverse.setdefault(value, set()).add(key)
+        # sort the gamble's (value, keys) pairs by value
+        items = sorted(gamble_inverse.iteritems())
+        event = set(self.pspace) # use set as mutable event
+        previous_value = 0
+        for value, keys in items:
+            coeff = value - previous_value
+            if coeff != 0:
+                result += coeff * self[event]
+            previous_value = value
+            event -= keys
+        return result
+
     def get_bba_choquet(self, gamble):
         r"""Calculate the Choquet integral of the set function as a
         basic belief assignment.
