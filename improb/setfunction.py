@@ -260,14 +260,13 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
         """
         result = 0
         gamble = self.make_gamble(gamble)
-        # implementation note:
-        # dict.setdefault(value, set()) is faster than defaultdict(set)
-        gamble_inverse = {}
+        # find values and level sets of the gamble
+        gamble_inverse = collections.defaultdict(set)
         for key, value in gamble.iteritems():
-            gamble_inverse.setdefault(value, set()).add(key)
-        # sort the gamble's (value, keys) pairs by value
+            gamble_inverse[value].add(key)
         items = sorted(gamble_inverse.iteritems())
-        event = set(self.pspace) # use set as mutable event
+        # now calculate the Choquet integral
+        event = set(self.pspace)
         previous_value = 0
         for value, keys in items:
             result += (value - previous_value) * self[event]
