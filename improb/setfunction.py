@@ -260,24 +260,8 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
         """
         result = 0
         gamble = self.make_gamble(gamble)
-        # sort the gamble's (key, value) pairs by value
-        items = sorted(gamble.iteritems(), key=operator.itemgetter(1))
-        event = set(self.pspace) # use set as mutable event
-        previous_value = 0
-        for key, value in items:
-            coeff = value - previous_value
-            if coeff != 0:
-                result += coeff * self[event]
-            previous_value = value
-            event.remove(key)
-        return result
-
-    def _get_choquet_erik(self, gamble):
-        """Possibly faster implementation."""
-        result = 0
-        gamble = self.make_gamble(gamble)
         # implementation note:
-        # dict.setdefault(v, set()) is faster than defaultdict(set)
+        # dict.setdefault(value, set()) is faster than defaultdict(set)
         gamble_inverse = {}
         for key, value in gamble.iteritems():
             gamble_inverse.setdefault(value, set()).add(key)
