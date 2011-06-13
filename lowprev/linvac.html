@@ -7,13 +7,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Linear Vacuous Mixtures &mdash; improb v0.1.1 (beta) documentation</title>
+    <title>Linear Vacuous Mixtures &mdash; improb v0.1.1 documentation</title>
     <link rel="stylesheet" href="../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.1.1 (beta)',
+        VERSION:     '0.1.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -22,7 +22,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="improb v0.1.1 (beta) documentation" href="../index.html" />
+    <link rel="top" title="improb v0.1.1 documentation" href="../index.html" />
     <link rel="up" title="Lower Previsions" href="../lowprev.html" />
     <link rel="next" title="Probability Measures" href="prob.html" />
     <link rel="prev" title="Belief Functions" href="belfunc.html" /> 
@@ -43,7 +43,7 @@
         <li class="right" >
           <a href="belfunc.html" title="Belief Functions"
              accesskey="P">previous</a> |</li>
-        <li><a href="../index.html">improb v0.1.1 (beta) documentation</a> &raquo;</li>
+        <li><a href="../index.html">improb v0.1.1 documentation</a> &raquo;</li>
           <li><a href="../lowprev.html" accesskey="U">Lower Previsions</a> &raquo;</li> 
       </ul>
     </div>  
@@ -59,8 +59,22 @@
 <dt id="improb.lowprev.linvac.LinVac">
 <em class="property">class </em><tt class="descclassname">improb.lowprev.linvac.</tt><tt class="descname">LinVac</tt><big>(</big><em>pspace=None</em>, <em>mapping=None</em>, <em>lprev=None</em>, <em>uprev=None</em>, <em>prev=None</em>, <em>lprob=None</em>, <em>uprob=None</em>, <em>prob=None</em>, <em>bba=None</em>, <em>credalset=None</em>, <em>number_type=None</em><big>)</big><a class="headerlink" href="#improb.lowprev.linvac.LinVac" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="belfunc.html#improb.lowprev.belfunc.BelFunc" title="improb.lowprev.belfunc.BelFunc"><tt class="xref py py-class docutils literal"><span class="pre">improb.lowprev.belfunc.BelFunc</span></tt></a></p>
-<p>Linear-vacuous mixture, implemented as an unconditional lower
-probability on singletons.</p>
+<p>Linear-vacuous mixture, implemented as a
+<a class="reference internal" href="belfunc.html#improb.lowprev.belfunc.BelFunc" title="improb.lowprev.belfunc.BelFunc"><tt class="xref py py-class docutils literal"><span class="pre">BelFunc</span></tt></a> whose natural extension
+is calculated via a much simpler formula; see <a class="reference internal" href="#improb.lowprev.linvac.LinVac.get_lower" title="improb.lowprev.linvac.LinVac.get_lower"><tt class="xref py py-meth docutils literal"><span class="pre">get_lower()</span></tt></a>.
+Assessments on non-singletons, and conditional assessments, raise
+a <cite>~exceptions.ValueError</cite>.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">improb.lowprev.linvac</span> <span class="kn">import</span> <span class="n">LinVac</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span> <span class="o">=</span> <span class="n">LinVac</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">lprob</span><span class="o">=</span><span class="p">{(</span><span class="mi">0</span><span class="p">,):</span> <span class="s">&#39;0.2&#39;</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr</span><span class="p">)</span>
+<span class="go">0     : 1/5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">extend</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr</span><span class="p">)</span>
+<span class="go">0     : 1/5</span>
+<span class="go">  1   : 0</span>
+<span class="go">    2 : 0</span>
+</pre></div>
+</div>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">improb.lowprev.prob</span> <span class="kn">import</span> <span class="n">Prob</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span> <span class="o">=</span> <span class="n">Prob</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">prob</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;0.2&#39;</span><span class="p">,</span> <span class="s">&#39;0.3&#39;</span><span class="p">,</span> <span class="s">&#39;0.5&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">get_linvac</span><span class="p">(</span><span class="s">&#39;0.1&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">get_lower</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]))</span>
@@ -166,7 +180,7 @@ singletons are defined (if needed, extend it first).</p>
         <li class="right" >
           <a href="belfunc.html" title="Belief Functions"
              >previous</a> |</li>
-        <li><a href="../index.html">improb v0.1.1 (beta) documentation</a> &raquo;</li>
+        <li><a href="../index.html">improb v0.1.1 documentation</a> &raquo;</li>
           <li><a href="../lowprev.html" >Lower Previsions</a> &raquo;</li> 
       </ul>
     </div>

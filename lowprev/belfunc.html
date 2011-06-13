@@ -7,13 +7,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Belief Functions &mdash; improb v0.1.1 (beta) documentation</title>
+    <title>Belief Functions &mdash; improb v0.1.1 documentation</title>
     <link rel="stylesheet" href="../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.1.1 (beta)',
+        VERSION:     '0.1.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -22,7 +22,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="improb v0.1.1 (beta) documentation" href="../index.html" />
+    <link rel="top" title="improb v0.1.1 documentation" href="../index.html" />
     <link rel="up" title="Lower Previsions" href="../lowprev.html" />
     <link rel="next" title="Linear Vacuous Mixtures" href="linvac.html" />
     <link rel="prev" title="Lower Probabilities" href="lowprob.html" /> 
@@ -43,7 +43,7 @@
         <li class="right" >
           <a href="lowprob.html" title="Lower Probabilities"
              accesskey="P">previous</a> |</li>
-        <li><a href="../index.html">improb v0.1.1 (beta) documentation</a> &raquo;</li>
+        <li><a href="../index.html">improb v0.1.1 documentation</a> &raquo;</li>
           <li><a href="../lowprev.html" accesskey="U">Lower Previsions</a> &raquo;</li> 
       </ul>
     </div>  
@@ -59,26 +59,29 @@
 <dt id="improb.lowprev.belfunc.BelFunc">
 <em class="property">class </em><tt class="descclassname">improb.lowprev.belfunc.</tt><tt class="descname">BelFunc</tt><big>(</big><em>pspace=None</em>, <em>mapping=None</em>, <em>lprev=None</em>, <em>uprev=None</em>, <em>prev=None</em>, <em>lprob=None</em>, <em>uprob=None</em>, <em>prob=None</em>, <em>bba=None</em>, <em>credalset=None</em>, <em>number_type=None</em><big>)</big><a class="headerlink" href="#improb.lowprev.belfunc.BelFunc" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="lowprob.html#improb.lowprev.lowprob.LowProb" title="improb.lowprev.lowprob.LowProb"><tt class="xref py py-class docutils literal"><span class="pre">improb.lowprev.lowprob.LowProb</span></tt></a></p>
-<p>This identical to <a class="reference internal" href="lowprob.html#improb.lowprev.lowprob.LowProb" title="improb.lowprev.lowprob.LowProb"><tt class="xref py py-class docutils literal"><span class="pre">LowProb</span></tt></a>,
-except that it uses the Mobius transform to calculate the natural
-extension.</p>
+<p>A belief function, implemented as a
+<a class="reference internal" href="lowprob.html#improb.lowprev.lowprob.LowProb" title="improb.lowprev.lowprob.LowProb"><tt class="xref py py-class docutils literal"><span class="pre">LowProb</span></tt></a>, except that it uses the
+Mobius transform to calculate the natural extension; see
+<a class="reference internal" href="#improb.lowprev.belfunc.BelFunc.get_lower" title="improb.lowprev.belfunc.BelFunc.get_lower"><tt class="xref py py-meth docutils literal"><span class="pre">get_lower()</span></tt></a>.</p>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<dl class="last docutils">
+<dt><a class="reference internal" href="lowprob.html#improb.lowprev.lowprob.LowProb.is_completely_monotone" title="improb.lowprev.lowprob.LowProb.is_completely_monotone"><tt class="xref py py-meth docutils literal"><span class="pre">improb.lowprev.lowprob.LowProb.is_completely_monotone()</span></tt></a></dt>
+<dd>To check for complete monotonicity.</dd>
+</dl>
+</div>
 <dl class="method">
 <dt id="improb.lowprev.belfunc.BelFunc.get_lower">
 <tt class="descname">get_lower</tt><big>(</big><em>gamble</em>, <em>event=True</em>, <em>algorithm='mobius'</em><big>)</big><a class="headerlink" href="#improb.lowprev.belfunc.BelFunc.get_lower" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the lower expectation of a gamble.</p>
 <p>The default algorithm is to use the Mobius transform <img class="math" src="../_images/math/f5047d1e0cbb50ec208923a22cd517c55100fa7b.png" alt="m"/>
 of the lower probability <img class="math" src="../_images/math/55ff9df91e57651bf3df23ecf7ab48925428ebf2.png" alt="\underline{P}"/>:</p>
-<div class="math">
-<p><img src="../_images/math/c34a3fa22ff63eaf8a7037b9897214b0a79b0816.png" alt="\underline{E}(f)=
-\sum_{A\subseteq\Omega}
-m(A)\inf_{\omega\in A}f(\omega)" /></p>
-</div><div class="admonition-see-also admonition seealso">
+<div class="admonition-see-also admonition seealso">
 <p class="first admonition-title">See also</p>
 <dl class="last docutils">
-<dt><a class="reference internal" href="lowprob.html#improb.lowprev.lowprob.LowProb.is_completely_monotone" title="improb.lowprev.lowprob.LowProb.is_completely_monotone"><tt class="xref py py-meth docutils literal"><span class="pre">improb.lowprev.lowprob.LowProb.is_completely_monotone()</span></tt></a></dt>
-<dd>To check for complete monotonicity.</dd>
-<dt><a class="reference internal" href="../setfunction.html#improb.setfunction.SetFunction.get_mobius" title="improb.setfunction.SetFunction.get_mobius"><tt class="xref py py-meth docutils literal"><span class="pre">improb.setfunction.SetFunction.get_mobius()</span></tt></a></dt>
-<dd>Mobius transform of an arbitrary set function.</dd>
+<dt><a class="reference internal" href="../setfunction.html#improb.setfunction.SetFunction.get_bba_choquet" title="improb.setfunction.SetFunction.get_bba_choquet"><tt class="xref py py-meth docutils literal"><span class="pre">improb.setfunction.SetFunction.get_bba_choquet()</span></tt></a></dt>
+<dd>Find Choquet integral via Mobius transform of an
+arbitrary set function.</dd>
 </dl>
 </div>
 <div class="admonition warning">
@@ -90,7 +93,7 @@ must contain <em>all</em> events. If needed, call
 <span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">bel</span><span class="p">)</span>
 <span class="go">0   : 1/5</span>
 <span class="go">  1 : 1/4</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">bel</span><span class="o">.</span><span class="n">get_lower</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span> <span class="c"># oops! fails...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bel</span><span class="o">.</span><span class="n">get_lower</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span> <span class="c"># oops! fails... </span>
 <span class="gt">Traceback (most recent call last):</span>
     <span class="o">...</span>
 <span class="nc">KeyError</span>: <span class="n-Identifier">...</span>
@@ -115,13 +118,14 @@ must contain <em>all</em> events. If needed, call
 exception even if the assessments are not completely
 monotone, or even incoherent&#8212;the Mobius transform is in
 such case still defined, although some of the values of
-<img class="math" src="../_images/math/f5047d1e0cbb50ec208923a22cd517c55100fa7b.png" alt="m"/> will be negative (obviously, in such case,
-<img class="math" src="../_images/math/2a2df1df1f79999382ee7184370e5633941fa615.png" alt="\underline{E}"/> will be incoherent as well).</p>
+<img class="math" src="../_images/math/f5047d1e0cbb50ec208923a22cd517c55100fa7b.png" alt="m"/> will be negative. In fact, if the assessments are
+not 2-monotone, then <img class="math" src="../_images/math/2a2df1df1f79999382ee7184370e5633941fa615.png" alt="\underline{E}"/> will be
+incoherent as well.</p>
 <div class="last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">bel</span> <span class="o">=</span> <span class="n">BelFunc</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">pspace</span><span class="o">=</span><span class="s">&#39;abcd&#39;</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="n">lprob</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;ab&#39;</span><span class="p">:</span> <span class="s">&#39;0.2&#39;</span><span class="p">,</span> <span class="s">&#39;bc&#39;</span><span class="p">:</span> <span class="s">&#39;0.2&#39;</span><span class="p">,</span> <span class="s">&#39;abc&#39;</span><span class="p">:</span> <span class="s">&#39;0.2&#39;</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">:</span> <span class="s">&#39;0.1&#39;</span><span class="p">})</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">bel</span><span class="o">.</span><span class="n">extend</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">bel</span><span class="o">.</span><span class="n">is_completely_monotone</span><span class="p">()</span> <span class="c"># (it is in fact not even 2-monotone)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bel</span><span class="o">.</span><span class="n">is_n_monotone</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
 <span class="go">False</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c"># exact linear programming algorithm</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">bel</span><span class="o">.</span><span class="n">get_lower</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">algorithm</span><span class="o">=</span><span class="s">&#39;linprog&#39;</span><span class="p">)</span>
@@ -228,7 +232,7 @@ such case still defined, although some of the values of
         <li class="right" >
           <a href="lowprob.html" title="Lower Probabilities"
              >previous</a> |</li>
-        <li><a href="../index.html">improb v0.1.1 (beta) documentation</a> &raquo;</li>
+        <li><a href="../index.html">improb v0.1.1 documentation</a> &raquo;</li>
           <li><a href="../lowprev.html" >Lower Previsions</a> &raquo;</li> 
       </ul>
     </div>

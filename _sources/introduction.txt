@@ -114,7 +114,10 @@ event. Effectively, given a possibility space *pspace*, an
 :class:`collections.Iterable` corresponds to the event (specified as a
 Python set)::
 
-    {omega for omega in iterable if omega in pspace}
+    {omega for omega in iterable}
+
+where all elements *omega* must belong to the possibility space
+*pspace*.
 
 For convenience, you can also specify an event as :const:`True` (which
 corresponds to the full set) or :const:`False` (which corresponds to

@@ -7,13 +7,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>More Examples &mdash; improb v0.1.1 (beta) documentation</title>
+    <title>More Examples &mdash; improb v0.1.1 documentation</title>
     <link rel="stylesheet" href="../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.1.1 (beta)',
+        VERSION:     '0.1.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -22,7 +22,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="improb v0.1.1 (beta) documentation" href="../index.html" />
+    <link rel="top" title="improb v0.1.1 documentation" href="../index.html" />
     <link rel="up" title="Lower Previsions" href="../lowprev.html" />
     <link rel="next" title="Set Functions" href="../setfunction.html" />
     <link rel="prev" title="Probability Measures" href="prob.html" /> 
@@ -43,7 +43,7 @@
         <li class="right" >
           <a href="prob.html" title="Probability Measures"
              accesskey="P">previous</a> |</li>
-        <li><a href="../index.html">improb v0.1.1 (beta) documentation</a> &raquo;</li>
+        <li><a href="../index.html">improb v0.1.1 documentation</a> &raquo;</li>
           <li><a href="../lowprev.html" accesskey="U">Lower Previsions</a> &raquo;</li> 
       </ul>
     </div>  
@@ -55,6 +55,57 @@
             
   <div class="section" id="more-examples">
 <h1>More Examples<a class="headerlink" href="#more-examples" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="instability-of-natural-extension">
+<h2>Instability of Natural Extension<a class="headerlink" href="#instability-of-natural-extension" title="Permalink to this headline">¶</a></h2>
+<p>Example adapted from <a class="footnote-reference" href="#robinson1977" id="id1">[1]</a> (page 443).</p>
+<p>Original model:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">improb.lowprev.lowpoly</span> <span class="kn">import</span> <span class="n">LowPoly</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span> <span class="o">=</span> <span class="n">LowPoly</span><span class="p">(</span><span class="s">&#39;abcd&#39;</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">set_upper</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="s">&#39;2/3&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="s">&#39;1/2&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">set_upper</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="s">&#39;3/2&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">get_upper</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+<span class="go">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">get_credal_set</span><span class="p">())</span>
+<span class="go">[(Fraction(1, 2), 0, Fraction(1, 2), 0), (0, Fraction(3, 4), Fraction(1, 4), 0)]</span>
+</pre></div>
+</div>
+<p>Perturbated model:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span> <span class="o">=</span> <span class="n">LowPoly</span><span class="p">(</span><span class="s">&#39;abcd&#39;</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">set_upper</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="s">&#39;0.66667&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="s">&#39;1/2&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">set_upper</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="s">&#39;3/2&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">get_upper</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+<span class="go">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">get_credal_set</span><span class="p">())</span>
+<span class="go">[(Fraction(1, 2), 0, Fraction(1, 2), 0)]</span>
+</pre></div>
+</div>
+<p>Existence of incurring sure loss perturbation of original model:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span> <span class="o">=</span> <span class="n">LowPoly</span><span class="p">(</span><span class="s">&#39;abcd&#39;</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">set_upper</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="s">&#39;2/3&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="s">&#39;0.49999&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">set_upper</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="s">&#39;3/2&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">is_avoiding_sure_loss</span><span class="p">()</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+<p>Small vacuous mixture of the perturbated (still instable) model (alpha
+is 0.999):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span> <span class="o">=</span> <span class="n">LowPoly</span><span class="p">(</span><span class="s">&#39;abcd&#39;</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">set_upper</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="s">&#39;0.66667&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="s">&#39;0.5015&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">set_upper</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="s">&#39;1.5015&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">get_upper</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+<span class="go">2</span>
+</pre></div>
+</div>
+<p>So vacuous mixture is not stable!</p>
+<p class="rubric">Footnotes</p>
+<table class="docutils footnote" frame="void" id="robinson1977" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td>Stephen M. Robinson. A characterization of stability in linear programming.
+Operations Research, 25(3):435–447, 1977.</td></tr>
+</tbody>
+</table>
+</div>
 <div class="section" id="mobius-transform-and-natural-extension">
 <h2>Mobius Transform and Natural Extension<a class="headerlink" href="#mobius-transform-and-natural-extension" title="Permalink to this headline">¶</a></h2>
 <p>This example shows that, in general, the Mobius transform of a
@@ -132,10 +183,10 @@ extension.</p>
 <span class="n">bel</span><span class="o">.</span><span class="n">get_lower</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span> <span class="o">=</span> <span class="mf">0.5</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="mi">1</span><span class="o">+</span><span class="mi">0</span><span class="o">+</span><span class="mi">0</span><span class="o">+</span><span class="mi">0</span><span class="o">+</span><span class="mi">0</span><span class="o">-</span><span class="mi">1</span><span class="o">+</span><span class="mi">0</span><span class="o">+</span><span class="mi">0</span><span class="p">)</span><span class="o">=</span><span class="mf">0.5</span>
 </pre></div>
 </div>
-<p>However, it seems that the Mobius transform of a 2-monotone lower
-probability <em>can</em> be used to calculate its natural extension. The
-following simulation seems to confirm this for a space of size 3 (all
-coherent lower probabilities on such space are 2-monotone).</p>
+<p>However, the Mobius transform of a 2-monotone lower probability <em>can</em>
+be used to calculate its natural extension. The following simulation
+confirms this for a space of size 3 (all coherent lower probabilities
+on such space are 2-monotone).</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">itertools</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">random</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">improb.lowprev.lowprob</span> <span class="kn">import</span> <span class="n">LowProb</span>
@@ -147,19 +198,66 @@ coherent lower probabilities on such space are 2-monotone).</p>
 <span class="gp">... </span>    <span class="c"># construct a coherent lower probability</span>
 <span class="gp">... </span>    <span class="n">lpr</span> <span class="o">=</span> <span class="n">LowProb</span><span class="o">.</span><span class="n">make_random</span><span class="p">(</span><span class="n">pspace</span><span class="o">=</span><span class="n">n</span><span class="p">,</span> <span class="n">division</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span>
 <span class="gp">... </span>    <span class="n">lpr</span><span class="o">.</span><span class="n">extend</span><span class="p">()</span>
-<span class="gp">... </span>    <span class="n">bel</span> <span class="o">=</span> <span class="n">BelFunc</span><span class="p">(</span><span class="n">lpr</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">set_function</span> <span class="o">=</span> <span class="n">lpr</span><span class="o">.</span><span class="n">set_function</span>
+<span class="gp">... </span>    <span class="n">mobius</span> <span class="o">=</span> <span class="n">lpr</span><span class="o">.</span><span class="n">mobius</span>
 <span class="gp">... </span>    <span class="c"># check for incoherence</span>
 <span class="gp">... </span>    <span class="k">for</span> <span class="n">gamble</span> <span class="ow">in</span> <span class="n">gambles</span><span class="p">:</span>
-<span class="gp">... </span>        <span class="k">if</span> <span class="n">lpr</span><span class="o">.</span><span class="n">number_cmp</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">get_lower</span><span class="p">(</span><span class="n">gamble</span><span class="p">),</span> <span class="n">bel</span><span class="o">.</span><span class="n">get_lower</span><span class="p">(</span><span class="n">gamble</span><span class="p">))</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+<span class="gp">... </span>        <span class="k">if</span> <span class="n">lpr</span><span class="o">.</span><span class="n">number_cmp</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">get_lower</span><span class="p">(</span><span class="n">gamble</span><span class="p">),</span> <span class="n">mobius</span><span class="o">.</span><span class="n">get_bba_choquet</span><span class="p">(</span><span class="n">gamble</span><span class="p">))</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">lpr</span><span class="o">.</span><span class="n">number_cmp</span><span class="p">(</span><span class="n">lpr</span><span class="o">.</span><span class="n">get_lower</span><span class="p">(</span><span class="n">gamble</span><span class="p">),</span> <span class="n">set_function</span><span class="o">.</span><span class="n">get_choquet</span><span class="p">(</span><span class="n">gamble</span><span class="p">))</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
 <span class="gp">... </span>            <span class="k">print</span><span class="p">(</span><span class="s">&#39;lpr (lower probability):&#39;</span><span class="p">)</span>
 <span class="gp">... </span>            <span class="k">print</span><span class="p">(</span><span class="n">lpr</span><span class="p">)</span>
-<span class="gp">... </span>            <span class="k">print</span><span class="p">(</span><span class="s">&#39;bel.mobius (basic belief assignment):&#39;</span><span class="p">)</span>
-<span class="gp">... </span>            <span class="k">print</span><span class="p">(</span><span class="n">bel</span><span class="o">.</span><span class="n">mobius</span><span class="p">)</span>
+<span class="gp">... </span>            <span class="k">print</span><span class="p">(</span><span class="s">&#39;mobius (basic belief assignment):&#39;</span><span class="p">)</span>
+<span class="gp">... </span>            <span class="k">print</span><span class="p">(</span><span class="n">mobius</span><span class="p">)</span>
 <span class="gp">... </span>            <span class="k">print</span><span class="p">(</span><span class="s">&quot;lpr.get_lower({0})={1}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">gamble</span><span class="p">,</span> <span class="n">lpr</span><span class="o">.</span><span class="n">get_lower</span><span class="p">(</span><span class="n">gamble</span><span class="p">)))</span>
-<span class="gp">... </span>            <span class="k">print</span><span class="p">(</span><span class="s">&quot;bel.get_lower({0})={1}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">gamble</span><span class="p">,</span> <span class="n">bel</span><span class="o">.</span><span class="n">get_lower</span><span class="p">(</span><span class="n">gamble</span><span class="p">)))</span>
+<span class="gp">... </span>            <span class="k">print</span><span class="p">(</span><span class="s">&quot;mobius.get_bba_choquet({0})={1}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">gamble</span><span class="p">,</span> <span class="n">mobius</span><span class="o">.</span><span class="n">get_bba_choquet</span><span class="p">(</span><span class="n">gamble</span><span class="p">)))</span>
+<span class="gp">... </span>            <span class="k">print</span><span class="p">(</span><span class="s">&quot;set_function.get_choquet({0})={1}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">gamble</span><span class="p">,</span> <span class="n">set_function</span><span class="o">.</span><span class="n">get_choquet</span><span class="p">(</span><span class="n">gamble</span><span class="p">)))</span>
 <span class="gp">... </span>            <span class="k">break</span>
 <span class="gp">... </span>    <span class="k">else</span><span class="p">:</span>
 <span class="gp">... </span>        <span class="c"># no incoherence found! try another one</span>
+<span class="gp">... </span>        <span class="k">continue</span>
+<span class="gp">... </span>    <span class="k">break</span>
+<span class="gp">... </span><span class="k">else</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s">&quot;no counterexample found&quot;</span><span class="p">)</span> 
+<span class="gt">Traceback (most recent call last):</span>
+    <span class="o">...</span>
+<span class="nc">RuntimeError</span>: <span class="n-Identifier">no counterexample found</span>
+</pre></div>
+</div>
+<p>Finally, note that the Mobius transform can also be used to calculate
+the Choquet integral with respect to an arbitrary set function
+<img class="math" src="../_images/math/f37bba504894945c07a32f5496d74299a37aa51c.png" alt="s"/> for which <img class="math" src="../_images/math/ea3fc8bec1ea8fbcc50594e7ad00ef8a3853c904.png" alt="s(\emptyset)=0"/>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">itertools</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">random</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">improb</span> <span class="kn">import</span> <span class="n">PSpace</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">improb.setfunction</span> <span class="kn">import</span> <span class="n">SetFunction</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">n</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gambles</span> <span class="o">=</span> <span class="p">[[</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">)]</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">20</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">20</span><span class="p">):</span> <span class="c"># increase at will...</span>
+<span class="gp">... </span>    <span class="c"># construct a random set function</span>
+<span class="gp">... </span>    <span class="n">pspace</span> <span class="o">=</span> <span class="n">PSpace</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">s</span> <span class="o">=</span> <span class="n">SetFunction</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="n">pspace</span><span class="o">=</span><span class="n">pspace</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="n">data</span><span class="o">=</span><span class="nb">dict</span><span class="p">((</span><span class="n">event</span><span class="p">,</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">pspace</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">pspace</span><span class="p">)))</span>
+<span class="gp">... </span>                  <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">pspace</span><span class="o">.</span><span class="n">subsets</span><span class="p">()),</span>
+<span class="gp">... </span>        <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">s</span><span class="p">[</span><span class="bp">False</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="gp">... </span>    <span class="n">m</span> <span class="o">=</span> <span class="n">SetFunction</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="n">pspace</span><span class="o">=</span><span class="n">pspace</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="n">data</span><span class="o">=</span><span class="nb">dict</span><span class="p">((</span><span class="n">event</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">get_mobius</span><span class="p">(</span><span class="n">event</span><span class="p">))</span>
+<span class="gp">... </span>                  <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">pspace</span><span class="o">.</span><span class="n">subsets</span><span class="p">()),</span>
+<span class="gp">... </span>        <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="c"># check equality of two types of integrals</span>
+<span class="gp">... </span>    <span class="k">for</span> <span class="n">gamble</span> <span class="ow">in</span> <span class="n">gambles</span><span class="p">:</span>
+<span class="gp">... </span>        <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">number_cmp</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">get_choquet</span><span class="p">(</span><span class="n">gamble</span><span class="p">),</span> <span class="n">m</span><span class="o">.</span><span class="n">get_bba_choquet</span><span class="p">(</span><span class="n">gamble</span><span class="p">))</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+<span class="gp">... </span>            <span class="k">print</span><span class="p">(</span><span class="s">&#39;s:&#39;</span><span class="p">)</span>
+<span class="gp">... </span>            <span class="k">print</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+<span class="gp">... </span>            <span class="k">print</span><span class="p">(</span><span class="s">&#39;m (basic belief assignment):&#39;</span><span class="p">)</span>
+<span class="gp">... </span>            <span class="k">print</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+<span class="gp">... </span>            <span class="k">print</span><span class="p">(</span><span class="s">&quot;s.get_choquet({0})={1}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">gamble</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">get_choquet</span><span class="p">(</span><span class="n">gamble</span><span class="p">)))</span>
+<span class="gp">... </span>            <span class="k">print</span><span class="p">(</span><span class="s">&quot;m.get_bba_choquet({0})={1}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">gamble</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">get_bba_choquet</span><span class="p">(</span><span class="n">gamble</span><span class="p">)))</span>
+<span class="gp">... </span>            <span class="k">break</span>
+<span class="gp">... </span>    <span class="k">else</span><span class="p">:</span>
+<span class="gp">... </span>        <span class="c"># no inequality! try another one</span>
 <span class="gp">... </span>        <span class="k">continue</span>
 <span class="gp">... </span>    <span class="k">break</span>
 <span class="gp">... </span><span class="k">else</span><span class="p">:</span>
@@ -290,6 +388,7 @@ into an extensive form?</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">20</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="c"># construct a lower prevision</span>
 <span class="gp">... </span>    <span class="n">lpr</span> <span class="o">=</span> <span class="n">LowProb</span><span class="o">.</span><span class="n">make_random</span><span class="p">(</span><span class="n">pspace</span><span class="o">=</span><span class="n">pspace</span><span class="p">,</span> <span class="n">zero</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">opt</span> <span class="o">=</span> <span class="n">OptLowPrevMax</span><span class="p">(</span><span class="n">lpr</span><span class="p">)</span>
 <span class="gp">... </span>    <span class="c"># construct gambles:</span>
 <span class="gp">... </span>    <span class="c"># gambles[w1][d][w2] gives the gain of the w1-d-w2 path</span>
 <span class="gp">... </span>    <span class="n">gambles</span> <span class="o">=</span> <span class="p">[[[</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span> <span class="k">for</span> <span class="n">w2</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n2</span><span class="p">)]</span>
@@ -376,6 +475,7 @@ into an extensive form?</p>
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">More Examples</a><ul>
+<li><a class="reference internal" href="#instability-of-natural-extension">Instability of Natural Extension</a></li>
 <li><a class="reference internal" href="#mobius-transform-and-natural-extension">Mobius Transform and Natural Extension</a></li>
 <li><a class="reference internal" href="#a-simple-subtree-imperfect-decision-tree">A Simple Subtree Imperfect Decision Tree</a></li>
 <li><a class="reference internal" href="#stronger-violation-of-subtree-perfectness">Stronger Violation of Subtree Perfectness</a></li>
@@ -426,7 +526,7 @@ into an extensive form?</p>
         <li class="right" >
           <a href="prob.html" title="Probability Measures"
              >previous</a> |</li>
-        <li><a href="../index.html">improb v0.1.1 (beta) documentation</a> &raquo;</li>
+        <li><a href="../index.html">improb v0.1.1 documentation</a> &raquo;</li>
           <li><a href="../lowprev.html" >Lower Previsions</a> &raquo;</li> 
       </ul>
     </div>

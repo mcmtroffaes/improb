@@ -7,13 +7,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Lower Probabilities &mdash; improb v0.1.1 (beta) documentation</title>
+    <title>Lower Probabilities &mdash; improb v0.1.1 documentation</title>
     <link rel="stylesheet" href="../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.1.1 (beta)',
+        VERSION:     '0.1.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -22,7 +22,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="improb v0.1.1 (beta) documentation" href="../index.html" />
+    <link rel="top" title="improb v0.1.1 documentation" href="../index.html" />
     <link rel="up" title="Lower Previsions" href="../lowprev.html" />
     <link rel="next" title="Belief Functions" href="belfunc.html" />
     <link rel="prev" title="Polyhedral Lower Previsions" href="lowpoly.html" /> 
@@ -43,7 +43,7 @@
         <li class="right" >
           <a href="lowpoly.html" title="Polyhedral Lower Previsions"
              accesskey="P">previous</a> |</li>
-        <li><a href="../index.html">improb v0.1.1 (beta) documentation</a> &raquo;</li>
+        <li><a href="../index.html">improb v0.1.1 documentation</a> &raquo;</li>
           <li><a href="../lowprev.html" accesskey="U">Lower Previsions</a> &raquo;</li> 
       </ul>
     </div>  
@@ -97,6 +97,13 @@ unconditional assessments on events are allowed.</p>
 <span class="go">0   2 : 0</span>
 <span class="go">  1 2 : 3/20</span>
 <span class="go">0 1 2 : 7/10</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span> <span class="o">=</span> <span class="n">LowProb</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">lprob</span><span class="o">=</span><span class="p">{(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span> <span class="s">&#39;0.1&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span> <span class="s">&#39;0.2&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span><span class="p">,):</span> <span class="s">&#39;0.05&#39;</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="o">.</span><span class="n">extend</span><span class="p">([(</span><span class="n">lpr</span><span class="o">.</span><span class="n">pspace</span><span class="o">.</span><span class="n">make_event</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)),</span> <span class="bp">True</span><span class="p">)])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lpr</span><span class="p">)</span>
+<span class="go">    2 : 1/20</span>
+<span class="go">0 1   : 1/10</span>
+<span class="go">0   2 : 1/20</span>
+<span class="go">  1 2 : 1/5</span>
 </pre></div>
 </div>
 <dl class="classmethod">
@@ -111,7 +118,7 @@ monotonicity.</p>
 <tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>pspace</strong> (<tt class="xref py py-class docutils literal"><span class="pre">list</span></tt> or similar; see <a class="reference internal" href="../introduction.html#possibility-spaces"><em>Possibility Spaces</em></a>) &#8211; The possibility space.</li>
 <li><strong>monotonicity</strong> (<tt class="xref py py-class docutils literal"><span class="pre">int</span></tt> or
-<tt class="xref py py-class docutils literal"><span class="pre">collections.Iterable</span></tt> of <tt class="xref py py-class docutils literal"><span class="pre">int</span></tt>) &#8211; Requested level of monotonicity (see
+<a class="reference external" href="http://docs.python.org/library/collections.html#collections.Iterable" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">collections.Iterable</span></tt></a> of <tt class="xref py py-class docutils literal"><span class="pre">int</span></tt>) &#8211; Requested level of monotonicity (see
 notes below for details).</li>
 </ul>
 </td>
@@ -203,6 +210,546 @@ lower probability one, are not included: so for
 <span class="go">    a   b   c   ab  ac  bc  abc</span>
 <span class="go">-1  1   1   1   -1  -1  -1  1  </span>
 </pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="improb.lowprev.lowprob.LowProb.get_imprecise_part">
+<tt class="descname">get_imprecise_part</tt><big>(</big><big>)</big><a class="headerlink" href="#improb.lowprev.lowprob.LowProb.get_imprecise_part" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract the imprecise part and its relative weight.</p>
+<p>Every coherent lower probability <img class="math" src="../_images/math/55ff9df91e57651bf3df23ecf7ab48925428ebf2.png" alt="\underline{P}"/> can be written
+as a unique convex mixture <img class="math" src="../_images/math/62ac3c9e88c610d76e46fb242028a3376ca43979.png" alt="\lambda P+(1-\lambda)\underline{Q}"/>
+of an additive &#8216;precise&#8217; part <img class="math" src="../_images/math/4b4cade9ca8a2c8311fafcf040bc5b15ca507f52.png" alt="P"/> and an &#8216;imprecise&#8217; part
+<img class="math" src="../_images/math/c2428cb62f9da425ba78e7629683e165bbfe66cc.png" alt="\underline{Q}"/> that is zero on singletons.
+We return the tuple <img class="math" src="../_images/math/804480a0bd266804e52158356b83d2e84fb097b7.png" alt="(\underline{Q},1-\lambda)"/>.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pspace</span> <span class="o">=</span> <span class="n">PSpace</span><span class="p">(</span><span class="s">&#39;abc&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lprob</span> <span class="o">=</span> <span class="n">LowProb</span><span class="p">(</span><span class="n">pspace</span><span class="p">,</span>
+<span class="gp">... </span>                <span class="n">lprob</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;a&#39;</span><span class="p">:</span> <span class="s">&#39;1/8&#39;</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">:</span> <span class="s">&#39;1/7&#39;</span><span class="p">,</span> <span class="s">&#39;c&#39;</span><span class="p">:</span> <span class="s">&#39;1/6&#39;</span><span class="p">},</span>
+<span class="gp">... </span>                <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lprob</span><span class="p">)</span>
+<span class="go">a     : 1/8</span>
+<span class="go">  b   : 1/7</span>
+<span class="go">    c : 1/6</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lprob</span><span class="o">.</span><span class="n">extend</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lprob</span><span class="p">)</span>
+<span class="go">      : 0</span>
+<span class="go">a     : 1/8</span>
+<span class="go">  b   : 1/7</span>
+<span class="go">    c : 1/6</span>
+<span class="go">a b   : 15/56</span>
+<span class="go">a   c : 7/24</span>
+<span class="go">  b c : 13/42</span>
+<span class="go">a b c : 1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lprob</span><span class="o">.</span><span class="n">set_lower</span><span class="p">(</span><span class="n">Event</span><span class="p">(</span><span class="n">pspace</span><span class="p">,</span> <span class="s">&#39;ac&#39;</span><span class="p">),</span> <span class="s">&#39;1/3&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">prob</span><span class="p">,</span> <span class="n">coeff</span>  <span class="o">=</span> <span class="n">lprob</span><span class="o">.</span><span class="n">get_precise_part</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">prob</span><span class="p">)</span>
+<span class="go">a : 21/73</span>
+<span class="go">b : 24/73</span>
+<span class="go">c : 28/73</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">coeff</span><span class="p">)</span>
+<span class="go">73/168</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">improb</span><span class="p">,</span> <span class="n">cocoeff</span>  <span class="o">=</span> <span class="n">lprob</span><span class="o">.</span><span class="n">get_imprecise_part</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">cocoeff</span><span class="p">)</span>
+<span class="go">95/168</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">improb</span><span class="p">)</span>
+<span class="go">      : 0</span>
+<span class="go">a     : 0</span>
+<span class="go">  b   : 0</span>
+<span class="go">    c : 0</span>
+<span class="go">a b   : 0</span>
+<span class="go">a   c : 7/95</span>
+<span class="go">  b c : 0</span>
+<span class="go">a b c : 1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">coeff</span> <span class="o">+</span> <span class="n">cocoeff</span> <span class="o">==</span> <span class="mi">1</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">The lower probability must be defined for all singletons. If
+needed, call <a class="reference internal" href="lowpoly.html#improb.lowprev.lowpoly.LowPoly.extend" title="improb.lowprev.lowpoly.LowPoly.extend"><tt class="xref py py-meth docutils literal"><span class="pre">extend()</span></tt></a> first.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="improb.lowprev.lowprob.LowProb.get_outer_approx">
+<tt class="descname">get_outer_approx</tt><big>(</big><em>algorithm=None</em><big>)</big><a class="headerlink" href="#improb.lowprev.lowprob.LowProb.get_outer_approx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate an outer approximation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>algorithm</strong> &#8211; a <tt class="xref py py-class docutils literal"><span class="pre">string</span></tt> denoting the algorithm used:
+<tt class="xref docutils literal"><span class="pre">None</span></tt>, <tt class="docutils literal"><span class="pre">'linvac'</span></tt>, <tt class="docutils literal"><span class="pre">'irm'</span></tt>, <tt class="docutils literal"><span class="pre">'imrm'</span></tt>, or <tt class="docutils literal"><span class="pre">'lpbelfunc'</span></tt></td>
+</tr>
+<tr class="field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#improb.lowprev.lowprob.LowProb" title="improb.lowprev.lowprob.LowProb"><tt class="xref py py-class docutils literal"><span class="pre">LowProb</span></tt></a></td>
+</tr>
+</tbody>
+</table>
+<p>This method replaces the lower probability <img class="math" src="../_images/math/55ff9df91e57651bf3df23ecf7ab48925428ebf2.png" alt="\underline{P}"/> by
+a lower probability <img class="math" src="../_images/math/acc8c6b9328a35a7e4837bad886d024d08e62486.png" alt="\underline{R}"/> determined by the
+<tt class="docutils literal"><span class="pre">algorithm</span></tt> argument:</p>
+<dl class="docutils">
+<dt><tt class="xref docutils literal"><span class="pre">None</span></tt></dt>
+<dd><p class="first">returns the original lower probability.</p>
+<div class="last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pspace</span> <span class="o">=</span> <span class="n">PSpace</span><span class="p">(</span><span class="s">&#39;abc&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lprob</span> <span class="o">=</span> <span class="n">LowProb</span><span class="p">(</span><span class="n">pspace</span><span class="p">,</span>
+<span class="gp">... </span>            <span class="n">lprob</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;ab&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">5</span><span class="p">,</span> <span class="s">&#39;ac&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">5</span><span class="p">,</span> <span class="s">&#39;bc&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">5</span><span class="p">},</span>
+<span class="gp">... </span>            <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lprob</span><span class="o">.</span><span class="n">extend</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lprob</span><span class="p">)</span>
+<span class="go">      : 0</span>
+<span class="go">a     : 0</span>
+<span class="go">  b   : 0</span>
+<span class="go">    c : 0</span>
+<span class="go">a b   : 1/2</span>
+<span class="go">a   c : 1/2</span>
+<span class="go">  b c : 1/2</span>
+<span class="go">a b c : 1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lprob</span> <span class="o">==</span> <span class="n">lprob</span><span class="o">.</span><span class="n">get_outer_approx</span><span class="p">()</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">'linvac'</span></tt></dt>
+<dd>replaces the imprecise part <img class="math" src="../_images/math/c2428cb62f9da425ba78e7629683e165bbfe66cc.png" alt="\underline{Q}"/> by the vacuous
+lower probability <img class="math" src="../_images/math/af6432b81c3412003152b3ca0cc90f4704ef0e42.png" alt="\underline{R}=\min"/> to generate a simple
+outer approximation.</dd>
+<dt><tt class="docutils literal"><span class="pre">'irm'</span></tt></dt>
+<dd><p class="first">replaces <img class="math" src="../_images/math/55ff9df91e57651bf3df23ecf7ab48925428ebf2.png" alt="\underline{P}"/> by a completely monotone lower
+probability <img class="math" src="../_images/math/acc8c6b9328a35a7e4837bad886d024d08e62486.png" alt="\underline{R}"/> that is obtained by using the
+IRM algorithm of Hall &amp; Lawry <a class="footnote-reference" href="#hall2004" id="id1">[1]</a>. The Moebius transform
+of a lower probability that is not completely monotone contains
+negative belief assignments. Consider such a lower probability and
+an event with such a negative belief assignment. The approximation
+consists of removing this negative assignment and compensating for
+this by correspondingly reducing the positive masses for events
+below it; for details, see the paper.</p>
+<p>The following example illustrates the procedure:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pspace</span> <span class="o">=</span> <span class="n">PSpace</span><span class="p">(</span><span class="s">&#39;abc&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lprob</span> <span class="o">=</span> <span class="n">LowProb</span><span class="p">(</span><span class="n">pspace</span><span class="p">,</span>
+<span class="gp">... </span>            <span class="n">lprob</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;ab&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">5</span><span class="p">,</span> <span class="s">&#39;ac&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">5</span><span class="p">,</span> <span class="s">&#39;bc&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">5</span><span class="p">},</span>
+<span class="gp">... </span>            <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lprob</span><span class="o">.</span><span class="n">extend</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lprob</span><span class="p">)</span>
+<span class="go">      : 0</span>
+<span class="go">a     : 0</span>
+<span class="go">  b   : 0</span>
+<span class="go">    c : 0</span>
+<span class="go">a b   : 1/2</span>
+<span class="go">a   c : 1/2</span>
+<span class="go">  b c : 1/2</span>
+<span class="go">a b c : 1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lprob</span><span class="o">.</span><span class="n">is_completely_monotone</span><span class="p">()</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lprob</span><span class="o">.</span><span class="n">mobius</span><span class="p">)</span>
+<span class="go">      : 0</span>
+<span class="go">a     : 0</span>
+<span class="go">  b   : 0</span>
+<span class="go">    c : 0</span>
+<span class="go">a b   : 1/2</span>
+<span class="go">a   c : 1/2</span>
+<span class="go">  b c : 1/2</span>
+<span class="go">a b c : -1/2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">belfunc</span> <span class="o">=</span> <span class="n">lprob</span><span class="o">.</span><span class="n">get_outer_approx</span><span class="p">(</span><span class="s">&#39;irm&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">belfunc</span><span class="o">.</span><span class="n">mobius</span><span class="p">)</span>
+<span class="go">      : 0</span>
+<span class="go">a     : 0</span>
+<span class="go">  b   : 0</span>
+<span class="go">    c : 0</span>
+<span class="go">a b   : 1/3</span>
+<span class="go">a   c : 1/3</span>
+<span class="go">  b c : 1/3</span>
+<span class="go">a b c : 0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">belfunc</span><span class="p">)</span>
+<span class="go">      : 0</span>
+<span class="go">a     : 0</span>
+<span class="go">  b   : 0</span>
+<span class="go">    c : 0</span>
+<span class="go">a b   : 1/3</span>
+<span class="go">a   c : 1/3</span>
+<span class="go">  b c : 1/3</span>
+<span class="go">a b c : 1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">belfunc</span><span class="o">.</span><span class="n">is_completely_monotone</span><span class="p">()</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>The next is Example 2 from Hall &amp; Lawry&#8217;s 2004 paper <a class="footnote-reference" href="#hall2004" id="id2">[1]</a>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pspace</span> <span class="o">=</span> <span class="n">PSpace</span><span class="p">(</span><span class="s">&#39;ABCD&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lprob</span> <span class="o">=</span> <span class="n">LowProb</span><span class="p">(</span><span class="n">pspace</span><span class="p">,</span> <span class="n">lprob</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#39;ABCD&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+<span class="gp">... </span>                               <span class="s">&#39;A&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mo">0895</span><span class="p">,</span> <span class="s">&#39;B&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">2743</span><span class="p">,</span>
+<span class="gp">... </span>                               <span class="s">&#39;C&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">2668</span><span class="p">,</span> <span class="s">&#39;D&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">1063</span><span class="p">,</span>
+<span class="gp">... </span>                               <span class="s">&#39;AB&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">3947</span><span class="p">,</span> <span class="s">&#39;AC&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">4506</span><span class="p">,</span>
+<span class="gp">... </span>                               <span class="s">&#39;AD&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">2959</span><span class="p">,</span> <span class="s">&#39;BC&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">5837</span><span class="p">,</span>
+<span class="gp">... </span>                               <span class="s">&#39;BD&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">4835</span><span class="p">,</span> <span class="s">&#39;CD&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">4079</span><span class="p">,</span>
+<span class="gp">... </span>                               <span class="s">&#39;ABC&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">7248</span><span class="p">,</span> <span class="s">&#39;ABD&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">6224</span><span class="p">,</span>
+<span class="gp">... </span>                               <span class="s">&#39;ACD&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">6072</span><span class="p">,</span> <span class="s">&#39;BCD&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">7502</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lprob</span><span class="o">.</span><span class="n">is_avoiding_sure_loss</span><span class="p">()</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lprob</span><span class="o">.</span><span class="n">is_coherent</span><span class="p">()</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lprob</span><span class="o">.</span><span class="n">is_completely_monotone</span><span class="p">()</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">belfunc</span> <span class="o">=</span> <span class="n">lprob</span><span class="o">.</span><span class="n">get_outer_approx</span><span class="p">(</span><span class="s">&#39;irm&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">belfunc</span><span class="o">.</span><span class="n">is_completely_monotone</span><span class="p">()</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lprob</span><span class="p">)</span>
+<span class="go">        : 0.0</span>
+<span class="go">A       : 0.0895</span>
+<span class="go">  B     : 0.2743</span>
+<span class="go">    C   : 0.2668</span>
+<span class="go">      D : 0.1063</span>
+<span class="go">A B     : 0.3947</span>
+<span class="go">A   C   : 0.4506</span>
+<span class="go">A     D : 0.2959</span>
+<span class="go">  B C   : 0.5837</span>
+<span class="go">  B   D : 0.4835</span>
+<span class="go">    C D : 0.4079</span>
+<span class="go">A B C   : 0.7248</span>
+<span class="go">A B   D : 0.6224</span>
+<span class="go">A   C D : 0.6072</span>
+<span class="go">  B C D : 0.7502</span>
+<span class="go">A B C D : 1.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">belfunc</span><span class="p">)</span>
+<span class="go">        : 0.0</span>
+<span class="go">A       : 0.0895</span>
+<span class="go">  B     : 0.2743</span>
+<span class="go">    C   : 0.2668</span>
+<span class="go">      D : 0.1063</span>
+<span class="go">A B     : 0.375789766751</span>
+<span class="go">A   C   : 0.405080300695</span>
+<span class="go">A     D : 0.259553087227</span>
+<span class="go">  B C   : 0.560442004097</span>
+<span class="go">  B   D : 0.43812301076</span>
+<span class="go">    C D : 0.399034985143</span>
+<span class="go">A B C   : 0.710712071543</span>
+<span class="go">A B   D : 0.603365864737</span>
+<span class="go">A   C D : 0.601068373065</span>
+<span class="go">  B C D : 0.7502</span>
+<span class="go">A B C D : 1.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lprob</span><span class="o">.</span><span class="n">mobius</span><span class="p">)</span>
+<span class="go">        : 0.0</span>
+<span class="go">A       : 0.0895</span>
+<span class="go">  B     : 0.2743</span>
+<span class="go">    C   : 0.2668</span>
+<span class="go">      D : 0.1063</span>
+<span class="go">A B     : 0.0309</span>
+<span class="go">A   C   : 0.0943</span>
+<span class="go">A     D : 0.1001</span>
+<span class="go">  B C   : 0.0426</span>
+<span class="go">  B   D : 0.1029</span>
+<span class="go">    C D : 0.0348</span>
+<span class="go">A B C   : -0.0736</span>
+<span class="go">A B   D : -0.0816</span>
+<span class="go">A   C D : -0.0846</span>
+<span class="go">  B C D : -0.0775</span>
+<span class="go">A B C D : 0.1748</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">belfunc</span><span class="o">.</span><span class="n">mobius</span><span class="p">)</span>
+<span class="go">        : 0.0</span>
+<span class="go">A       : 0.0895</span>
+<span class="go">  B     : 0.2743</span>
+<span class="go">    C   : 0.2668</span>
+<span class="go">      D : 0.1063</span>
+<span class="go">A B     : 0.0119897667507</span>
+<span class="go">A   C   : 0.0487803006948</span>
+<span class="go">A     D : 0.0637530872268</span>
+<span class="go">  B C   : 0.019342004097</span>
+<span class="go">  B   D : 0.0575230107598</span>
+<span class="go">    C D : 0.0259349851432</span>
+<span class="go">A B C   : 3.33066907388e-16</span>
+<span class="go">A B   D : -1.11022302463e-16</span>
+<span class="go">A   C D : -1.11022302463e-16</span>
+<span class="go">  B C D : 0.0</span>
+<span class="go">A B C D : 0.0357768453276</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">sum</span><span class="p">(</span><span class="n">lprev</span> <span class="k">for</span> <span class="p">(</span><span class="n">lprev</span><span class="p">,</span> <span class="n">uprev</span><span class="p">)</span>
+<span class="gp">... </span>          <span class="ow">in</span> <span class="p">(</span><span class="n">lprob</span> <span class="o">-</span> <span class="n">belfunc</span><span class="p">)</span><span class="o">.</span><span class="n">itervalues</span><span class="p">())</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span> <span class="o">**</span> <span class="nb">len</span><span class="p">(</span><span class="n">pspace</span><span class="p">))</span>
+<span class="go">0.013595658498933991</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This algorithm is <em>not</em> invariant under permutation of the
+possibility space.</p>
+</div>
+<div class="last admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">The lower probability must be defined for all events. If
+needed, call <a class="reference internal" href="lowpoly.html#improb.lowprev.lowpoly.LowPoly.extend" title="improb.lowprev.lowpoly.LowPoly.extend"><tt class="xref py py-meth docutils literal"><span class="pre">extend()</span></tt></a>
+first.</p>
+</div>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">'imrm'</span></tt></dt>
+<dd><p class="first">replaces <img class="math" src="../_images/math/55ff9df91e57651bf3df23ecf7ab48925428ebf2.png" alt="\underline{P}"/> by a completely monotone lower
+probability <img class="math" src="../_images/math/acc8c6b9328a35a7e4837bad886d024d08e62486.png" alt="\underline{R}"/> that is obtained by using an
+algorithm by Quaeghebeur that is as of yet unpublished.</p>
+<p>We apply it to Example 2 from Hall &amp; Lawry&#8217;s 2004 paper
+<a class="footnote-reference" href="#hall2004" id="id3">[1]</a>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pspace</span> <span class="o">=</span> <span class="n">PSpace</span><span class="p">(</span><span class="s">&#39;ABCD&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lprob</span> <span class="o">=</span> <span class="n">LowProb</span><span class="p">(</span><span class="n">pspace</span><span class="p">,</span> <span class="n">lprob</span><span class="o">=</span><span class="p">{</span>
+<span class="gp">... </span>    <span class="s">&#39;&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#39;ABCD&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s">&#39;A&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mo">0895</span><span class="p">,</span> <span class="s">&#39;B&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">2743</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s">&#39;C&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">2668</span><span class="p">,</span> <span class="s">&#39;D&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">1063</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s">&#39;AB&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">3947</span><span class="p">,</span> <span class="s">&#39;AC&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">4506</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s">&#39;AD&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">2959</span><span class="p">,</span> <span class="s">&#39;BC&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">5837</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s">&#39;BD&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">4835</span><span class="p">,</span> <span class="s">&#39;CD&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">4079</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s">&#39;ABC&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">7248</span><span class="p">,</span> <span class="s">&#39;ABD&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">6224</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s">&#39;ACD&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">6072</span><span class="p">,</span> <span class="s">&#39;BCD&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">7502</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">belfunc</span> <span class="o">=</span> <span class="n">lprob</span><span class="o">.</span><span class="n">get_outer_approx</span><span class="p">(</span><span class="s">&#39;imrm&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">belfunc</span><span class="o">.</span><span class="n">is_completely_monotone</span><span class="p">()</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lprob</span><span class="p">)</span>
+<span class="go">        : 0.0</span>
+<span class="go">A       : 0.0895</span>
+<span class="go">  B     : 0.2743</span>
+<span class="go">    C   : 0.2668</span>
+<span class="go">      D : 0.1063</span>
+<span class="go">A B     : 0.3947</span>
+<span class="go">A   C   : 0.4506</span>
+<span class="go">A     D : 0.2959</span>
+<span class="go">  B C   : 0.5837</span>
+<span class="go">  B   D : 0.4835</span>
+<span class="go">    C D : 0.4079</span>
+<span class="go">A B C   : 0.7248</span>
+<span class="go">A B   D : 0.6224</span>
+<span class="go">A   C D : 0.6072</span>
+<span class="go">  B C D : 0.7502</span>
+<span class="go">A B C D : 1.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">belfunc</span><span class="p">)</span>
+<span class="go">        : 0.0</span>
+<span class="go">A       : 0.0895</span>
+<span class="go">  B     : 0.2743</span>
+<span class="go">    C   : 0.2668</span>
+<span class="go">      D : 0.1063</span>
+<span class="go">A B     : 0.381007057096</span>
+<span class="go">A   C   : 0.411644226231</span>
+<span class="go">A     D : 0.26007767078</span>
+<span class="go">  B C   : 0.562748716673</span>
+<span class="go">  B   D : 0.4404197271</span>
+<span class="go">    C D : 0.394394926787</span>
+<span class="go">A B C   : 0.7248</span>
+<span class="go">A B   D : 0.6224</span>
+<span class="go">A   C D : 0.6072</span>
+<span class="go">  B C D : 0.7502</span>
+<span class="go">A B C D : 1.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lprob</span><span class="o">.</span><span class="n">mobius</span><span class="p">)</span>
+<span class="go">        : 0.0</span>
+<span class="go">A       : 0.0895</span>
+<span class="go">  B     : 0.2743</span>
+<span class="go">    C   : 0.2668</span>
+<span class="go">      D : 0.1063</span>
+<span class="go">A B     : 0.0309</span>
+<span class="go">A   C   : 0.0943</span>
+<span class="go">A     D : 0.1001</span>
+<span class="go">  B C   : 0.0426</span>
+<span class="go">  B   D : 0.1029</span>
+<span class="go">    C D : 0.0348</span>
+<span class="go">A B C   : -0.0736</span>
+<span class="go">A B   D : -0.0816</span>
+<span class="go">A   C D : -0.0846</span>
+<span class="go">  B C D : -0.0775</span>
+<span class="go">A B C D : 0.1748</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">belfunc</span><span class="o">.</span><span class="n">mobius</span><span class="p">)</span>
+<span class="go">        : 0.0</span>
+<span class="go">A       : 0.0895</span>
+<span class="go">  B     : 0.2743</span>
+<span class="go">    C   : 0.2668</span>
+<span class="go">      D : 0.1063</span>
+<span class="go">A B     : 0.0172070570962</span>
+<span class="go">A   C   : 0.0553442262305</span>
+<span class="go">A     D : 0.0642776707797</span>
+<span class="go">  B C   : 0.0216487166733</span>
+<span class="go">  B   D : 0.0598197271</span>
+<span class="go">    C D : 0.0212949267869</span>
+<span class="go">A B C   : 2.22044604925e-16</span>
+<span class="go">A B   D : 0.0109955450242</span>
+<span class="go">A   C D : 0.00368317620293</span>
+<span class="go">  B C D : 3.66294398528e-05</span>
+<span class="go">A B C D : 0.00879232466651</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">sum</span><span class="p">(</span><span class="n">lprev</span> <span class="k">for</span> <span class="p">(</span><span class="n">lprev</span><span class="p">,</span> <span class="n">uprev</span><span class="p">)</span>
+<span class="gp">... </span>          <span class="ow">in</span> <span class="p">(</span><span class="n">lprob</span> <span class="o">-</span> <span class="n">belfunc</span><span class="p">)</span><span class="o">.</span><span class="n">itervalues</span><span class="p">())</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span> <span class="o">**</span> <span class="nb">len</span><span class="p">(</span><span class="n">pspace</span><span class="p">))</span>
+<span class="go">0.010375479708342836</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This algorithm <em>is</em> invariant under permutation of the
+possibility space.</p>
+</div>
+<div class="last admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">The lower probability must be defined for all events. If
+needed, call <a class="reference internal" href="lowpoly.html#improb.lowprev.lowpoly.LowPoly.extend" title="improb.lowprev.lowpoly.LowPoly.extend"><tt class="xref py py-meth docutils literal"><span class="pre">extend()</span></tt></a>
+first.</p>
+</div>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">'lpbelfunc'</span></tt></dt>
+<dd><p class="first">replaces <img class="math" src="../_images/math/55ff9df91e57651bf3df23ecf7ab48925428ebf2.png" alt="\underline{P}"/> by a completely monotone lower
+probability <img class="math" src="../_images/math/6dfe828547d81893dcc2ed49af4f8bccfaabc8df.png" alt="\underline{R}_\mu"/> that is obtained via the zeta
+transform of the basic belief assignment <img class="math" src="../_images/math/2d8c833ed800824727cd7bd2fb9de1a12ad7e674.png" alt="\mu"/>, a solution of
+the following optimization (linear programming) problem:</p>
+<div class="math">
+<p><img src="../_images/math/40c72d502b24768266a0dca0623acf56beb3cb75.png" alt="\min\{
+\sum_{A\subseteq\Omega}(\underline{P}(A)-\underline{R}_\mu(A)):
+\mu(A)\geq0, \sum_{B\subseteq\Omega}\mu(B)=1,
+\underline{R}_\mu(A)\leq\underline{P}(A), A\subseteq\Omega
+\}," /></p>
+</div><p>which, because constants in the objective function do not influence
+the solution and because
+<img class="math" src="../_images/math/5272a6eca80ebd37759ae7a715af2e00aa3c45b6.png" alt="\underline{R}_\mu(A)=\sum_{B\subseteq A}\mu(B)"/>,
+is equivalent to:</p>
+<div class="math">
+<p><img src="../_images/math/80216e46d58cd1e5b758ddb3454221963057af03.png" alt="\max\{
+\sum_{B\subseteq\Omega}2^{|\Omega|-|B|}\mu(B):
+\mu(A)\geq0, \sum_{B\subseteq\Omega}\mu(B)=1,
+\sum_{B\subseteq A}\mu(B)
+ \leq\underline{P}(A), A\subseteq\Omega
+\}," /></p>
+</div><p>the version that is implemented.</p>
+<p>We apply this to Example 2 from Hall &amp; Lawry&#8217;s 2004 paper
+<a class="footnote-reference" href="#hall2004" id="id4">[1]</a>, which we also used for <tt class="docutils literal"><span class="pre">'irm'</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pspace</span> <span class="o">=</span> <span class="n">PSpace</span><span class="p">(</span><span class="s">&#39;ABCD&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lprob</span> <span class="o">=</span> <span class="n">LowProb</span><span class="p">(</span><span class="n">pspace</span><span class="p">,</span> <span class="n">lprob</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#39;ABCD&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+<span class="gp">... </span>                               <span class="s">&#39;A&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mo">0895</span><span class="p">,</span> <span class="s">&#39;B&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">2743</span><span class="p">,</span>
+<span class="gp">... </span>                               <span class="s">&#39;C&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">2668</span><span class="p">,</span> <span class="s">&#39;D&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">1063</span><span class="p">,</span>
+<span class="gp">... </span>                               <span class="s">&#39;AB&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">3947</span><span class="p">,</span> <span class="s">&#39;AC&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">4506</span><span class="p">,</span>
+<span class="gp">... </span>                               <span class="s">&#39;AD&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">2959</span><span class="p">,</span> <span class="s">&#39;BC&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">5837</span><span class="p">,</span>
+<span class="gp">... </span>                               <span class="s">&#39;BD&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">4835</span><span class="p">,</span> <span class="s">&#39;CD&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">4079</span><span class="p">,</span>
+<span class="gp">... </span>                               <span class="s">&#39;ABC&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">7248</span><span class="p">,</span> <span class="s">&#39;ABD&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">6224</span><span class="p">,</span>
+<span class="gp">... </span>                               <span class="s">&#39;ACD&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">6072</span><span class="p">,</span> <span class="s">&#39;BCD&#39;</span><span class="p">:</span> <span class="o">.</span><span class="mi">7502</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">belfunc</span> <span class="o">=</span> <span class="n">lprob</span><span class="o">.</span><span class="n">get_outer_approx</span><span class="p">(</span><span class="s">&#39;lpbelfunc&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">belfunc</span><span class="o">.</span><span class="n">is_completely_monotone</span><span class="p">()</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lprob</span><span class="p">)</span>
+<span class="go">        : 0.0</span>
+<span class="go">A       : 0.0895</span>
+<span class="go">  B     : 0.2743</span>
+<span class="go">    C   : 0.2668</span>
+<span class="go">      D : 0.1063</span>
+<span class="go">A B     : 0.3947</span>
+<span class="go">A   C   : 0.4506</span>
+<span class="go">A     D : 0.2959</span>
+<span class="go">  B C   : 0.5837</span>
+<span class="go">  B   D : 0.4835</span>
+<span class="go">    C D : 0.4079</span>
+<span class="go">A B C   : 0.7248</span>
+<span class="go">A B   D : 0.6224</span>
+<span class="go">A   C D : 0.6072</span>
+<span class="go">  B C D : 0.7502</span>
+<span class="go">A B C D : 1.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">belfunc</span><span class="p">)</span>
+<span class="go">        : 0.0</span>
+<span class="go">A       : 0.0895</span>
+<span class="go">  B     : 0.2743</span>
+<span class="go">    C   : 0.2668</span>
+<span class="go">      D : 0.1063</span>
+<span class="go">A B     : 0.3638</span>
+<span class="go">A   C   : 0.4079</span>
+<span class="go">A     D : 0.28835</span>
+<span class="go">  B C   : 0.5837</span>
+<span class="go">  B   D : 0.44035</span>
+<span class="go">    C D : 0.37355</span>
+<span class="go">A B C   : 0.7248</span>
+<span class="go">A B   D : 0.6224</span>
+<span class="go">A   C D : 0.6072</span>
+<span class="go">  B C D : 0.7502</span>
+<span class="go">A B C D : 1.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lprob</span><span class="o">.</span><span class="n">mobius</span><span class="p">)</span>
+<span class="go">        : 0.0</span>
+<span class="go">A       : 0.0895</span>
+<span class="go">  B     : 0.2743</span>
+<span class="go">    C   : 0.2668</span>
+<span class="go">      D : 0.1063</span>
+<span class="go">A B     : 0.0309</span>
+<span class="go">A   C   : 0.0943</span>
+<span class="go">A     D : 0.1001</span>
+<span class="go">  B C   : 0.0426</span>
+<span class="go">  B   D : 0.1029</span>
+<span class="go">    C D : 0.0348</span>
+<span class="go">A B C   : -0.0736</span>
+<span class="go">A B   D : -0.0816</span>
+<span class="go">A   C D : -0.0846</span>
+<span class="go">  B C D : -0.0775</span>
+<span class="go">A B C D : 0.1748</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">belfunc</span><span class="o">.</span><span class="n">mobius</span><span class="p">)</span>
+<span class="go">        : 0.0</span>
+<span class="go">A       : 0.0895</span>
+<span class="go">  B     : 0.2743</span>
+<span class="go">    C   : 0.2668</span>
+<span class="go">      D : 0.1063</span>
+<span class="go">A B     : 0.0</span>
+<span class="go">A   C   : 0.0516</span>
+<span class="go">A     D : 0.09255</span>
+<span class="go">  B C   : 0.0426</span>
+<span class="go">  B   D : 0.05975</span>
+<span class="go">    C D : 0.00045</span>
+<span class="go">A B C   : 0.0</span>
+<span class="go">A B   D : 1.11022302463e-16</span>
+<span class="go">A   C D : 0.0</span>
+<span class="go">  B C D : 0.0</span>
+<span class="go">A B C D : 0.01615</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">sum</span><span class="p">(</span><span class="n">lprev</span> <span class="k">for</span> <span class="p">(</span><span class="n">lprev</span><span class="p">,</span> <span class="n">uprev</span><span class="p">)</span>
+<span class="gp">... </span>          <span class="ow">in</span> <span class="p">(</span><span class="n">lprob</span> <span class="o">-</span> <span class="n">belfunc</span><span class="p">)</span><span class="o">.</span><span class="n">itervalues</span><span class="p">())</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span> <span class="o">**</span> <span class="nb">len</span><span class="p">(</span><span class="n">pspace</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="p">)</span> 
+<span class="go">0.00991562...</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This algorithm is <em>not</em> invariant under permutation of the
+possibility space or changes in the LP-solver:
+there may be a nontrivial convex set of optimal solutions.</p>
+</div>
+<div class="last admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">The lower probability must be defined for all events. If
+needed, call <a class="reference internal" href="lowpoly.html#improb.lowprev.lowpoly.LowPoly.extend" title="improb.lowprev.lowpoly.LowPoly.extend"><tt class="xref py py-meth docutils literal"><span class="pre">extend()</span></tt></a>
+first.</p>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="improb.lowprev.lowprob.LowProb.get_precise_part">
+<tt class="descname">get_precise_part</tt><big>(</big><big>)</big><a class="headerlink" href="#improb.lowprev.lowprob.LowProb.get_precise_part" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract the precise part and its relative weight.</p>
+<p>Every coherent lower probability <img class="math" src="../_images/math/55ff9df91e57651bf3df23ecf7ab48925428ebf2.png" alt="\underline{P}"/> can be written
+as a unique convex mixture <img class="math" src="../_images/math/62ac3c9e88c610d76e46fb242028a3376ca43979.png" alt="\lambda P+(1-\lambda)\underline{Q}"/>
+of an additive &#8216;precise&#8217; part <img class="math" src="../_images/math/4b4cade9ca8a2c8311fafcf040bc5b15ca507f52.png" alt="P"/> and an &#8216;imprecise&#8217; part
+<img class="math" src="../_images/math/c2428cb62f9da425ba78e7629683e165bbfe66cc.png" alt="\underline{Q}"/> that is zero on singletons.
+We return the tuple <img class="math" src="../_images/math/1a7029f061cf3e9be1d6a836658f962dc3945e02.png" alt="(P,\lambda)"/>, where <img class="math" src="../_images/math/4b4cade9ca8a2c8311fafcf040bc5b15ca507f52.png" alt="P"/> is a
+<a class="reference internal" href="prob.html#improb.lowprev.prob.Prob" title="improb.lowprev.prob.Prob"><tt class="xref py py-class docutils literal"><span class="pre">Prob</span></tt></a>. In case <img class="math" src="../_images/math/ab8ccbedc8ad9dd3e5fb8e654b94ee38f70f19e9.png" alt="\lambda=0"/> we return
+the tuple (<tt class="xref docutils literal"><span class="pre">None</span></tt>, 0).</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pspace</span> <span class="o">=</span> <span class="n">PSpace</span><span class="p">(</span><span class="s">&#39;abc&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lprob</span> <span class="o">=</span> <span class="n">LowProb</span><span class="p">(</span><span class="n">pspace</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">event</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">A</span><span class="p">:</span> <span class="n">Event</span><span class="p">(</span><span class="n">pspace</span><span class="p">,</span> <span class="n">A</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lprob</span><span class="o">.</span><span class="n">set_lower</span><span class="p">(</span><span class="n">event</span><span class="p">(</span><span class="s">&#39;a&#39;</span><span class="p">),</span> <span class="s">&#39;1/8&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lprob</span><span class="o">.</span><span class="n">set_lower</span><span class="p">(</span><span class="n">event</span><span class="p">(</span><span class="s">&#39;b&#39;</span><span class="p">),</span> <span class="s">&#39;1/7&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lprob</span><span class="o">.</span><span class="n">set_lower</span><span class="p">(</span><span class="n">event</span><span class="p">(</span><span class="s">&#39;c&#39;</span><span class="p">),</span> <span class="s">&#39;1/6&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lprob</span><span class="o">.</span><span class="n">set_lower</span><span class="p">(</span><span class="n">event</span><span class="p">(</span><span class="s">&#39;ac&#39;</span><span class="p">),</span> <span class="s">&#39;3/8&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lprob</span><span class="o">.</span><span class="n">extend</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">lprob</span><span class="p">)</span>
+<span class="go">      : 0</span>
+<span class="go">a     : 1/8</span>
+<span class="go">  b   : 1/7</span>
+<span class="go">    c : 1/6</span>
+<span class="go">a b   : 15/56</span>
+<span class="go">a   c : 3/8</span>
+<span class="go">  b c : 13/42</span>
+<span class="go">a b c : 1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">prob</span><span class="p">,</span> <span class="n">coeff</span> <span class="o">=</span> <span class="n">lprob</span><span class="o">.</span><span class="n">get_precise_part</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">prob</span><span class="p">)</span>
+<span class="go">a : 21/73</span>
+<span class="go">b : 24/73</span>
+<span class="go">c : 28/73</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">coeff</span>
+<span class="go">Fraction(73, 168)</span>
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">The lower probability must be defined for all singletons. If
+needed, call <a class="reference internal" href="lowpoly.html#improb.lowprev.lowpoly.LowPoly.extend" title="improb.lowprev.lowpoly.LowPoly.extend"><tt class="xref py py-meth docutils literal"><span class="pre">extend()</span></tt></a> first.</p>
 </div>
 </dd></dl>
 
@@ -431,6 +978,16 @@ probabilities, as <a class="reference internal" href="../setfunction.html#improb
 
 </dd></dl>
 
+<p class="rubric">Footnotes</p>
+<table class="docutils footnote" frame="void" id="hall2004" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[1]</td><td><em>(<a class="fn-backref" href="#id1">1</a>, <a class="fn-backref" href="#id2">2</a>, <a class="fn-backref" href="#id3">3</a>, <a class="fn-backref" href="#id4">4</a>)</em> Jim W. Hall and Jonathan Lawry:
+Generation, combination and extension of random set approximations
+to coherent lower and upper probabilities
+Reliability Engineering &amp; System Safety, 85:89-101, 2004.</td></tr>
+</tbody>
+</table>
 </div>
 
 
@@ -482,7 +1039,7 @@ probabilities, as <a class="reference internal" href="../setfunction.html#improb
         <li class="right" >
           <a href="lowpoly.html" title="Polyhedral Lower Previsions"
              >previous</a> |</li>
-        <li><a href="../index.html">improb v0.1.1 (beta) documentation</a> &raquo;</li>
+        <li><a href="../index.html">improb v0.1.1 documentation</a> &raquo;</li>
           <li><a href="../lowprev.html" >Lower Previsions</a> &raquo;</li> 
       </ul>
     </div>

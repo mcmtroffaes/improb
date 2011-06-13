@@ -7,13 +7,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Polyhedral Lower Previsions &mdash; improb v0.1.1 (beta) documentation</title>
+    <title>Polyhedral Lower Previsions &mdash; improb v0.1.1 documentation</title>
     <link rel="stylesheet" href="../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.1.1 (beta)',
+        VERSION:     '0.1.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -22,7 +22,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="improb v0.1.1 (beta) documentation" href="../index.html" />
+    <link rel="top" title="improb v0.1.1 documentation" href="../index.html" />
     <link rel="up" title="Lower Previsions" href="../lowprev.html" />
     <link rel="next" title="Lower Probabilities" href="lowprob.html" />
     <link rel="prev" title="Lower Previsions" href="../lowprev.html" /> 
@@ -43,7 +43,7 @@
         <li class="right" >
           <a href="../lowprev.html" title="Lower Previsions"
              accesskey="P">previous</a> |</li>
-        <li><a href="../index.html">improb v0.1.1 (beta) documentation</a> &raquo;</li>
+        <li><a href="../index.html">improb v0.1.1 documentation</a> &raquo;</li>
           <li><a href="../lowprev.html" accesskey="U">Lower Previsions</a> &raquo;</li> 
       </ul>
     </div>  
@@ -62,7 +62,7 @@
 <p>An arbitrary finitely generated lower prevision, that is, a
 finite intersection of half-spaces, each of which constrains the
 set of probability mass functions.</p>
-<p>This class is derived from <tt class="xref py py-class docutils literal"><span class="pre">collections.MutableMapping</span></tt>:
+<p>This class is derived from <a class="reference external" href="http://docs.python.org/library/collections.html#collections.MutableMapping" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">collections.MutableMapping</span></tt></a>:
 keys are (gamble, event) pairs, values are (lprev, uprev) pairs:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span> <span class="o">=</span> <span class="n">LowPoly</span><span class="p">(</span><span class="n">pspace</span><span class="o">=</span><span class="s">&#39;abcd&#39;</span><span class="p">,</span> <span class="n">number_type</span><span class="o">=</span><span class="s">&#39;fraction&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">lpr</span><span class="p">[{</span><span class="s">&#39;a&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">},</span> <span class="s">&#39;abcd&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;1.5&#39;</span><span class="p">,</span> <span class="s">&#39;1.9&#39;</span><span class="p">)</span>
@@ -96,15 +96,15 @@ convenience methods <a class="reference internal" href="#improb.lowprev.lowpoly.
 <tbody valign="top">
 <tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>pspace</strong> (<tt class="xref py py-class docutils literal"><span class="pre">list</span></tt> or similar; see <a class="reference internal" href="../introduction.html#possibility-spaces"><em>Possibility Spaces</em></a>) &#8211; The possibility space.</li>
-<li><strong>mapping</strong> (<tt class="xref py py-class docutils literal"><span class="pre">collections.Mapping</span></tt>) &#8211; Mapping from (gamble, event) to (lower prevision, upper prevision).</li>
-<li><strong>lprev</strong> (<tt class="xref py py-class docutils literal"><span class="pre">collections.Mapping</span></tt>) &#8211; Mapping from gamble to lower prevision.</li>
-<li><strong>uprev</strong> (<tt class="xref py py-class docutils literal"><span class="pre">collections.Mapping</span></tt>) &#8211; Mapping from gamble to upper prevision.</li>
-<li><strong>prev</strong> (<tt class="xref py py-class docutils literal"><span class="pre">collections.Mapping</span></tt>) &#8211; Mapping from gamble to precise prevision.</li>
-<li><strong>lprob</strong> (<tt class="xref py py-class docutils literal"><span class="pre">collections.Mapping</span></tt> or <tt class="xref py py-class docutils literal"><span class="pre">collections.Sequence</span></tt>) &#8211; Mapping from event to lower probability.</li>
-<li><strong>uprob</strong> (<tt class="xref py py-class docutils literal"><span class="pre">collections.Mapping</span></tt> or <tt class="xref py py-class docutils literal"><span class="pre">collections.Sequence</span></tt>) &#8211; Mapping from event to upper probability.</li>
-<li><strong>prob</strong> (<tt class="xref py py-class docutils literal"><span class="pre">collections.Mapping</span></tt> or <tt class="xref py py-class docutils literal"><span class="pre">collections.Sequence</span></tt>) &#8211; Mapping from event to precise probability.</li>
-<li><strong>bba</strong> (<tt class="xref py py-class docutils literal"><span class="pre">collections.Mapping</span></tt>) &#8211; Mapping from event to basic belief assignment (useful for constructing belief functions).</li>
-<li><strong>credalset</strong> (<tt class="xref py py-class docutils literal"><span class="pre">collections.Sequence</span></tt>) &#8211; Sequence of probability mass functions.</li>
+<li><strong>mapping</strong> (<a class="reference external" href="http://docs.python.org/library/collections.html#collections.Mapping" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">collections.Mapping</span></tt></a>) &#8211; Mapping from (gamble, event) to (lower prevision, upper prevision).</li>
+<li><strong>lprev</strong> (<a class="reference external" href="http://docs.python.org/library/collections.html#collections.Mapping" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">collections.Mapping</span></tt></a>) &#8211; Mapping from gamble to lower prevision.</li>
+<li><strong>uprev</strong> (<a class="reference external" href="http://docs.python.org/library/collections.html#collections.Mapping" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">collections.Mapping</span></tt></a>) &#8211; Mapping from gamble to upper prevision.</li>
+<li><strong>prev</strong> (<a class="reference external" href="http://docs.python.org/library/collections.html#collections.Mapping" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">collections.Mapping</span></tt></a>) &#8211; Mapping from gamble to precise prevision.</li>
+<li><strong>lprob</strong> (<a class="reference external" href="http://docs.python.org/library/collections.html#collections.Mapping" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">collections.Mapping</span></tt></a> or <a class="reference external" href="http://docs.python.org/library/collections.html#collections.Sequence" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">collections.Sequence</span></tt></a>) &#8211; Mapping from event to lower probability.</li>
+<li><strong>uprob</strong> (<a class="reference external" href="http://docs.python.org/library/collections.html#collections.Mapping" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">collections.Mapping</span></tt></a> or <a class="reference external" href="http://docs.python.org/library/collections.html#collections.Sequence" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">collections.Sequence</span></tt></a>) &#8211; Mapping from event to upper probability.</li>
+<li><strong>prob</strong> (<a class="reference external" href="http://docs.python.org/library/collections.html#collections.Mapping" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">collections.Mapping</span></tt></a> or <a class="reference external" href="http://docs.python.org/library/collections.html#collections.Sequence" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">collections.Sequence</span></tt></a>) &#8211; Mapping from event to precise probability.</li>
+<li><strong>bba</strong> (<a class="reference external" href="http://docs.python.org/library/collections.html#collections.Mapping" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">collections.Mapping</span></tt></a>) &#8211; Mapping from event to basic belief assignment (useful for constructing belief functions).</li>
+<li><strong>credalset</strong> (<a class="reference external" href="http://docs.python.org/library/collections.html#collections.Sequence" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">collections.Sequence</span></tt></a>) &#8211; Sequence of probability mass functions.</li>
 <li><strong>number_type</strong> (<tt class="xref py py-class docutils literal"><span class="pre">str</span></tt>) &#8211; The number type. If not specified, it is
 determined using
 <a class="reference external" href="http://packages.python.org/pycddlib/numbertype.html#cdd.get_number_type_from_sequences" title="(in pycddlib v1.0.3)"><tt class="xref py py-func docutils literal"><span class="pre">get_number_type_from_sequences()</span></tt></a> on all
@@ -190,9 +190,9 @@ is copied. For example:</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>keys</strong> (<tt class="xref py py-class docutils literal"><span class="pre">collections.Iterable</span></tt>) &#8211; The gamble/event pairs to extend. If <tt class="xref py py-const xref docutils literal"><span class="pre">None</span></tt>, then
-extends to the full domain (for
-<a class="reference internal" href="#improb.lowprev.lowpoly.LowPoly" title="improb.lowprev.lowpoly.LowPoly"><tt class="xref py py-class docutils literal"><span class="pre">LowPoly</span></tt></a> this raises a
+<li><strong>keys</strong> (<a class="reference external" href="http://docs.python.org/library/collections.html#collections.Iterable" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">collections.Iterable</span></tt></a>) &#8211; The gamble/event pairs to extend. If <tt class="xref py py-const xref docutils literal"><span class="pre">None</span></tt>, then
+extends to the full domain, given by <tt class="xref py py-meth docutils literal"><span class="pre">get_extend_domain()</span></tt>
+(for <a class="reference internal" href="#improb.lowprev.lowpoly.LowPoly" title="improb.lowprev.lowpoly.LowPoly"><tt class="xref py py-class docutils literal"><span class="pre">LowPoly</span></tt></a> this raises a
 <a class="reference external" href="http://docs.python.org/library/exceptions.html#exceptions.ValueError" title="(in Python v2.7)"><tt class="xref py py-exc docutils literal"><span class="pre">ValueError</span></tt></a>, however some derived
 classes implement this if they have a finite domain).</li>
 <li><strong>lower</strong> (<tt class="xref py py-class docutils literal"><span class="pre">bool</span></tt>) &#8211; Whether to extend the lower bounds.</li>
@@ -662,7 +662,7 @@ the empty set.</p>
 </div>
 <div class="section" id="marginal-extension">
 <h2>Marginal Extension<a class="headerlink" href="#marginal-extension" title="Permalink to this headline">¶</a></h2>
-<p>Finding coherent lower and upper bounds for the oil catter example in
+<p>Finding coherent lower and upper bounds for the oil wildcatter example in
 <a class="footnote-reference" href="#kikuti2005" id="id5">[1]</a>:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="c"># lower previsions over s, given t</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">lpr_s_t</span> <span class="o">=</span> <span class="p">[</span><span class="n">LowPoly</span><span class="p">(</span><span class="n">pspace</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span>
@@ -905,7 +905,7 @@ Statistical Planning and Inference, 126(1):119-151, November 2004.</td></tr>
         <li class="right" >
           <a href="../lowprev.html" title="Lower Previsions"
              >previous</a> |</li>
-        <li><a href="../index.html">improb v0.1.1 (beta) documentation</a> &raquo;</li>
+        <li><a href="../index.html">improb v0.1.1 documentation</a> &raquo;</li>
           <li><a href="../lowprev.html" >Lower Previsions</a> &raquo;</li> 
       </ul>
     </div>
