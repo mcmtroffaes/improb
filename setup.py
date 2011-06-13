@@ -1,7 +1,7 @@
 """Setup script for improb."""
 
 # improb is a Python module for working with imprecise probabilities
-# Copyright (c) 2008-2010, Matthias Troffaes
+# Copyright (c) 2008-2011, Matthias Troffaes
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
