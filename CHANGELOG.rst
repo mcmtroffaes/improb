@@ -1,5 +1,5 @@
-Version 0.1.1 (in development)
-------------------------------
+Version 0.1.1 (13 June 2011)
+----------------------------
 
 * Fixed calculation of conditional credal set.
 

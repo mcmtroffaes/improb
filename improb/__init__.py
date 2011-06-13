@@ -20,7 +20,7 @@
 from __future__ import division, absolute_import, print_function
 
 __version__ = '0.1.1'
-__release__ = __version__ + ' (beta)'
+__release__ = __version__
 
 from abc import ABCMeta, abstractmethod, abstractproperty
 import cdd
