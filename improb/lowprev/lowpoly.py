@@ -28,7 +28,7 @@ from improb import PSpace, Gamble, Event
 from improb.lowprev import LowPrev
 from improb.setfunction import SetFunction
 
-class LowPoly(LowPrev):
+class LowPoly(collections.MutableMapping, LowPrev):
     """An arbitrary finitely generated lower prevision, that is, a
     finite intersection of half-spaces, each of which constrains the
     set of probability mass functions.
@@ -37,12 +37,14 @@ class LowPoly(LowPrev):
     keys are (gamble, event) pairs, values are (lprev, uprev) pairs:
 
     >>> lpr = LowPoly(pspace='abcd', number_type='fraction')
-    >>> lpr[{'a': 2, 'b': 3}, 'abcd'] = ('1.5', '1.9')
-    >>> lpr[{'c': 1, 'd': 8}, 'cd'] = ('1.2', None)
+    >>> lpr[{'a': 2, 'b': 3}, 'abcd'] = '1.5'
+    >>> lpr[{'a': -2, 'b': -3}, 'abcd'] = '-1.9'
+    >>> lpr[{'c': 1, 'd': 8}, 'cd'] = '1.2'
     >>> print(lpr) # doctest: +NORMALIZE_WHITESPACE
-    a b c d
-    2 3 0 0 | a b c d : [3/2  , 19/10]
-    0 0 1 8 |     c d : [6/5  ,      ]
+    a  b  c  d
+    -2 -3 0  0  | a b c d : -19/10
+    2  3  0  0  | a b c d : 3/2  
+    0  0  1  8  |     c d : 6/5  
 
     Instead of working on the mapping directly, you can use the
     convenience methods :meth:`set_lower`, :meth:`set_upper`, and
@@ -53,9 +55,10 @@ class LowPoly(LowPrev):
     >>> lpr.set_upper({'a': 2, 'b': 3}, '1.9')
     >>> lpr.set_lower({'c': 1, 'd': 8}, '1.2', event='cd')
     >>> print(lpr) # doctest: +NORMALIZE_WHITESPACE
-    a b c d
-    2 3 0 0 | a b c d : [3/2  , 19/10]
-    0 0 1 8 |     c d : [6/5  ,      ]
+    a  b  c  d
+    -2 -3 0  0  | a b c d : -19/10
+    2  3  0  0  | a b c d : 3/2  
+    0  0  1  8  |     c d : 6/5  
     """
     def __init__(self, pspace=None, mapping=None,
                  lprev=None, uprev=None, prev=None,
@@ -65,7 +68,7 @@ class LowPoly(LowPrev):
 
         :param pspace: The possibility space.
         :type pspace: |pspacetype|
-        :param mapping: Mapping from (gamble, event) to (lower prevision, upper prevision).
+        :param mapping: Mapping from (gamble, event) to lower prevision.
         :type mapping: :class:`collections.Mapping`
         :param lprev: Mapping from gamble to lower prevision.
         :type lprev: :class:`collections.Mapping`
@@ -94,11 +97,11 @@ class LowPoly(LowPrev):
         probabilities:
 
         >>> print(LowPoly(pspace=3, mapping={
-        ...     ((3, 1, 2), True): (1.5, None),
-        ...     ((1, 0, -1), (1, 2)): (0.25, 0.3)})) # doctest: +NORMALIZE_WHITESPACE
+        ...     ((3, 1, 2), True): 1.5,
+        ...     ((1, 0, -1), (1, 2)): 0.25})) # doctest: +NORMALIZE_WHITESPACE
          0    1   2
-        3.0  1.0 2.0  | 0 1 2 : [1.5 ,     ]
-        1.0  0.0 -1.0 |   1 2 : [0.25, 0.3 ]
+        3.0  1.0 2.0  | 0 1 2 : 1.5
+        1.0  0.0 -1.0 |   1 2 : 0.25
         >>> print(LowPoly(pspace=3,
         ...     lprev={(1, 3, 2): 1.5, (2, 0, -1): 1},
         ...     uprev={(2, 0, -1): 1.9},
@@ -106,14 +109,18 @@ class LowPoly(LowPrev):
         ...     lprob={(1, 2): 0.2, (1,): 0.1},
         ...     uprob={(1, 2): 0.3, (0,): 0.9},
         ...     prob={(2,): '0.3'})) # doctest: +NORMALIZE_WHITESPACE
-          0    1   2
-         0.0  0.0 1.0  | 0 1 2 : [0.3 , 0.3 ]
-         0.0  1.0 0.0  | 0 1 2 : [0.1 ,     ]
-         0.0  1.0 1.0  | 0 1 2 : [0.2 , 0.3 ]
-         1.0  0.0 0.0  | 0 1 2 : [    , 0.9 ]
-         1.0  3.0 2.0  | 0 1 2 : [1.5 ,     ]
-         2.0  0.0 -1.0 | 0 1 2 : [1.0 , 1.9 ]
-         9.0  8.0 20.0 | 0 1 2 : [15.0, 15.0]
+          0     1     2  
+        -9.0  -8.0  -20.0 | 0 1 2 : -15.0
+        -2.0  -0.0  1.0   | 0 1 2 : -1.9 
+        -1.0  -0.0  -0.0  | 0 1 2 : -0.9 
+        -0.0  -1.0  -1.0  | 0 1 2 : -0.3 
+        -0.0  -0.0  -1.0  | 0 1 2 : -0.3 
+        0.0   0.0   1.0   | 0 1 2 : 0.3  
+        0.0   1.0   0.0   | 0 1 2 : 0.1  
+        0.0   1.0   1.0   | 0 1 2 : 0.2  
+        1.0   3.0   2.0   | 0 1 2 : 1.5  
+        2.0   0.0   -1.0  | 0 1 2 : 1.0  
+        9.0   8.0   20.0  | 0 1 2 : 15.0 
 
         A credal set can be specified simply as a list:
 
@@ -122,10 +129,11 @@ class LowPoly(LowPrev):
         ...                ['0.4', '0.3', '0.3'],
         ...                ['0.3', '0.2', '0.5']]))
           0     1     2  
-        -10   10    0     | 0 1 2 : [-1,   ]
-        -1    -2    0     | 0 1 2 : [-1,   ]
-        1     1     1     | 0 1 2 : [1 , 1 ]
-        50/23 40/23 0     | 0 1 2 : [1 ,   ]
+        -10   10    0     | 0 1 2 : -1
+        -1    -2    0     | 0 1 2 : -1
+        -1    -1    -1    | 0 1 2 : -1
+        1     1     1     | 0 1 2 : 1 
+        50/23 40/23 0     | 0 1 2 : 1 
 
         As a special case, for lower/upper/precise probabilities, if
         you need to set values on singletons, you can use a list
@@ -133,25 +141,25 @@ class LowPoly(LowPrev):
 
         >>> print(LowPoly(pspace='abc', lprob=['0.1', '0.2', '0.3'])) # doctest: +NORMALIZE_WHITESPACE
         a b c
-        0 0 1 | a b c : [3/10, ]
-        0 1 0 | a b c : [1/5 , ]
-        1 0 0 | a b c : [1/10, ]
+        0 0 1 | a b c : 3/10
+        0 1 0 | a b c : 1/5 
+        1 0 0 | a b c : 1/10
 
         If the first argument is a :class:`LowPoly` instance, then it
         is copied. For example:
 
-        >>> from improb.lowprev.lowprob import LowProb
         >>> lpr = LowPoly(pspace='abc', lprob=['0.1', '0.1', '0.1'])
         >>> print(lpr)
         a b c
-        0 0 1 | a b c : [1/10,     ]
-        0 1 0 | a b c : [1/10,     ]
-        1 0 0 | a b c : [1/10,     ]
-        >>> lprob = LowProb(lpr)
-        >>> print(lprob)
-        a     : 1/10
-          b   : 1/10
-            c : 1/10
+        0 0 1 | a b c : 1/10
+        0 1 0 | a b c : 1/10
+        1 0 0 | a b c : 1/10
+        >>> lpr2 = LowPoly(lpr)
+        >>> print(lpr2)
+        a b c
+        0 0 1 | a b c : 1/10
+        0 1 0 | a b c : 1/10
+        1 0 0 | a b c : 1/10
         """
 
         def iter_items(obj):
@@ -191,12 +199,8 @@ class LowPoly(LowPrev):
                         if cdd.get_number_type_from_sequences(key.itervalues()) == 'float':
                             return 'float'
                     # inspect value(s)
-                    if isinstance(value, collections.Sequence):
-                        if cdd.get_number_type_from_sequences(value) == 'float':
-                            return 'float'
-                    else:
-                        if cdd.get_number_type_from_value(value) == 'float':
-                            return 'float'
+                    if cdd.get_number_type_from_value(value) == 'float':
+                        return 'float'
             for xprob in xprobs:
                 if xprob is None:
                     continue
@@ -291,9 +295,8 @@ class LowPoly(LowPrev):
             maxlen_value = max(max(len(self.number_str(gamble[omega]))
                                    for omega in self.pspace)
                                for gamble, event in self)
-            maxlen_prev = max(max(len(self.number_str(prev))
-                                  for prev in prevs if prev is not None)
-                               for prevs in self.itervalues())
+            maxlen_prev = max(len(self.number_str(prev))
+                              for prev in self.itervalues())
         else:
             maxlen_value = 0
             maxlen_prev = 0
@@ -307,14 +310,9 @@ class LowPoly(LowPrev):
             + " ".join("{0:{1}}".format(omega if omega in event else '',
                                         maxlen_pspace)
                        for omega in self.pspace)
-            + " : ["
-            + ("{0:{1}}".format(self.number_str(lprev), maxlen_prev)
-               if lprev is not None else ' ' * maxlen_prev)
-            + ", "
-            + ("{0:{1}}".format(self.number_str(uprev), maxlen_prev)
-               if uprev is not None else ' ' * maxlen_prev)
-            + "]"
-            for (gamble, event), (lprev, uprev)
+            + " : "
+            + "{0:{1}}".format(self.number_str(lprev), maxlen_prev)
+            for (gamble, event), lprev
             in sorted(self.iteritems(),
                       key=lambda val: (
                           tuple(-x for x in val[0][1].indicator(number_type='fraction').values())
@@ -359,17 +357,13 @@ class LowPoly(LowPrev):
             return items
         # construct set of all conditioning events
         # (we need a variable tau_i for each of these)
-        evs = set(ev for (ga, ev), (lprev, uprev) in items)
+        evs = set(ev for (ga, ev), lprev in items)
         num_evs = len(evs)
         # construct lists of lower and upper assessments
         # (we need a variable lambda_i for each of these)
-        low_items = [((ga, ev), (lprev, uprev))
-                     for (ga, ev), (lprev, uprev) in items
-                     if lprev is not None]
-        upp_items = [((ga, ev), (lprev, uprev))
-                     for (ga, ev), (lprev, uprev) in items
-                     if uprev is not None]
-        num_items = len(low_items + upp_items)
+        low_items = [((ga, ev), lprev)
+                     for (ga, ev), lprev in items]
+        num_items = len(low_items)
         # construct the linear program
         matrix = cdd.Matrix(
             # tau_i >= 0
@@ -390,16 +384,13 @@ class LowPoly(LowPrev):
               + [(1 if i == j else 0) for i in xrange(num_items)])
              for j in xrange(num_items)]
             +
-            # sum_{i,j,k}
+            # sum_{i,k}
             #  - tau_k ev_k[omega]
-            #  - lambda_i (ga_i[omega] - lprev_i)
-            #  - lambda_j (uprev_j - ga_j[omega]) >= 0
+            #  - lambda_i ev_i[omega] (ga_i[omega] - lprev_i) >= 0
             [([0]
               + [-1 if (omega in ev) else 0 for ev in evs]
               + [(lprev - ga[omega]) if omega in ev else 0
-                 for (ga, ev), (lprev, uprev) in low_items]
-              + [(ga[omega] - uprev) if omega in ev else 0
-                 for (ga, ev), (lprev, uprev) in upp_items]
+                 for (ga, ev), lprev in low_items]
               )
               for omega in compl_event],
             number_type=self.number_type)
@@ -423,8 +414,8 @@ class LowPoly(LowPrev):
                 raise RuntimeError("unexpected solution for tau: {0}".format(tau))
         # derive new set of items
         new_items = set(
-            ((ga, ev), (lprev, uprev))
-            for (ga, ev), (lprev, uprev) in items
+            ((ga, ev), lprev)
+            for (ga, ev), lprev in items
             if ev in new_evs)
         if items == new_items:
             # if all tau were 1, we are done
@@ -469,10 +460,7 @@ class LowPoly(LowPrev):
         """Helper function to construct a value for the internal mapping.
         This implementation returns any lower/upper prevision pair.
         """
-        lprev, uprev = value
-        return (
-            self.make_number(lprev) if lprev is not None else None,
-            self.make_number(uprev) if uprev is not None else None)
+        return self.make_number(value)
 
     def _get_matrix(self, event=True):
         """Construct cdd matrix representation."""
@@ -493,26 +481,10 @@ class LowPoly(LowPrev):
         for j in self.pspace:
             add_constraint([0] + [1 if i == j else 0 for i in self.pspace])
         # add constraints on conditional expectation
-        for (ga, ev), (lprev, uprev) in self.get_relevant_items(event=event):
-            if lprev is None and uprev is None:
-                # nothing assigned
-                continue
-            elif lprev == uprev:
-                # precise assignment
+        for (ga, ev), lprev in self.get_relevant_items(event=event):
                 add_constraint(
                     [0] + [value - lprev if omega in ev else 0
-                           for omega, value in ga.iteritems()],
-                    linear=True)
-            else:
-                # interval assignment
-                if lprev is not None:
-                    add_constraint(
-                        [0] + [value - lprev if omega in ev else 0
-                               for omega, value in ga.iteritems()])
-                if uprev is not None:
-                    add_constraint(
-                        [0] + [uprev - value if omega in ev else 0
-                               for omega, value in ga.iteritems()])
+                           for omega, value in ga.iteritems()])
         # create matrix
         matrix = cdd.Matrix(constraints, number_type=self.number_type)
         matrix.lin_set = lin_set
@@ -543,21 +515,7 @@ class LowPoly(LowPrev):
         :param lprev: The lower bound for this expectation.
         :type lprev: |numbertype|
         """
-        # check that something is specified
-        if lprev is None:
-            return
-        # update the key value
-        key = self._make_key((gamble, event))
-        try:
-            old_lprev, uprev = self[key]
-        except KeyError:
-            # not yet defined, leave uprev unspecified
-            uprev = None
-        else:
-            # already defined: constrain interval further
-            lprev = (max(lprev, old_lprev)
-                     if old_lprev is not None else lprev)
-        self[key] = lprev, uprev
+        self[gamble, event] = lprev
 
     def set_upper(self, gamble, uprev, event=True):
         """Constrain the expectation of *gamble* to be at most *uprev*.
@@ -567,21 +525,9 @@ class LowPoly(LowPrev):
         :param uprev: The upper bound for this expectation.
         :type uprev: |numbertype|
         """
-        # check that something is specified
-        if uprev is None:
-            return
-        # update the key value
-        key = self._make_key((gamble, event))
-        try:
-            lprev, old_uprev = self[key]
-        except KeyError:
-            # not yet defined, leave lprev unspecified
-            lprev = None
-        else:
-            # already defined: constrain interval further
-            uprev = (min(uprev, old_uprev)
-                     if old_uprev is not None else uprev)
-        self[key] = lprev, uprev
+        gamble = self.make_gamble(gamble)
+        uprev = self.make_number(uprev)
+        self.set_lower(-gamble, -uprev, event=event)
 
     def set_precise(self, gamble, prev, event=True):
         """Constrain the expectation of *gamble* to be exactly *prev*.
@@ -591,36 +537,14 @@ class LowPoly(LowPrev):
         :param prev: The precise bound for this expectation.
         :type prev: |numbertype|
         """
-        # check that something is specified
-        if prev is None:
-            return
-        # update the key value
-        key = self._make_key((gamble, event))
-        try:
-            old_lprev, old_uprev = self[key]
-        except KeyError:
-            # not yet defined, copy as is
-            lprev = prev
-            uprev = prev
-        else:
-            # already defined: constrain interval further
-            lprev = (max(prev, old_lprev)
-                     if old_lprev is not None else prev)
-            uprev = (min(prev, old_uprev)
-                     if old_uprev is not None else prev)
-        self[key] = lprev, uprev
+        self.set_lower(gamble, prev, event=event)
+        self.set_upper(gamble, prev, event=event)
 
-    def get_lower(self, gamble, event=True, algorithm='linprog'):
+    def get_lower_natext(self, gamble, event=True):
         """Calculate lower expectation, using Algorithm 4 of Walley,
         Pelessoni, and Vicig (2004) [#walley2004]_. The algorithm
         deals properly with zero probabilities.
         """
-        # set fastest algorithm
-        if algorithm is None:
-            algorithm = 'linprog'
-        # check algorithm
-        if algorithm != 'linprog':
-            raise ValueError("invalid algorithm '{0}'".format(algorithm))
         # check avoiding sure loss (just in case)
         if not self.is_avoiding_sure_loss():
             raise ValueError(
@@ -654,7 +578,7 @@ class LowPoly(LowPrev):
                     yield vert
                 verts.add(vert)
 
-    def get_coherent(self, algorithm='linprog'):
+    def get_coherent(self, algorithm='natext'):
         """Return a coherent version, using linear programming."""
         if not self.is_avoiding_sure_loss():
             raise ValueError('incurs sure loss')
@@ -675,7 +599,7 @@ class LowPoly(LowPrev):
             mapping=mapping,
             number_type=self.number_type)
 
-    def extend(self, keys=None, lower=True, upper=True, algorithm='linprog'):
+    def extend(self, keys=None, algorithm='natext'):
         """Calculate coherent extension to the given keys
         (gamble/event pairs), using linear programming.
 
@@ -694,52 +618,47 @@ class LowPoly(LowPrev):
         >>> lpr = LowPoly(pspace=pspace, lprob=['0.1', '0.2', '0.15'], number_type='fraction')
         >>> print(lpr)
         x y z
-        0 0 1 | x y z : [3/20,     ]
-        0 1 0 | x y z : [1/5 ,     ]
-        1 0 0 | x y z : [1/10,     ]
+        0 0 1 | x y z : 3/20
+        0 1 0 | x y z : 1/5 
+        1 0 0 | x y z : 1/10
         >>> for event in pspace.subsets(empty=False):
         ...     lpr.extend((subevent, event) for subevent in pspace.subsets(event))
         >>> print(lpr)
         x y z
-        0 0 0 | x y z : [0    , 0    ]
-        0 0 1 | x y z : [3/20 , 7/10 ]
-        0 1 0 | x y z : [1/5  , 3/4  ]
-        0 1 1 | x y z : [7/20 , 9/10 ]
-        1 0 0 | x y z : [1/10 , 13/20]
-        1 0 1 | x y z : [1/4  , 4/5  ]
-        1 1 0 | x y z : [3/10 , 17/20]
-        1 1 1 | x y z : [1    , 1    ]
-        0 0 0 | x y   : [0    , 0    ]
-        0 1 0 | x y   : [4/17 , 15/17]
-        1 0 0 | x y   : [2/17 , 13/17]
-        1 1 0 | x y   : [1    , 1    ]
-        0 0 0 | x   z : [0    , 0    ]
-        0 0 1 | x   z : [3/16 , 7/8  ]
-        1 0 0 | x   z : [1/8  , 13/16]
-        1 0 1 | x   z : [1    , 1    ]
-        0 0 0 | x     : [0    , 0    ]
-        1 0 0 | x     : [1    , 1    ]
-        0 0 0 |   y z : [0    , 0    ]
-        0 0 1 |   y z : [1/6  , 7/9  ]
-        0 1 0 |   y z : [2/9  , 5/6  ]
-        0 1 1 |   y z : [1    , 1    ]
-        0 0 0 |   y   : [0    , 0    ]
-        0 1 0 |   y   : [1    , 1    ]
-        0 0 0 |     z : [0    , 0    ]
-        0 0 1 |     z : [1    , 1    ]
+        0 0 0 | x y z : 0   
+        0 0 1 | x y z : 3/20
+        0 1 0 | x y z : 1/5 
+        0 1 1 | x y z : 7/20
+        1 0 0 | x y z : 1/10
+        1 0 1 | x y z : 1/4 
+        1 1 0 | x y z : 3/10
+        1 1 1 | x y z : 1   
+        0 0 0 | x y   : 0   
+        0 1 0 | x y   : 4/17
+        1 0 0 | x y   : 2/17
+        1 1 0 | x y   : 1   
+        0 0 0 | x   z : 0   
+        0 0 1 | x   z : 3/16
+        1 0 0 | x   z : 1/8 
+        1 0 1 | x   z : 1   
+        0 0 0 | x     : 0   
+        1 0 0 | x     : 1   
+        0 0 0 |   y z : 0   
+        0 0 1 |   y z : 1/6 
+        0 1 0 |   y z : 2/9 
+        0 1 1 |   y z : 1   
+        0 0 0 |   y   : 0   
+        0 1 0 |   y   : 1   
+        0 0 0 |     z : 0   
+        0 0 1 |     z : 1   
         """
         if keys is None:
             keys = self.get_extend_domain()
+        extension = {}
         for gamble, event in keys:
-            try:
-                lprev, uprev = self[gamble, event]
-            except KeyError:
-                lprev, uprev = None, None
-            if lower:
-                lprev = self.get_lower(gamble, event, algorithm)
-            if upper:
-                uprev = self.get_upper(gamble, event, algorithm)
-            self[gamble, event] = lprev, uprev
+            extension[gamble, event] = self.get_lower(gamble, event, algorithm)
+        for (gamble, event), lprev in extension.iteritems():
+            self[gamble, event] = lprev
 
     def is_avoiding_sure_loss(self, algorithm='linprog'):
         """Check avoiding sure loss by linear programming.

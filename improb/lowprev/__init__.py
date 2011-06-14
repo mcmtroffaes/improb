@@ -28,7 +28,7 @@ import itertools
 from improb import PSpace, Gamble, Event
 from improb.setfunction import SetFunction
 
-class LowPrev(collections.MutableMapping, cdd.NumberTypeable):
+class LowPrev(cdd.NumberTypeable):
     """Abstract base class for working with arbitrary lower previsions.
 
     A lower prevision is understood to be an intersection of
@@ -58,7 +58,7 @@ class LowPrev(collections.MutableMapping, cdd.NumberTypeable):
         :rtype: :class:`float` or :class:`~fractions.Fraction`
         """
         if algorithm is None:
-            return self[gamble, event]
+            return self._get_lower(gamble, event)
         elif algorithm == "natext":
             return self.get_lower_natext(gamble, event)
         elif algorithm == "choquet":
@@ -87,6 +87,10 @@ class LowPrev(collections.MutableMapping, cdd.NumberTypeable):
         return -self.get_lower(gamble=-gamble, event=event, algorithm=algorithm)
 
     @abstractmethod
+    def _get_lower(self, gamble, event):
+        raise NotImplementedError
+
+    @abstractmethod
     def get_lower_natext(self, gamble, event=True):
         raise NotImplementedError
 
@@ -106,7 +110,7 @@ class LowPrev(collections.MutableMapping, cdd.NumberTypeable):
         for value, keys in items:
             result += (
                 (value - previous_value)
-                * self[self.make_event(subevent), event])
+                * self.get_lower(self.make_event(subevent), event))
             previous_value = value
             subevent -= keys
         return result
@@ -115,12 +119,14 @@ class LowPrev(collections.MutableMapping, cdd.NumberTypeable):
         """Approximate lower expectation by linear vacuous mixture."""
         gamble = self.make_gamble(gamble)
         event = self.pspace.make_event(event)
-        epsilon = 1 - sum(self[{omega: 1}, True][0] for omega in self.pspace)
+        lowprob = dict((omega, self.get_lower({omega: 1}, True))
+                       for omega in self.pspace)
+        epsilon = 1 - sum(lowprob.itervalues())
         return (
-            (sum(self[{omega: 1}, True][0] * gamble[omega] for omega in event)
+            (sum(lowprob[omega] * gamble[omega] for omega in event)
              + epsilon * min(gamble[omega] for omega in event))
             /
-            (sum(self[{omega: 1}, True][0] for omega in event)
+            (sum(lowprob[omega] for omega in event)
              + epsilon)
             )
 
