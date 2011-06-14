@@ -29,7 +29,12 @@ from improb import PSpace, Gamble, Event
 from improb.setfunction import SetFunction
 
 class LowPrev(collections.MutableMapping, cdd.NumberTypeable):
-    """Abstract base class for working with arbitrary lower previsions."""
+    """Abstract base class for working with arbitrary lower previsions.
+
+    A lower prevision is understood to be an intersection of
+    half-spaces, each of which constrains the set of probability mass
+    functions.
+    """
     __metaclass__ = ABCMeta
 
     @abstractproperty
@@ -37,39 +42,87 @@ class LowPrev(collections.MutableMapping, cdd.NumberTypeable):
         """An :class:`~improb.PSpace` representing the possibility space."""
         raise NotImplementedError
 
-    @abstractmethod
     def get_lower(self, gamble, event=True, algorithm=None):
-        """Return the lower expectation for *gamble* conditional on
-        *event* via natural extension.
+        """Return the lower expectation---or an approximation
+        thereof---for *gamble* conditional on *event* via the
+        prescribed *algorithm*.
 
         :param gamble: The gamble whose upper expectation to find.
         :type gamble: |gambletype|
         :param event: The event to condition on.
         :type event: |eventtype|
-        :param algorithm: The algorithm to use (the default value uses
-           the most efficient algorithm).
+        :param algorithm: The algorithm to use. The default value,
+            ``None``, returns ``self[gamble, event]``.
         :type algorithm: :class:`str`
-        :return: The lower bound for this expectation, i.e. the natural extension of the gamble.
+        :return: The lower bound for the conditional expectation.
         :rtype: :class:`float` or :class:`~fractions.Fraction`
         """
-        raise NotImplementedError
+        if algorithm is None:
+            return self[gamble, event]
+        elif algorithm == "natext":
+            return self.get_lower_natext(gamble, event)
+        elif algorithm == "choquet":
+            return self.get_lower_choquet(gamble, event)
+        elif algorithm == "linvac":
+            return self.get_lower_linvac(gamble, event)
+        else:
+            raise ValueError("unknown algorithm '{0}'".format(algorithm))
 
     def get_upper(self, gamble, event=True, algorithm=None):
-        """Return the upper expectation for *gamble* conditional on
-        *event* via natural extension.
+        """Return the upper expectation---or an approximation
+        thereof---for *gamble* conditional on *event* via the
+        prescribed *algorithm*.
 
         :param gamble: The gamble whose upper expectation to find.
         :type gamble: |gambletype|
         :param event: The event to condition on.
         :type event: |eventtype|
-        :param algorithm: The algorithm to use (:const:`None` for the
-            most efficient algorithm).
+        :param algorithm: The algorithm to use. The default value,
+            ``None``, returns ``-self[-gamble, event]``.
         :type algorithm: :class:`str`
-        :return: The upper bound for this expectation, i.e. the natural extension of the gamble.
+        :return: The upper bound for the conditional expectation.
         :rtype: :class:`float` or :class:`~fractions.Fraction`
         """
         gamble = self.make_gamble(gamble)
         return -self.get_lower(gamble=-gamble, event=event, algorithm=algorithm)
+
+    @abstractmethod
+    def get_lower_natext(self, gamble, event=True):
+        raise NotImplementedError
+
+    def get_lower_choquet(self, gamble, event=True):
+        """Approximate lower expectation by Choquet integration."""
+        result = 0
+        gamble = self.make_gamble(gamble)
+        event = self.make_event(event)
+        # find values and level sets of the gamble
+        gamble_inverse = collections.defaultdict(set)
+        for key in event:
+            gamble_inverse[gamble[key]].add(key)
+        items = sorted(gamble_inverse.iteritems())
+        # now calculate the Choquet integral
+        subevent = set(event) # use set as it must be mutable
+        previous_value = 0
+        for value, keys in items:
+            result += (
+                (value - previous_value)
+                * self[self.make_event(subevent), event])
+            previous_value = value
+            subevent -= keys
+        return result
+
+    def get_lower_linvac(self, gamble, event=True):
+        """Approximate lower expectation by linear vacuous mixture."""
+        gamble = self.make_gamble(gamble)
+        event = self.pspace.make_event(event)
+        epsilon = 1 - sum(self[{omega: 1}, True][0] for omega in self.pspace)
+        return (
+            (sum(self[{omega: 1}, True][0] * gamble[omega] for omega in event)
+             + epsilon * min(gamble[omega] for omega in event))
+            /
+            (sum(self[{omega: 1}, True][0] for omega in event)
+             + epsilon)
+            )
 
     def make_gamble(self, gamble):
         return self.pspace.make_gamble(gamble, self.number_type)
