@@ -15,3 +15,4 @@ Lower Previsions
 
 .. autoclass:: LowPrev
    :members:
+   :show-inheritance:
