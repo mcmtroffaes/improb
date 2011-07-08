@@ -37,7 +37,8 @@ def _print_rst_table(rows, file=None):
                 print("|", end="", file=file)
             else:
                 print(" {0:^{1}} ".format("", width), end="", file=file)
-                if i == len(row) - 1 or row[i+1] is not None:
+                # XXX workaround for rst2pdf bug
+                if True: #i == len(row) - 1 or row[i+1] is not None:
                     print("|", end="", file=file)
                 else:
                     print(" ", end="", file=file)
@@ -50,7 +51,8 @@ def _print_rst_table(rows, file=None):
                 print("{0:-<{1}}".format("", width + 2), end="", file=file)
                 print("+", end="", file=file)
             else:
-                if j + 1 == len(rows) or rows[j+1][i] is not None:
+                # XXX workaround for rst2pdf bug
+                if True: #j + 1 == len(rows) or rows[j+1][i] is not None:
                     print("{0:-<{1}}".format("", width + 2), end="", file=file)
                     print("+", end="", file=file)
                 else:
