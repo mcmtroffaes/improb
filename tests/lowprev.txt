@@ -182,6 +182,8 @@ Another example:
 >>> lpr = LowPoly(pspace=9, credalset=credalset, number_type='fraction')
 >>> lpr.get_lower([-1, 2, 0, 0, 0, 0, 3, 0, 2])
 Fraction(3, 50)
+>>> lpr.get_upper([-1, 2, 0, 0, 0, 0, 3, 0, 2])
+Fraction(81, 50)
 >>> lpr = LowPoly(pspace=9, credalset=credalset, number_type='float')
 >>> # numerical instability!!!
 >>> lpr.get_lower([-1, 2, 0, 0, 0, 0, 3, 0, 2]) # doctest: +ELLIPSIS
@@ -189,6 +191,12 @@ Traceback (most recent call last):
   ...
 RuntimeError: BUG: unexpected status (3)
 ...
+>>> # stabilize... result is more conservative than [0.06, 1.62]
+>>> lpr.stabilize(1e-4)
+>>> lpr.get_lower([-1, 2, 0, 0, 0, 0, 3, 0, 2]) # doctest: +ELLIPSIS
+0.03941...
+>>> lpr.get_upper([-1, 2, 0, 0, 0, 0, 3, 0, 2]) # doctest: +ELLIPSIS
+1.640...
 
 Mobius Transform
 ~~~~~~~~~~~~~~~~
