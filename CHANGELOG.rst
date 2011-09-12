@@ -6,6 +6,9 @@ Version 0.1.2 (in development)
 
 * Added Gamble.minimum and Gamble.maximum methods.
 
+* Added LowPoly.stabilize method to work around numerical
+  instabilities for instance in the random generator.
+
 Version 0.1.1 (13 June 2011)
 ----------------------------
 

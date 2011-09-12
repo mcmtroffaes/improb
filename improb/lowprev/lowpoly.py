@@ -848,11 +848,33 @@ class LowPoly(LowPrev):
 
         if samples is None:
             samples = len(pspace)
-        return cls(
+        lpr = cls(
             pspace=pspace,
             number_type=number_type,
             credalset=[make_random_prob() for i in xrange(samples)]
             )
+        # when using floats, lpr may be numerically unstable
+        # we fix this here
+        if number_type == 'float':
+            lpr.stabilize()
+        return lpr
+
+    def stabilize(self, factor=None):
+        """Perturbate lower prevision to make it stable.
+
+        :param factor: The factor by which to perturbate the lower prevision.
+            If not specified, then defaults to 1/100.
+        :type factor: :class:`float` or :class:`
+        """
+        if factor is None:
+            factor = self.make_number('0.01')
+        for (gamble, event), (lprev, uprev) in list(self.iteritems()):
+            epsilon = factor * (gamble.maximum() - gamble.minimum())
+            if lprev is not None:
+                lprev -= epsilon
+            if uprev is not None:
+                uprev += epsilon
+            self[gamble, event] = lprev, uprev
 
     #def optimize(self):
     #    """Removes redundant assessments."""
