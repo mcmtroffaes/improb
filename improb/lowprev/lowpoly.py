@@ -23,6 +23,7 @@ import cdd
 import collections
 from fractions import Fraction
 import itertools
+import math
 import random
 
 from improb import PSpace, Gamble, Event
@@ -831,14 +832,18 @@ class LowPoly(LowPrev):
 
         >>> import random
         >>> random.seed(30)
-        >>> lpr = LowPoly.make_random("abcd", division=10, number_type='fraction')
+        >>> lpr = LowPoly.make_random(
+        ...     "abcd", division=20, zero=False, number_type='fraction')
         >>> print(lpr)
           a     b     c     d  
-        -3    -1    -5/2  0     | a b c d : [-2  ,     ]
-        -8/5  -6/5  -1    0     | a b c d : [-6/5,     ]
-        -1    -2    -5/2  0     | a b c d : [-2  ,     ]
-        1     1     1     1     | a b c d : [1   , 1   ]
-        13/11 1     25/22 0     | a b c d : [1   ,     ]
+        0     0     0     1     | a b c d : [1/20,     ]
+        0     0     1     0     | a b c d : [1/20,     ]
+        0     1     0     0     | a b c d : [1/20,     ]
+        1/4   2/5   13/20 1     | a b c d : [9/20,     ]
+        11/20 3/10  0     13/20 | a b c d : [3/20,     ]
+        17/20 3/5   19/20 1     | a b c d : [3/4 ,     ]
+        1     0     0     0     | a b c d : [1/20,     ]
+        1     1     1/4   1/20  | a b c d : [1/4 ,     ]
         >>> lpr.is_coherent()
         True
         """
@@ -860,7 +865,7 @@ class LowPoly(LowPrev):
             if number_type == 'float':
                 epsilon = 0.01 / len(pspace)
             else:
-                epsilon = fractions.Fraction(1, division)
+                epsilon = Fraction(1, division)
             for omega in pspace:
                 lpr[{omega: 1}, True] = epsilon, None
         if samples is None:
