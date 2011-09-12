@@ -120,6 +120,10 @@ into an extensive form?
 >>> for i in range(20):
 ...     # construct a lower prevision
 ...     lpr = LowPoly.make_random(pspace=pspace, division=50, zero=False)
+...     # extra check that all lower probabilities are strictly positive
+...     for omega in pspace:
+...         if lpr.number_cmp(lpr.get_lower({omega: 1})) == 0:
+...             raise RuntimeError("counterexample must have lower probability non-zero for all events (%s)" % (omega,))
 ...     opt = OptLowPrevMax(lpr)
 ...     # construct gambles:
 ...     # gambles[w1][d][w2] gives the gain of the w1-d-w2 path
