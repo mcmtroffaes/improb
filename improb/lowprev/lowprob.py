@@ -131,7 +131,23 @@ class LowProb(LowPoly):
     @classmethod
     def make_random(cls, pspace=None, division=None, zero=True,
                     number_type='float'):
-        """Generate a random coherent lower probability."""
+        """Generate a random coherent lower probability.
+
+        :param pspace: The possibility space.
+        :type pspace: |pspacetype|
+        :param division: If specified, generated numbers
+            will be divisible by this factor.
+        :type division: :class:`int`
+        :param zero: Whether to allow for zero probability.
+        :type zero: :class:`bool`
+        :param number_type: The number type.
+        :type number_type: :class:`str`
+
+        .. todo::
+
+           Current implementation is highly inefficient. Refactor to use
+           :meth:`improb.lowprev.lowpoly.LowPoly.make_random` instead.
+        """
         # for now this is just a pretty dumb method
         pspace = PSpace.make(pspace)
         lpr = cls(pspace=pspace, number_type=number_type)

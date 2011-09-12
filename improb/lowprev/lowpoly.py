@@ -784,6 +784,65 @@ class LowPoly(LowPrev):
         raise ValueError(
             'cannot extend to full domain: specify keys')
 
+    @classmethod
+    def make_random(cls, pspace=None, division=None, zero=True,
+                    samples=None,
+                    number_type='float'):
+        """Generate a random coherent polyhedral lower prevision.
+
+        :param pspace: The possibility space.
+        :type pspace: |pspacetype|
+        :param division: If specified, probabilities of credal sets
+            will be divisible by this factor.
+        :type division: :class:`int`
+        :param zero: Whether to allow for zero probability.
+        :type zero: :class:`bool`
+        :param samples: How many probability mass functions to sample
+            when constructing the credal set. If not specified, then
+            this defaults to the number of elements of the possibility
+            space.
+        :type samples: :class:`int`
+        :param number_type: The number type.
+        :type number_type: :class:`str`
+
+        .. warning::
+
+           Current implementation generates unconditional assessments
+           only.
+
+        .. warning::
+
+           Sampling may not be uniform over the space of polyhedral
+           coherent lower previsions with given number of extreme
+           points.
+
+        >>> import random
+        >>> random.seed(30)
+        >>> lpr = LowPoly.make_random("abcd", division=10, number_type='fraction')
+        >>> print(lpr)
+          a     b     c     d  
+        -3    -1    -5/2  0     | a b c d : [-2  ,     ]
+        -8/5  -6/5  -1    0     | a b c d : [-6/5,     ]
+        -1    -2    -5/2  0     | a b c d : [-2  ,     ]
+        1     1     1     1     | a b c d : [1   , 1   ]
+        13/11 1     25/22 0     | a b c d : [1   ,     ]
+        >>> lpr.is_coherent()
+        True
+        """
+
+        def make_random_prob():
+            from improb.lowprev.prob import Prob
+            prob = Prob.make_random(pspace, division, zero, number_type)
+            return [prob[{omega: 1}, True][0] for omega in pspace]
+
+        if samples is None:
+            samples = len(pspace)
+        return cls(
+            pspace=pspace,
+            number_type=number_type,
+            credalset=[make_random_prob() for i in xrange(samples)]
+            )
+
     #def optimize(self):
     #    """Removes redundant assessments."""
     #    raise NotImplementedError

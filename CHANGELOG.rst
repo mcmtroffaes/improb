@@ -1,6 +1,9 @@
 Version 0.1.2 (in development)
 ------------------------------
 
+* Added LowPoly.make_random to generate random polyhedral lower
+  previsions.
+
 Version 0.1.1 (13 June 2011)
 ----------------------------
 

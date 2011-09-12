@@ -147,6 +147,16 @@ class Prob(LinVac):
                     number_type='float'):
         """Generate a random probability mass function.
 
+        :param pspace: The possibility space.
+        :type pspace: |pspacetype|
+        :param division: If specified, probabilities
+            will be divisible by this factor.
+        :type division: :class:`int`
+        :param zero: Whether to allow for zero probability.
+        :type zero: :class:`bool`
+        :param number_type: The number type.
+        :type number_type: :class:`str`
+
         >>> import random
         >>> random.seed(25)
         >>> print(Prob.make_random("abcd", division=10))
