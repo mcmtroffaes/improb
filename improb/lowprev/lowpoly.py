@@ -864,7 +864,7 @@ class LowPoly(LowPrev):
 
         :param factor: The factor by which to perturbate the lower prevision.
             If not specified, then defaults to 1/100.
-        :type factor: :class:`float` or :class:`
+        :type factor: :class:`float` or :class:`~fractions.Fraction`
         """
         if factor is None:
             factor = self.make_number('0.01')
