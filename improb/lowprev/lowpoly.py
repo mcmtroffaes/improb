@@ -414,7 +414,7 @@ class LowPoly(LowPrev):
         if linprog.status != cdd.LPStatusType.OPTIMAL:
             raise RuntimeError(
                 "BUG: unexpected status (%i)\n"
-                "conditioning event: %s\n"
+                "conditioning event:\n%s\n"
                 "lower prevision:\n%s"
                 % (linprog.status, event, self))
         # calculate set of events for which tau is 1
@@ -638,9 +638,12 @@ class LowPoly(LowPrev):
         if linprog.status != cdd.LPStatusType.OPTIMAL:
             raise RuntimeError(
                 "BUG: unexpected status (%i)\n"
-                "conditioning event: %s\n"
-                "lower prevision:\n%s"
-                % (linprog.status, event, self))
+                "gamble:\n%s\n"
+                "conditioning event:\n%s\n"
+                "lower prevision:\n%s\n"
+                "matrix:\n%s\n"
+                "linear program:\n%s\n"
+                % (linprog.status, gamble, event, self, matrix, linprog))
         return linprog.obj_value
 
     def get_credal_set(self, event=True):
