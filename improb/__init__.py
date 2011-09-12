@@ -645,6 +645,13 @@ class Gamble(collections.Mapping, collections.Hashable, cdd.NumberTypeable):
     __rsub__ = lambda self, other: self.__sub__(other).__neg__()
     __rmul__ = __mul__
 
+    def minimum(self):
+        """Find minimum value of the gamble."""
+        return min(value for value in self.itervalues())
+
+    def maximum(self):
+        """Find maximum value of the gamble."""
+        return max(value for value in self.itervalues())
 
 class Event(collections.Set, collections.Hashable):
     """An immutable event.

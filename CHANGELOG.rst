@@ -4,6 +4,8 @@ Version 0.1.2 (in development)
 * Added LowPoly.make_random to generate random polyhedral lower
   previsions.
 
+* Added Gamble.minimum and Gamble.maximum methods.
+
 Version 0.1.1 (13 June 2011)
 ----------------------------
 
