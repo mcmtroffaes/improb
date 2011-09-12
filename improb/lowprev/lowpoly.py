@@ -23,6 +23,7 @@ import cdd
 import collections
 from fractions import Fraction
 import itertools
+import random
 
 from improb import PSpace, Gamble, Event
 from improb.lowprev import LowPrev
@@ -797,22 +798,23 @@ class LowPoly(LowPrev):
 
     @classmethod
     def make_random(cls, pspace=None, division=None, zero=True,
-                    samples=None,
+                    samples=None, imprecision=0.5,
                     number_type='float'):
         """Generate a random coherent polyhedral lower prevision.
 
         :param pspace: The possibility space.
         :type pspace: |pspacetype|
-        :param division: If specified, probabilities of credal sets
+        :param division: If specified, generated numbers
             will be divisible by this factor.
         :type division: :class:`int`
         :param zero: Whether to allow for zero probability.
         :type zero: :class:`bool`
-        :param samples: How many probability mass functions to sample
-            when constructing the credal set. If not specified, then
+        :param samples: How many gambles to sample. If not specified, then
             this defaults to the number of elements of the possibility
             space.
         :type samples: :class:`int`
+        :param imprecision: Level of imprecision desired.
+        :type imprecision: :class:`float`
         :param number_type: The number type.
         :type number_type: :class:`str`
 
@@ -841,22 +843,40 @@ class LowPoly(LowPrev):
         True
         """
 
-        def make_random_prob():
-            from improb.lowprev.prob import Prob
-            prob = Prob.make_random(pspace, division, zero, number_type)
-            return [prob[{omega: 1}, True][0] for omega in pspace]
+        def make_random(a, b):
+            if division:
+                lowerint = int(math.ceil(a * division))
+                upperint = int(math.floor(b * division))
+                if lowerint > upperint:
+                    return a
+                else:
+                    return Fraction(
+                        random.randint(lowerint, upperint), division)
+            else:
+                return random.uniform(a, b)
 
+        lpr = cls(pspace=pspace, number_type=number_type)
+        if not zero:
+            if number_type == 'float':
+                epsilon = 0.01 / len(pspace)
+            else:
+                epsilon = fractions.Fraction(1, division)
+            for omega in pspace:
+                lpr[{omega: 1}, True] = epsilon, None
         if samples is None:
             samples = len(pspace)
-        lpr = cls(
-            pspace=pspace,
-            number_type=number_type,
-            credalset=[make_random_prob() for i in xrange(samples)]
-            )
-        # when using floats, lpr may be numerically unstable
-        # we fix this here
-        if number_type == 'float':
-            lpr.stabilize()
+        for i in xrange(samples):
+            gamble = Gamble(
+                pspace=pspace,
+                data={omega: make_random(0, 1) for omega in pspace},
+                number_type=number_type)
+            lower = lpr.get_lower(gamble)
+            upper = lpr.get_upper(gamble)
+            lprev = make_random(
+                lower,
+                (1 - imprecision) * lower + imprecision * upper)
+            if lprev > lower:
+                lpr.set_lower(gamble, lprev)
         return lpr
 
     def stabilize(self, factor=None):
