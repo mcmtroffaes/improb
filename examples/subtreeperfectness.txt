@@ -4,6 +4,7 @@ A Simple Subtree Imperfect Decision Tree
 >>> from fractions import Fraction
 >>> import itertools
 >>> import random
+>>> from improb.lowprev.lowpoly import LowPoly
 >>> from improb.lowprev.linvac import LinVac
 >>> from improb.decision.opt import OptLowPrevMax
 >>> random.seed(40)
@@ -111,14 +112,14 @@ into an extensive form?
 >>> from improb.lowprev.lowprob import LowProb
 >>> from improb.decision.opt import OptLowPrevMax
 >>> random.seed(10)
->>> n1 = 2
+>>> n1 = 3
 >>> n2 = 3
 >>> ndec = 3
 >>> pspace = [tuple(omega)
 ...           for omega in itertools.product(list(range(n1)), list(range(n2)))]
 >>> for i in range(20):
 ...     # construct a lower prevision
-...     lpr = LowProb.make_random(pspace=pspace, zero=False)
+...     lpr = LowPoly.make_random(pspace=pspace, division=50, zero=False)
 ...     opt = OptLowPrevMax(lpr)
 ...     # construct gambles:
 ...     # gambles[w1][d][w2] gives the gain of the w1-d-w2 path
@@ -177,6 +178,7 @@ into an extensive form?
 ...     # check if solutions differ
 ...     # stronger violation!!
 ...     if localstrats != normstrats2:
+...         print("counterexample found")
 ...         for w1 in range(n1):
 ...             for d in range(ndec):
 ...                 print(
@@ -184,11 +186,11 @@ into an extensive form?
 ...                     + " ".join("{0:.2f}".format(x) for x in gambles[w1][d]))
 ...         for (gamble, event), (lprev, uprev) in lpr.iteritems():
 ...             print("lpr({0})={1:.2f}".format(gamble, lprev))
+...         print(sorted(normstrats))
 ...         print(sorted(normstrats2))
 ...         print(sorted(localstrats))
 ...         break
 ... else:
 ...     raise RuntimeError("no counterexample found") # doctest: +ELLIPSIS
-Traceback (most recent call last):
-    ...
-RuntimeError: no counterexample found
+counterexample found
+...
