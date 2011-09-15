@@ -440,7 +440,7 @@ class Func(ABCVar):
         """Construct a function.
 
         :param inputs: The input variables.
-        :type inputs: :class:`improb.ABCVar`
+        :type inputs: Iterable of :class:`improb.ABCVar`
         :param mapping: Maps each combinations of values of input
             variables to a value.
         :type mapping: :class:`collections.Mapping`
@@ -449,7 +449,7 @@ class Func(ABCVar):
         :param validate: Whether to validate the keys of the mapping.
         :type validate: :class:`bool`
         """
-        self._inputs = list(inputs)
+        self._inputs = tuple(inputs)
         if any(not isinstance(inp, ABCVar) for inp in self._inputs):
             raise TypeError("expected sequence of ABCVar for inputs")
         self._mapping = dict(mapping)
@@ -473,7 +473,10 @@ class Func(ABCVar):
         return self._mapping[key]
 
     def __hash__(self):
-        return hash(frozenset(self._mapping.iteritems()))
+        return hash(tuple(
+            self._inputs,
+            frozenset(self._mapping.iteritems()),
+            self._name))
 
     @property
     def name(self):
