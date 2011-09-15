@@ -52,22 +52,6 @@ or :class:`str`.
     :func:`cdd.get_number_type_from_value`
         Determine the number type from values.
 
-.. _domains:
-
-Domains
--------
-
-Any :class:`collections.Set` of :class:`improb.Var`\ s can
-be used to specify a possibility space.  One can think of it as a
-Cartesian product of sets.
-
-.. autoclass:: Domain
-   :members:
-
-   .. automethod:: __init__
-   .. automethod:: __repr__
-   .. automethod:: __str__
-
 .. _variables:
 
 Variables
@@ -116,9 +100,23 @@ are characterized by a sequence of (not necessarily primitive) input
 variables, and their value at any logically possible combination of
 values of input variables.
 
-A domain is simply a subset of :math:`\mathbf{X}`.
-Every variable has a canonical domain, which consists of a minimal
-subset of :math:`\mathbf{X}` for which its values are uniquely determined.
+.. _domains:
+
+Domains
+-------
+
+A domain is simply a subset of :math:`\mathbf{X}`.  Every variable has
+a canonical domain, which consists of a minimal subset of
+:math:`\mathbf{X}` for which its values are uniquely determined. One
+can think of a domain as a Cartesian product of sets, providing a
+possibility space for a random variable.
+
+.. autoclass:: Domain
+   :members:
+
+   .. automethod:: __init__
+   .. automethod:: __repr__
+   .. automethod:: __str__
 
 .. _gambles:
 

@@ -294,7 +294,11 @@ class ABCVar(collections.Hashable, collections.Mapping):
             )
 
     def is_equivalent_to(self, other):
-        """Check whether two random variables are equivalent."""
+        """Check whether two variables are equivalent.
+
+        :param other: The other variable.
+        :type other: :class:`ABCVar`
+        """
         domain = self.domain | other.domain
         for atom in domain.atoms():
             if self.get_value(atom, domain) != other.get_value(atom, domain):
@@ -432,14 +436,25 @@ class Func(ABCVar):
     """
 
     def __init__(self, inputs, mapping, name=None, validate=True):
-        """Construct a function."""
+        """Construct a function.
+
+        :param inputs: The input variables.
+        :type inputs: :class:`improb.ABCVar`
+        :param mapping: Maps each combinations of values of input
+            variables to a value.
+        :type mapping: :class:`collections.Mapping`
+        :param name: The name of this function.
+        :type name: :class:`str`
+        :param validate: Whether to validate the keys of the mapping.
+        :type validate: :class:`bool`
+        """
         self._inputs = list(inputs)
+        if any(not isinstance(inp, ABCVar) for inp in self._inputs):
+            raise TypeError("expected sequence of ABCVar for inputs")
         self._mapping = dict(mapping)
         self._domain = functools.reduce(
             operator.or_, (inp.domain for inp in self._inputs))
-        if any(not isinstance(inp, ABCVar) for inp in self._inputs):
-            raise TypeError("expected sequence of ABCVar for inputs")
-        # check that it is well defined
+        self._name = str(name) if name is not None else self._make_name()
         if validate:
             for atom in self._domain.atoms():
                 self.get_value(atom, self._domain)
