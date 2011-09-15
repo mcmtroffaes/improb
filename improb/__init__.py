@@ -17,14 +17,21 @@
 
 """improb is a Python module for working with imprecise probabilities."""
 
+# variable implementation is inspired by
+# http://openopt.org/FuncDesignerDoc
+
 from __future__ import division, absolute_import, print_function
 
 from abc import ABCMeta, abstractmethod, abstractproperty
 import cdd
 import collections
+import functools
 import fractions
 import itertools
 import numbers
+import operator
+
+from improb._compat import OrderedDict, OrderedSet
 
 def _str_keys_values(keys, values):
     """Turn dictionary with *keys* and *values* into a string.
@@ -36,279 +43,97 @@ def _str_keys_values(keys, values):
             key, maxlen_keys, value)
         for key, value in itertools.izip(keys, values))
 
-class PSpace(collections.Set, collections.Hashable):
-    """An immutable possibility space, derived from
-    :class:`collections.Set` and :class:`collections.Hashable`. This
-    is effectively an immutable ordered set with a fancy constructor.
-    """
+class Domain(collections.Hashable, collections.Set):
+    """An immutable set of :class:`Var`\ s."""
 
-    def __init__(self, *args):
-        """Convert *args* into a possibility space.
+    def __init__(self, *vars_):
+        """Construct a domain for the given *vars_*.
 
-        :param args: The components of the space.
-        :type args: :class:`collections.Iterable` or :class:`int`
-
-        Some examples of how components can be specified:
-
-        * A range of integers.
-
-          .. doctest::
-
-             >>> list(PSpace(xrange(2, 15, 3)))
-             [2, 5, 8, 11, 14]
-
-        * A string.
-
-          .. doctest::
-
-             >>> list(PSpace('abcdefg'))
-             ['a', 'b', 'c', 'd', 'e', 'f', 'g']
-
-        * A list of strings.
-
-          .. doctest::
-
-             >>> list(PSpace('rain cloudy sunny'.split(' ')))
-             ['rain', 'cloudy', 'sunny']
-
-        * As a special case, you can also specify just a single integer. This
-          will be converted to a tuple of integers of the corresponding length.
-
-          .. doctest::
-
-             >>> list(PSpace(3))
-             [0, 1, 2]
-
-        If multiple arguments are specified, the product is calculated:
+        :param vars_: The components of the domain.
+        :type vars_: Each component is a :class:`Var`.
 
         .. doctest::
 
-           >>> list(PSpace(3, 'abc')) # doctest: +NORMALIZE_WHITESPACE
-           [(0, 'a'), (0, 'b'), (0, 'c'),
-            (1, 'a'), (1, 'b'), (1, 'c'),
-            (2, 'a'), (2, 'b'), (2, 'c')]
-           >>> list(PSpace(('rain', 'cloudy', 'sunny'), ('cold', 'warm'))) # doctest: +NORMALIZE_WHITESPACE
-           [('rain', 'cold'), ('rain', 'warm'),
-            ('cloudy', 'cold'), ('cloudy', 'warm'),
-            ('sunny', 'cold'), ('sunny', 'warm')]
-
-        Duplicates are automatically removed:
-
-        .. doctest::
-
-           >>> list(PSpace([2, 2, 5, 3, 9, 5, 1, 2]))
-           [2, 5, 3, 9, 1]
+           >>> a = Var(range(3), name='a')
+           >>> Domain(a)
+           Domain(Var([0, 1, 2], name='a'))
+           >>> Domain(a, a)
+           Domain(Var([0, 1, 2], name='a'))
+           >>> c = Var(range(3), name='c')
+           >>> Domain(a, c)
+           Domain(Var([0, 1, 2], name='a'), Var([0, 1, 2], name='c'))
+           >>> d = Var(range(3), name='a') # identical to a!
+           >>> Domain(a, d)
+           Domain(Var([0, 1, 2], name='a'))
+           >>> b = Var('abc')
+           >>> dom = Domain(a, b)
+           >>> list(atom.values() for atom in dom.atoms()) # doctest: +NORMALIZE_WHITESPACE
+           [[0, 'a'], [0, 'b'], [0, 'c'],
+            [1, 'a'], [1, 'b'], [1, 'c'],
+            [2, 'a'], [2, 'b'], [2, 'c']]
+           >>> a = Var(['rain', 'cloudy', 'sunny'])
+           >>> b = Var(['cold', 'warm'])
+           >>> dom = Domain(a, b)
+           >>> list(atom.values() for atom in dom.atoms()) # doctest: +NORMALIZE_WHITESPACE
+           [['rain', 'cold'], ['rain', 'warm'],
+            ['cloudy', 'cold'], ['cloudy', 'warm'],
+            ['sunny', 'cold'], ['sunny', 'warm']]
         """
-        if not args:
-            raise ValueError('specify at least one argument')
-        elif len(args) == 1:
-            arg = args[0]
-            if isinstance(arg, int):
-                self._data = tuple(xrange(arg))
-            elif isinstance(arg, collections.Iterable):
-                # rationale for removing duplicates: if elem is not in
-                # added, then added.add(elem) is executed and the
-                # expression returns True (since set.add() is always
-                # False); however, if elem is in added, then the
-                # expression returns False (and added.add(elem) is not
-                # executed)
-                added = set()
-                self._data = tuple(
-                    elem for elem in arg
-                    if elem not in added and not added.add(elem))
-            else:
-                raise TypeError(
-                    'specify possibility space as iterable or integer')
-        else:
-            self._data = tuple(
-                itertools.product(*[PSpace(arg) for arg in args]))
+        self._vars = OrderedSet(vars_)
+        if any(not isinstance(var, Var) for var in self._vars):
+            raise TypeError("expected Var (%s)" % self._vars)
 
+    # must override _from_iterable as __init__ does not accept an iterable
     @classmethod
-    def make(cls, pspace):
-        """If *pspace* is a :class:`~improb.PSpace`, then returns *pspace*.
-        Otherwise, converts *pspace* to a :class:`~improb.PSpace`.
-
-        :param pspace: The possibility space.
-        :type pspace: |pspacetype|
-        :return: A possibility space.
-        :rtype: :class:`~improb.PSpace`
-        """
-        return pspace if isinstance(pspace, cls) else cls(pspace)
-
-    def make_event(self, *args, **kwargs):
-        """If *event* is a :class:`Event`, then checks possibility
-        space and returns *event*. Otherwise, converts *event* to a
-        :class:`Event`.
-
-        If you wish to construct an event on a product space, which is
-        itself composed of a product of events, specify its components
-        as separate arguments---in this case, each of the components
-        must be a sequence.
-
-        :param event: The event.
-        :type event: |eventtype|
-        :param name: The name of the event (used for pretty printing).
-        :type name: :class:`str`
-        :return: A event.
-        :rtype: :class:`Event`
-        :raises: :exc:`~exceptions.ValueError` if possibility spaces do not match
-
-        >>> pspace = PSpace(2, 3)
-        >>> print(pspace.make_event([(1, 2), (0, 1)]))
-        (0, 0) : 0
-        (0, 1) : 1
-        (0, 2) : 0
-        (1, 0) : 0
-        (1, 1) : 0
-        (1, 2) : 1
-        >>> print(pspace.make_event((0, 1), (2,)))
-        (0, 0) : 0
-        (0, 1) : 0
-        (0, 2) : 1
-        (1, 0) : 0
-        (1, 1) : 0
-        (1, 2) : 1
-        """
-        name = kwargs.get("name")
-        if not args:
-            raise ValueError('specify at least one argument')
-        elif len(args) == 1:
-            event = args[0]
-            if isinstance(event, Event):
-                if self != event.pspace:
-                    raise ValueError('possibility space mismatch')
-                return event
-            elif event is True:
-                return Event(self, event, name=name)
-            elif event is False:
-                return Event(self, event, name=name)
-            elif isinstance(event, Gamble):
-                if self != event.pspace:
-                    raise ValueError('possibility space mismatch')
-                if not(set(event.itervalues()) <= set([0, 1])):
-                    raise ValueError("not an indicator gamble")
-                return Event(self,
-                             (omega for omega, value in event.iteritems()
-                              if value == 1),
-                             name=name)
-            else:
-                return Event(self, event, name=name)
-        else:
-            return Event(self, itertools.product(*args), name=name)
-
-    def make_gamble(self, gamble, number_type=None):
-        """If *gamble* is
-
-        * a :class:`Gamble`, then checks possibility space and number
-          type and returns *gamble*; if number type does not
-          correspond, returns a copy of *gamble* with requested number
-          type,
-
-        * an :class:`Event`, then checks possibility space and returns
-          the indicator of *gamble* with the correct number type,
-
-        * anything else, then construct a :class:`Gamble` using
-          *gamble* as data.
-
-        :param gamble: The gamble.
-        :type gamble: |gambletype|
-        :param number_type: The type to use for numbers: ``'float'``
-            or ``'fraction'``. If omitted, then
-            :func:`~cdd.get_number_type_from_sequences` is used to
-            determine the number type.
-        :type number_type: :class:`str`
-        :return: A gamble.
-        :rtype: :class:`Gamble`
-        :raises: :exc:`~exceptions.ValueError` if possibility spaces
-            or number types do not match
-
-        >>> from improb import PSpace, Event, Gamble
-        >>> pspace = PSpace('abc')
-        >>> event = Event(pspace, 'ac')
-        >>> gamble = event.indicator('fraction')
-        >>> fgamble = event.indicator() # float number type
-        >>> pevent = Event('ab', False)
-        >>> pgamble = Gamble('ab', [2, 5], number_type='fraction')
-        >>> print(pspace.make_gamble({'b': 1}, 'fraction'))
-        a : 0
-        b : 1
-        c : 0
-        >>> print(pspace.make_gamble(event, 'fraction'))
-        a : 1
-        b : 0
-        c : 1
-        >>> print(pspace.make_gamble(gamble, 'fraction'))
-        a : 1
-        b : 0
-        c : 1
-        >>> print(pspace.make_gamble(fgamble, 'fraction'))
-        a : 1
-        b : 0
-        c : 1
-        >>> print(pspace.make_gamble(pevent, 'fraction')) # doctest: +ELLIPSIS
-        Traceback (most recent call last):
-            ...
-        ValueError: ...
-        >>> print(pspace.make_gamble(pgamble, 'fraction')) # doctest: +ELLIPSIS
-        Traceback (most recent call last):
-            ...
-        ValueError: ...
-        >>> print(pspace.make_gamble({'a': 1, 'b': 0, 'c': 8}, 'fraction'))
-        a : 1
-        b : 0
-        c : 8
-        >>> print(pspace.make_gamble(range(2, 9, 3), 'fraction'))
-        a : 2
-        b : 5
-        c : 8
-        """
-        if isinstance(gamble, Gamble):
-            if self != gamble.pspace:
-                raise ValueError('possibility space mismatch')
-            if (number_type is not None) and (number_type != gamble.number_type):
-                return Gamble(self, gamble, number_type=number_type)
-            else:
-                return gamble
-        elif isinstance(gamble, Event):
-            if self != gamble.pspace:
-                raise ValueError('possibility space mismatch')
-            return gamble.indicator(number_type=number_type)
-        else:
-            return Gamble(self, gamble, number_type=number_type)
+    def _from_iterable(cls, it):
+        return cls(*list(it))
 
     def __len__(self):
-        return len(self._data)
-
-    def __contains__(self, omega):
-        return omega in self._data
-
-    def __getitem__(self, index):
-        return self._data[index]
+        return len(self._vars)
 
     def __iter__(self):
-        return iter(self._data)
+        return iter(self._vars)
+
+    def __contains__(self, var):
+        return var in self._vars
 
     def __hash__(self):
-        return hash(self._data)
+        return self._hash()
+
+    def atoms(self):
+        """Generate all atoms of the domain."""
+        for values in itertools.product(*self._vars):
+            yield OrderedDict(itertools.izip(self._vars, values))
 
     def __repr__(self):
         """
-        >>> PSpace([2, 4, 5])
-        PSpace([2, 4, 5])
-        >>> PSpace([0, 1, 2])
-        PSpace(3)
+        >>> a = Var([2, 4, 5], name='a')
+        >>> b = Var('xy', name='b')
+        >>> Domain(a)
+        Domain(Var([2, 4, 5], name='a'))
+        >>> Domain(a, b)
+        Domain(Var([2, 4, 5], name='a'), Var(['x', 'y'], name='b'))
         """
-        if list(self) == list(xrange(len(self))):
-            return "PSpace(%i)" % len(self)
-        else:
-            return "PSpace(%s)" % repr(list(self))
+        return (
+            "Domain("
+            + ", ".join(repr(var) for var in self._vars)
+            + ")"
+            )
 
     def __str__(self):
         """
-        >>> print(PSpace([2, 4, 5]))
-        2 4 5
+        >>> a = Var([2, 4, 5])
+        >>> b = Var('uv')
+        >>> print(Domain(a))
+        {2, 4, 5}
+        >>> print(Domain(a, b))
+        {2, 4, 5} x {u, v}
         """
-        return " ".join(str(omega) for omega in self)
+        return (
+            " x ".join(
+                "{" + ", ".join(str(val) for val in var) + "}"
+                for var in self)
+            )
 
     def subsets(self, event=True, empty=True, full=True,
                 size=None, contains=False):
@@ -329,6 +154,13 @@ class PSpace(collections.Set, collections.Hashable):
         :returns: Yields all subsets.
         :rtype: Iterator of :class:`Event`.
 
+        .. todo:: Implement!
+        """
+
+        return
+
+        # old tests and code:
+        """
         >>> pspace = PSpace([2, 4, 5])
         >>> print("\n---\n".join(str(subset) for subset in pspace.subsets()))
         2 : 0
@@ -420,6 +252,225 @@ class PSpace(collections.Set, collections.Hashable):
         for subset_size in size_range:
             for subset in itertools.combinations(event - contains, subset_size):
                 yield Event(self, subset) | contains
+
+class ABCVar(collections.Hashable, collections.Mapping):
+    """Abstract base class for variables."""
+    __metaclass__ = ABCMeta
+    _nextid = 0
+
+    @staticmethod
+    def _make_name():
+        return "unnamed{0}".format(ABCVar._nextid)
+        ABCVar._nextid += 1
+
+    @abstractproperty
+    def name(self):
+        """Name of the variable.
+
+        :rtype: :class:`str`
+        """
+        raise NotImplementedError
+
+    @abstractproperty
+    def domain(self):
+        """Return a domain on which the variable can be evaluated.
+
+        :rtype: :class:`Domain`
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_value(self, atom, domain):
+        """Return value of this variable on *atom*, relative to the
+        given *domain*.
+        """
+        raise NotImplementedError
+
+    def __str__(self):
+        return _str_keys_values(
+            [atom.values() for atom in self.domain.atoms()],
+            [self.get_value(atom, self.domain)
+             for atom in self.domain.atoms()]
+            )
+
+    def is_equivalent_to(self, other):
+        """Check whether two random variables are equivalent."""
+        domain = self.domain | other.domain
+        for atom in domain.atoms():
+            if self.get_value(atom, domain) != other.get_value(atom, domain):
+                return False
+        return True
+
+class Var(ABCVar):
+    """A variable, logically independent of all other :class:`Var`\ s.
+    """
+
+    def __init__(self, values, name=None):
+        """Construct a variable.
+
+        :param values: The values that the variable can take.
+        :type values: Any iterable.
+
+        Some examples of how variables can be specified:
+
+        * A range of integers.
+
+          .. doctest::
+
+             >>> Var(xrange(2, 15, 3), name='a')
+             Var([2, 5, 8, 11, 14], name='a')
+
+        * A string.
+
+          .. doctest::
+
+             >>> Var('abcdefg', name='x')
+             Var(['a', 'b', 'c', 'd', 'e', 'f', 'g'], name='x')
+
+        * A list of strings.
+
+          .. doctest::
+
+             >>> Var('rain cloudy sunny'.split(' '), name='weather')
+             Var(['rain', 'cloudy', 'sunny'], name='weather')
+
+        Duplicates are automatically removed:
+
+        .. doctest::
+
+           >>> Var([2, 2, 5, 3, 9, 5, 1, 2], name='c')
+           Var([2, 5, 3, 9, 1], name='c')
+        """
+        self._name = str(name) if name is not None else self._make_name()
+        self._values = OrderedSet(values)
+        self._domain = Domain(self)
+
+    def __repr__(self):
+        """Return string representation.
+
+        >>> Var(range(3)) # doctest: +ELLIPSIS
+        Var([0, 1, 2], name='unnamed...')
+        >>> Var(range(3), name='a')
+        Var([0, 1, 2], name='a')
+        """
+        return (
+            "Var(["
+            + ", ".join(repr(key) for key in self)
+            + "], name={0})".format(repr(self.name))
+            )
+
+    def __hash__(self):
+        return hash((self._name, self._values._hash()))
+
+    def __len__(self):
+        return len(self._values)
+
+    def __iter__(self):
+        return iter(self._values)
+
+    def __contains__(self, key):
+        return key in self._values
+
+    def __getitem__(self, key):
+        if key in self._values:
+            return key
+        else:
+            raise KeyError(str(key))
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def domain(self):
+        return self._domain
+
+    def get_value(self, atom, domain):
+        """
+        >>> a = Var(range(3))
+        >>> b = Var(['rain', 'sun'])
+        >>> dom = Domain(b, a)
+        >>> a.get_value({b: 'sun', a: 2}, dom)
+        2
+        >>> b.get_value({b: 'sun', a: 2}, dom)
+        'sun'
+        >>> b.get_value({b: 'blabla', a: 2}, dom) # doctest: +ELLIPSIS
+        Traceback (most recent call last):
+          ...
+        KeyError: 'blabla'
+        """
+        # we could simply return atom[self] but that might miss key errors
+        return self[atom[self]]
+
+class Func(ABCVar):
+    """A function of other variables.
+
+    >>> a = Var(range(2))
+    >>> b = Var(['rain', 'sun'])
+    >>> c = Func([a, b], {
+    ...     (0, 'rain'): -1,
+    ...     (0, 'sun'): 2,
+    ...     (1, 'rain'): 0,
+    ...     (1, 'sun'): 2,
+    ...     })
+    >>> print(c)
+    [0, 'rain'] : -1
+    [0, 'sun']  : 2
+    [1, 'rain'] : 0
+    [1, 'sun']  : 2
+    >>> d = Func([c], {(-1,): False, (0,): False, (2,): True})
+    >>> print(d)
+    [0, 'rain'] : False
+    [0, 'sun']  : True
+    [1, 'rain'] : False
+    [1, 'sun']  : True
+    >>> e = Func([b], {('rain',): False, ('sun',): True})
+    >>> e.is_equivalent_to(d)
+    True
+    >>> e.is_equivalent_to(a)
+    False
+    """
+
+    def __init__(self, inputs, mapping, name=None, validate=True):
+        """Construct a function."""
+        self._inputs = list(inputs)
+        self._mapping = dict(mapping)
+        self._domain = functools.reduce(
+            operator.or_, (inp.domain for inp in self._inputs))
+        if any(not isinstance(inp, ABCVar) for inp in self._inputs):
+            raise TypeError("expected sequence of ABCVar for inputs")
+        # check that it is well defined
+        if validate:
+            for atom in self._domain.atoms():
+                self.get_value(atom, self._domain)
+
+    def __len__(self):
+        return len(self._mapping)
+
+    def __iter__(self):
+        return iter(self._mapping)
+
+    def __contains__(self, key):
+        return key in self._mapping
+
+    def __getitem__(self, key):
+        return self._mapping[key]
+
+    def __hash__(self):
+        return hash(frozenset(self._mapping.iteritems()))
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def domain(self):
+        return self._domain
+
+    def get_value(self, atom, domain):
+        return self[tuple(inp.get_value(atom, domain) for inp in self._inputs)]
+
+# TODO: derive Gamble and Event from Func
 
 class Gamble(collections.Mapping, collections.Hashable, cdd.NumberTypeable):
     """An immutable gamble.

@@ -52,28 +52,73 @@ or :class:`str`.
     :func:`cdd.get_number_type_from_value`
         Determine the number type from values.
 
-.. _possibility-spaces:
+.. _domains:
 
-Possibility Spaces
-------------------
+Domains
+-------
 
-Any :class:`collections.Iterable` of immutable objects can be used to
-specify a possibility space. Effectively, an
-:class:`collections.Iterable` *pspace* is interpreted as an ordered
-:class:`set`.
+Any :class:`collections.Set` of :class:`improb.Var`\ s can
+be used to specify a possibility space.  One can think of it as a
+Cartesian product of sets.
 
-For convenience, you can also construct a possibility space from any
-integer ``n``---this is equivalent to specifying ``range(n)``.
-
-For further convenience, you can construct Cartesian products simply
-by specifying multiple iterables or integers.
-
-.. autoclass:: PSpace
+.. autoclass:: Domain
    :members:
 
    .. automethod:: __init__
    .. automethod:: __repr__
    .. automethod:: __str__
+
+.. _variables:
+
+Variables
+---------
+
+All variables (including gambles and events)
+derive from the following base class:
+
+.. autoclass:: ABCVar
+   :members:
+
+We say that a collection :math:`\mathbf{X}=\{X_1,\dots,X_n\}`
+of (random) variables is
+*logically independent* whenever collection of events
+
+.. math::
+
+   \{X_1=x_1\}\cup\dots\cup\{X_n=x_n\}
+
+have a non-empty intersection, for all
+:math:`x_1\in\mathcal{X}_1,\dots,x_n\in\mathcal{X}_n`. This simply
+means that the random vector :math:`(X_1,\dots,X_n)` can take any
+value in :math:`\mathcal{X}_1\times\dots\times\mathcal{X}_n`.
+
+In improb, one specifies such collection :math:`\mathbf{X}`
+of logically independent
+variables simply by deriving each variable :math:`X_1` from :class:`improb.Var`.
+These variables are characterized solely by the values they can take.
+
+.. autoclass:: Var
+   :members:
+
+   .. automethod:: __init__
+
+Any variables which are *functions* of variables in :math:`\mathbf{X}`
+(obviously, these cannot be logically independent from :math:`\mathbf{X}`)
+are derived from:
+
+.. autoclass:: Func
+   :members:
+
+   .. automethod:: __init__
+
+They represent arbitrary functions of other variables. They
+are characterized by a sequence of (not necessarily primitive) input
+variables, and their value at any logically possible combination of
+values of input variables.
+
+A domain is simply a subset of :math:`\mathbf{X}`.
+Every variable has a canonical domain, which consists of a minimal
+subset of :math:`\mathbf{X}` for which its values are uniquely determined.
 
 .. _gambles:
 
