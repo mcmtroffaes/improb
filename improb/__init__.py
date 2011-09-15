@@ -280,17 +280,19 @@ class ABCVar(collections.Hashable, collections.Mapping):
         raise NotImplementedError
 
     @abstractmethod
-    def get_value(self, atom, domain):
+    def get_value(self, atom):
         """Return value of this variable on *atom*, relative to the
         given *domain*.
+
+        :param atom: An atom.
+        :type atom: :class:`dict` from :class:`Var` to any value in :class:`Var`
         """
         raise NotImplementedError
 
     def __str__(self):
         return _str_keys_values(
             [atom.values() for atom in self.domain.atoms()],
-            [self.get_value(atom, self.domain)
-             for atom in self.domain.atoms()]
+            [self.get_value(atom) for atom in self.domain.atoms()]
             )
 
     def is_equivalent_to(self, other):
@@ -301,7 +303,7 @@ class ABCVar(collections.Hashable, collections.Mapping):
         """
         domain = self.domain | other.domain
         for atom in domain.atoms():
-            if self.get_value(atom, domain) != other.get_value(atom, domain):
+            if self.get_value(atom) != other.get_value(atom):
                 return False
         return True
 
@@ -389,16 +391,15 @@ class Var(ABCVar):
     def domain(self):
         return self._domain
 
-    def get_value(self, atom, domain):
+    def get_value(self, atom):
         """
         >>> a = Var(range(3))
         >>> b = Var(['rain', 'sun'])
-        >>> dom = Domain(b, a)
-        >>> a.get_value({b: 'sun', a: 2}, dom)
+        >>> a.get_value({b: 'sun', a: 2})
         2
-        >>> b.get_value({b: 'sun', a: 2}, dom)
+        >>> b.get_value({b: 'sun', a: 2})
         'sun'
-        >>> b.get_value({b: 'blabla', a: 2}, dom) # doctest: +ELLIPSIS
+        >>> b.get_value({b: 'blabla', a: 2}) # doctest: +ELLIPSIS
         Traceback (most recent call last):
           ...
         KeyError: 'blabla'
@@ -457,7 +458,7 @@ class Func(ABCVar):
         self._name = str(name) if name is not None else self._make_name()
         if validate:
             for atom in self._domain.atoms():
-                self.get_value(atom, self._domain)
+                self.get_value(atom)
 
     def __len__(self):
         return len(self._mapping)
@@ -482,8 +483,8 @@ class Func(ABCVar):
     def domain(self):
         return self._domain
 
-    def get_value(self, atom, domain):
-        return self[tuple(inp.get_value(atom, domain) for inp in self._inputs)]
+    def get_value(self, atom):
+        return self[tuple(inp.get_value(atom) for inp in self._inputs)]
 
 # TODO: derive Gamble and Event from Func
 
