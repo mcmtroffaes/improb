@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 # improb is a Python module for working with imprecise probabilities
 # Copyright (c) 2008-2011, Matthias Troffaes
 #
@@ -127,10 +129,10 @@ class Domain(collections.Hashable, collections.Set):
         >>> print(Domain(a))
         {2, 4, 5}
         >>> print(Domain(a, b))
-        {2, 4, 5} x {u, v}
+        {2, 4, 5} × {u, v}
         """
         return (
-            " x ".join(
+            " × ".join(
                 "{" + ", ".join(str(val) for val in var) + "}"
                 for var in self)
             )
