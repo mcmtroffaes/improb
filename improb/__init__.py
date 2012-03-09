@@ -50,33 +50,6 @@ class Domain(collections.Hashable, collections.Set):
 
         :param vars_: The components of the domain.
         :type vars_: Each component is a :class:`Var`.
-
-        .. doctest::
-
-           >>> a = Var(range(3), name='a')
-           >>> Domain(a)
-           Domain(Var([0, 1, 2], name='a'))
-           >>> Domain(a, a)
-           Domain(Var([0, 1, 2], name='a'))
-           >>> c = Var(range(3), name='c')
-           >>> Domain(a, c)
-           Domain(Var([0, 1, 2], name='a'), Var([0, 1, 2], name='c'))
-           >>> d = Var(range(3), name='a') # identical to a!
-           >>> Domain(a, d)
-           Domain(Var([0, 1, 2], name='a'))
-           >>> b = Var('abc')
-           >>> dom = Domain(a, b)
-           >>> list(atom.values() for atom in dom.atoms()) # doctest: +NORMALIZE_WHITESPACE
-           [[0, 'a'], [0, 'b'], [0, 'c'],
-            [1, 'a'], [1, 'b'], [1, 'c'],
-            [2, 'a'], [2, 'b'], [2, 'c']]
-           >>> a = Var(['rain', 'cloudy', 'sunny'])
-           >>> b = Var(['cold', 'warm'])
-           >>> dom = Domain(a, b)
-           >>> list(atom.values() for atom in dom.atoms()) # doctest: +NORMALIZE_WHITESPACE
-           [['rain', 'cold'], ['rain', 'warm'],
-            ['cloudy', 'cold'], ['cloudy', 'warm'],
-            ['sunny', 'cold'], ['sunny', 'warm']]
         """
         self._vars = OrderedSet(vars_)
         if any(not isinstance(var, Var) for var in self._vars):
@@ -259,8 +232,9 @@ class ABCVar(collections.Hashable, collections.Mapping):
 
     @staticmethod
     def _make_name():
-        return "unnamed{0}".format(ABCVar._nextid)
+        name = "unnamed_{0}".format(ABCVar._nextid)
         ABCVar._nextid += 1
+        return name
 
     @abstractproperty
     def name(self):
@@ -406,6 +380,9 @@ class Var(ABCVar):
 
     def __hash__(self):
         return hash((self._name, self._values._hash()))
+
+    def __eq__(self, other):
+        return self._name == other._name and ABCVar.__eq__(self, other)
 
     def __len__(self):
         return len(self._values)
