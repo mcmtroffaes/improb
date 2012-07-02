@@ -28,16 +28,22 @@ Programming Language :: Python
 Programming Language :: Python :: 2
 Operating System :: OS Independent"""
 
-from setuptools import setup
-from improb import __version__
+from setuptools import setup, find_packages
 
-doclines = open('README.rst').read().split('\n')
+with open("README.rst", "rb") as readme_file:
+    doclines = readme_file.read().split("\n")
+
+with open("requirements.txt", "rb") as requires_file:
+    requires = requires_file.read().split()
+
+with open("VERSION", "rb") as version_file:
+    version = version_file.read().strip()
 
 setup(
     name = "improb",
-    version = __version__,
+    version = version,
     packages = ['improb', 'improb.lowprev', 'improb.decision'],
-    author = "Matthias Troffaes",
+    author = "Matthias C. M. Troffaes",
     author_email = "matthias.troffaes@gmail.com",
     license = "GPL",
     keywords = "statistics, lower prevision, imprecise probability, credal set",
@@ -46,4 +52,5 @@ setup(
     long_description = "\n".join(doclines[2:]),
     url = "http://pypi.python.org/pypi/improb/",
     classifiers = classifiers.split('\n'),
+    install_requires=requires,
 )
