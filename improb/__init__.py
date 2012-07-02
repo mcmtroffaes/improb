@@ -19,9 +19,6 @@
 
 from __future__ import division, absolute_import, print_function
 
-__version__ = '0.1.2'
-__release__ = __version__ + ' (beta)'
-
 from abc import ABCMeta, abstractmethod, abstractproperty
 import cdd
 import collections
