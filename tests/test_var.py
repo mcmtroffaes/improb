@@ -94,10 +94,10 @@ def test_var_eq():
     nose.tools.assert_sequence_equal(
         [b.get_value(w) for w in atoms], [False, False, False, True, False])
 
-def test_var_neq():
+def test_var_ne():
     a = Var('abcde')
     atoms = list(a.domain.atoms())
-    b = a.neq_('b')
+    b = a.ne_('b')
     nose.tools.assert_sequence_equal(
         [b.get_value(w) for w in atoms], [True, False, True, True, True])
 

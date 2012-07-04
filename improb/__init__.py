@@ -28,6 +28,7 @@ from abc import ABCMeta, abstractmethod, abstractproperty
 import collections
 import functools
 import itertools
+import numbers
 import operator
 
 from improb._compat import OrderedDict, OrderedSet
@@ -107,6 +108,18 @@ class Domain(collections.Hashable, collections.Set):
                 for var in self)
             )
 
+    def make_abcvar(self, data):
+        _vars = list(self._vars)[0] if len(self._vars) == 1 else self._vars
+        if isinstance(data, ABCVar):
+            return data
+        elif isinstance(data, (collections.Mapping, collections.Sequence, collections.Callable)):
+            return Func(_vars, data)
+        elif isinstance(data, numbers.Real):
+            return Func(_vars, lambda *key: data)
+        else:
+            raise TypeError(
+                "cannot convert %s to ABCVar" % data.__class__.__name__)
+
     def subsets(self, event=True, empty=True, full=True,
                 size=None, contains=False):
         r"""Iterates over all subsets of the possibility space.
@@ -126,104 +139,105 @@ class Domain(collections.Hashable, collections.Set):
         :returns: Yields all subsets.
         :rtype: Iterator of :class:`Event`.
 
-        .. todo:: Implement!
-        """
-
-        return
-
-        # old tests and code:
-        """
-        >>> pspace = PSpace([2, 4, 5])
+        >>> a = Var([2, 4, 5])
+        >>> pspace = Domain(a)
         >>> print("\n---\n".join(str(subset) for subset in pspace.subsets()))
-        2 : 0
-        4 : 0
-        5 : 0
+        [2] : False
+        [4] : False
+        [5] : False
         ---
-        2 : 1
-        4 : 0
-        5 : 0
+        [2] : True
+        [4] : False
+        [5] : False
         ---
-        2 : 0
-        4 : 1
-        5 : 0
+        [2] : False
+        [4] : True
+        [5] : False
         ---
-        2 : 0
-        4 : 0
-        5 : 1
+        [2] : False
+        [4] : False
+        [5] : True
         ---
-        2 : 1
-        4 : 1
-        5 : 0
+        [2] : True
+        [4] : True
+        [5] : False
         ---
-        2 : 1
-        4 : 0
-        5 : 1
+        [2] : True
+        [4] : False
+        [5] : True
         ---
-        2 : 0
-        4 : 1
-        5 : 1
+        [2] : False
+        [4] : True
+        [5] : True
         ---
-        2 : 1
-        4 : 1
-        5 : 1
-        >>> print("\n---\n".join(str(subset) for subset in pspace.subsets([2, 4])))
-        2 : 0
-        4 : 0
-        5 : 0
+        [2] : True
+        [4] : True
+        [5] : True
+        >>> print("\n---\n".join(str(subset) for subset in pspace.subsets(lambda x: x in [2, 4])))
+        [2] : False
+        [4] : False
+        [5] : False
         ---
-        2 : 1
-        4 : 0
-        5 : 0
+        [2] : True
+        [4] : False
+        [5] : False
         ---
-        2 : 0
-        4 : 1
-        5 : 0
+        [2] : False
+        [4] : True
+        [5] : False
         ---
-        2 : 1
-        4 : 1
-        5 : 0
-        >>> print("\n---\n".join(str(subset) for subset in pspace.subsets([2, 4], empty=False, full=False)))
-        2 : 1
-        4 : 0
-        5 : 0
+        [2] : True
+        [4] : True
+        [5] : False
+        >>> print("\n---\n".join(str(subset) for subset in pspace.subsets(lambda x: x in [2, 4], empty=False, full=False)))
+        [2] : True
+        [4] : False
+        [5] : False
         ---
-        2 : 0
-        4 : 1
-        5 : 0
-        >>> print("\n---\n".join(str(subset) for subset in pspace.subsets(True, contains=[4])))
-        2 : 0
-        4 : 1
-        5 : 0
+        [2] : False
+        [4] : True
+        [5] : False
+        >>> print("\n---\n".join(str(subset) for subset in pspace.subsets(True, contains=lambda x: x in [4])))
+        [2] : False
+        [4] : True
+        [5] : False
         ---
-        2 : 1
-        4 : 1
-        5 : 0
+        [2] : True
+        [4] : True
+        [5] : False
         ---
-        2 : 0
-        4 : 1
-        5 : 1
+        [2] : False
+        [4] : True
+        [5] : True
         ---
-        2 : 1
-        4 : 1
-        5 : 1
+        [2] : True
+        [4] : True
+        [5] : True
         """
-        event = self.make_event(event)
-        contains = self.make_event(contains)
+        event = self.make_abcvar(event).bool_()
+        contains = self.make_abcvar(contains).bool_()
         if not(contains <= event):
             # nothing to iterate over!!
             return
+        length = len([atom for atom in self.atoms() if event.get_value(atom)])
         if size is None:
             size_range = xrange(0 if empty else 1,
-                                len(event) + (1 if full else 0))
+                                length + (1 if full else 0))
         elif isinstance(size, collections.Iterable):
             size_range = size
         elif isinstance(size, (int, long)):
             size_range = (size,)
         else:
             raise TypeError('invalid size')
+        good_atoms = [
+            atom for atom in self.atoms()
+            if event.get_value(atom) and not contains.get_value(atom)]
         for subset_size in size_range:
-            for subset in itertools.combinations(event & ~contains, subset_size):
-                yield Event(self, subset) | contains
+            for subset in itertools.combinations(good_atoms, subset_size):
+                yield Func(
+                    self, {
+                        tuple(atom.itervalues()): (atom in subset)
+                        for atom in self.atoms()}) | contains
 
 class ABCVar(collections.Hashable, collections.Mapping):
     """Abstract base class for variables."""
@@ -303,6 +317,12 @@ class ABCVar(collections.Hashable, collections.Mapping):
     __truediv__ = lambda self, other: self._scalar(other, operator.truediv)
     __floordiv__ = lambda self, other: self._scalar(other, operator.floordiv)
     __div__ = lambda self, other: self._scalar(other, operator.div)
+    __and__ = lambda self, other: self._pointwise(other, operator.and_)
+    __or__ = lambda self, other: self._pointwise(other, operator.or_)
+    __xor__ = lambda self, other: self._pointwise(other, operator.xor)
+
+    def __invert__(self):
+        return Func(self, {value: ~value for value in self.itervalues()})
 
     def __neg__(self):
         return Func(self, {value: -value for value in self.itervalues()})
@@ -311,8 +331,19 @@ class ABCVar(collections.Hashable, collections.Mapping):
     __rsub__ = lambda self, other: self.__sub__(other).__neg__()
     __rmul__ = __mul__
 
+    le_ = lambda self, other: self._pointwise(other, operator.le)
+    lt_ = lambda self, other: self._pointwise(other, operator.lt)
     eq_ = lambda self, other: self._pointwise(other, operator.eq)
-    neq_ = lambda self, other: self._pointwise(other, operator.ne)
+    ne_ = lambda self, other: self._pointwise(other, operator.ne)
+    ge_ = lambda self, other: self._pointwise(other, operator.ge)
+    gt_ = lambda self, other: self._pointwise(other, operator.gt)
+    not_ = lambda self: Func(self, {value: not value for value in self.itervalues()})
+    bool_ = lambda self: Func(self, {value: bool(value) for value in self.itervalues()})
+
+    __le__ = lambda self, other: self.le_(other).all()
+    __lt__ = lambda self, other: self.le_(other).all() and self.lt_(other).any()
+    __ge__ = lambda self, other: self.ge_(other).all()
+    __gt__ = lambda self, other: self.ge_(other).all() and self.gt_(other).any()
 
     def minimum(self):
         """Find minimum value of the gamble."""
@@ -321,6 +352,13 @@ class ABCVar(collections.Hashable, collections.Mapping):
     def maximum(self):
         """Find maximum value of the gamble."""
         return max(value for value in self.itervalues())
+
+    # follow numpy convention
+    def __nonzero__(self):
+        raise ValueError("The truth value of a variable is ambiguous. Use a.any() or a.all()")
+
+    all = lambda self: all(self.itervalues())
+    any = lambda self: any(self.itervalues())
 
 class Var(ABCVar):
     """A variable, logically independent of all other :class:`Var`\ s.
@@ -500,6 +538,13 @@ class Func(ABCVar):
                 self._inputs = tuple(inputs)
             self._mapping = dict(itertools.izip(
                 itertools.product(*self._inputs), data))
+        elif isinstance(data, collections.Callable):
+            if isinstance(inputs, ABCVar):
+                self._inputs = (inputs,)
+            else:
+                self._inputs = tuple(inputs)
+            self._mapping = {
+                key: data(*key) for key in itertools.product(*self._inputs)}
         else:
             raise TypeError(
                 "expected collections.Mapping or collections.Sequence for data")

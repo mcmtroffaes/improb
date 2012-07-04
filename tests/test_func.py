@@ -195,11 +195,11 @@ def test_func_eq():
     nose.tools.assert_sequence_equal(
         [c.get_value(w) for w in atoms], [False, True, False, False, True])
 
-def test_func_neq():
+def test_func_ne():
     a = Var('abcde')
     b = Func(a, [0, 1, 2, 2, 1])
     atoms = [{a: 'a'}, {a: 'b'}, {a: 'c'}, {a: 'd'}, {a: 'e'}]
-    c = b.neq_(2)
+    c = b.ne_(2)
     nose.tools.assert_sequence_equal(
         [c.get_value(w) for w in atoms], [True, True, False, False, True])
 
