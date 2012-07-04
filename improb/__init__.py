@@ -471,44 +471,46 @@ class Func(ABCVar):
     [1, 'sun']  : 1
     """
 
-    def __init__(self, inputs, mapping, name=None, validate=True):
+    def __init__(self, inputs, data, name=None, validate=True):
         """Construct a function.
 
         :param inputs: The input variables.
         :type inputs: :class:`improb.ABCVar` if there is only one input,
             or iterable of :class:`improb.ABCVar`\ s.
-        :param mapping: Maps each combinations of values of input
-            variables to a value.
+        :param data: Either maps each combination of values of input
+            variables to a value, or lists a value for each such combination.
         :type mapping: :class:`collections.Mapping`
         :param name: The name of this function.
         :type name: :class:`str`
         :param validate: Whether to validate the keys of the mapping.
         :type validate: :class:`bool`
         """
-        if isinstance(inputs, ABCVar):
-            self._inputs = [inputs]
-            self._mapping = {
-                (key,): value for key, value in mapping.iteritems()}
+        if isinstance(data, collections.Mapping):
+            if isinstance(inputs, ABCVar):
+                self._inputs = (inputs,)
+                self._mapping = {
+                    (key,): value for key, value in data.iteritems()}
+            else:
+                self._inputs = tuple(inputs)
+                self._mapping = dict(data)
+        elif isinstance(data, collections.Sequence):
+            if isinstance(inputs, ABCVar):
+                self._inputs = (inputs,)
+            else:
+                self._inputs = tuple(inputs)
+            self._mapping = dict(itertools.izip(
+                itertools.product(*self._inputs), data))
         else:
-            self._inputs = tuple(inputs)
-            if any(not isinstance(inp, ABCVar) for inp in self._inputs):
-                raise TypeError("expected ABCVar or sequence of ABCVar for inputs")
-            self._mapping = dict(mapping)
+            raise TypeError(
+                "expected collections.Mapping or collections.Sequence for data")
+        if any(not isinstance(inp, ABCVar) for inp in self._inputs):
+            raise TypeError("expected ABCVar or sequence of ABCVar for inputs")
         self._domain = functools.reduce(
             operator.or_, (inp.domain for inp in self._inputs))
         self._name = str(name) if name is not None else self._make_name()
         if validate:
             for atom in self._domain.atoms():
                 self.get_value(atom)
-
-    @classmethod
-    def from_list(cls, inputs, list_, name=None, validate=True):
-        if isinstance(inputs, ABCVar):
-            inputs = (inputs,)
-        mapping = dict(itertools.izip(
-                itertools.product(*inputs),
-                list_))
-        return cls(inputs, mapping, name=name, validate=validate)
 
     def reduced(self):
         return Func(
