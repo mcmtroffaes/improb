@@ -78,7 +78,7 @@ value in :math:`\mathcal{X}_1\times\dots\times\mathcal{X}_n`.
 
 In improb, one specifies such collection :math:`\mathbf{X}`
 of logically independent
-variables simply by deriving each variable :math:`X_1` from :class:`improb.Var`.
+variables simply by deriving each variable :math:`X_i` from :class:`improb.Var`.
 These variables are characterized solely by the values they can take.
 
 .. autoclass:: Var
