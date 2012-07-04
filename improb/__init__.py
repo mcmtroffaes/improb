@@ -301,6 +301,8 @@ class ABCVar(collections.Hashable, collections.Mapping):
     __sub__ = lambda self, other: self._pointwise(other, operator.sub)
     __mul__ = lambda self, other: self._pointwise(other, operator.mul)
     __truediv__ = lambda self, other: self._scalar(other, operator.truediv)
+    __floordiv__ = lambda self, other: self._scalar(other, operator.floordiv)
+    __div__ = lambda self, other: self._scalar(other, operator.div)
 
     def __neg__(self):
         return Func(self, {value: -value for value in self.itervalues()})

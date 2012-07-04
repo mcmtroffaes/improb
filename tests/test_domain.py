@@ -1,4 +1,4 @@
-"""Tests for working with variables."""
+"""Tests for the Domain class."""
 
 import nose.tools
 import itertools
