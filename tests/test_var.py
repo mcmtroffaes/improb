@@ -5,7 +5,7 @@ from __future__ import division, print_function
 import nose.tools
 import itertools
 
-from improb import Domain, Var, Func
+from improb import Domain, Var
 
 def test_var_add_scalar():
     a = Var(xrange(3))

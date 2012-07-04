@@ -501,6 +501,15 @@ class Func(ABCVar):
             for atom in self._domain.atoms():
                 self.get_value(atom)
 
+    @classmethod
+    def from_list(cls, inputs, list_, name=None, validate=True):
+        if isinstance(inputs, ABCVar):
+            inputs = (inputs,)
+        mapping = dict(itertools.izip(
+                itertools.product(*inputs),
+                list_))
+        return cls(inputs, mapping, name=name, validate=validate)
+
     def reduced(self):
         return Func(
             self.domain, {
