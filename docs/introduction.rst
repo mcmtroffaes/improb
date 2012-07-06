@@ -65,7 +65,7 @@ derive from the following base class:
 
 We say that a collection :math:`\mathbf{X}=\{X_1,\dots,X_n\}`
 of (random) variables is
-*logically independent* whenever collection of events
+*logically independent* whenever the collection of events
 
 .. math::
 
