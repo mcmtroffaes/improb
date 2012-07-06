@@ -92,7 +92,7 @@ class Domain(collections.Hashable, collections.Set):
                 for var in self)
             )
 
-    def make_abcvar(self, data):
+    def make_func(self, data):
         _vars = list(self._vars)[0] if len(self._vars) == 1 else self._vars
         if isinstance(data, ABCVar):
             return data
@@ -198,8 +198,8 @@ class Domain(collections.Hashable, collections.Set):
         [4] : True
         [5] : True
         """
-        event = self.make_abcvar(event).bool_()
-        contains = self.make_abcvar(contains).bool_()
+        event = self.make_func(event).bool_()
+        contains = self.make_func(contains).bool_()
         if not(contains <= event):
             # nothing to iterate over!!
             return
