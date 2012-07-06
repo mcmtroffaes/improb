@@ -41,3 +41,9 @@ def test_event_and_or_xor():
     d = b ^ c
     nose.tools.assert_sequence_equal(
         [d.get_value(w) for w in points], [True, False, False, True])
+
+def test_event_points():
+    a = Var('abcd')
+    b = Func(a, [False, True, False, True])
+    nose.tools.assert_sequence_equal(
+        list(b.points()), [{a: 'b'}, {a: 'd'}])

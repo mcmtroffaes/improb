@@ -260,6 +260,14 @@ class ABCVar(collections.Hashable, collections.Mapping):
         """
         raise NotImplementedError
 
+    def points(self):
+        """Generate all points of the domain where the variable
+        evaluates to ``True``.
+        """
+        for point in self.domain.points():
+            if self.get_value(point):
+                yield point
+
     def __str__(self):
         return _str_keys_values(
             [point.values() for point in self.domain.points()],
