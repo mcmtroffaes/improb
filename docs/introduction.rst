@@ -69,7 +69,7 @@ of (random) variables is
 
 .. math::
 
-   \{X_1=x_1\}\cup\dots\cup\{X_n=x_n\}
+   \{X_1=x_1\},\dots,\{X_n=x_n\}
 
 have a non-empty intersection, for all
 :math:`x_1\in\mathcal{X}_1,\dots,x_n\in\mathcal{X}_n`. This simply
