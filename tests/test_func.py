@@ -62,75 +62,75 @@ def test_func_init_from_list_2():
 def test_func_add_scalar():
     a = Var('abc')
     b = Func(a, [0, 1, 2])
-    atoms = [{a: 'a'}, {a: 'b'}, {a: 'c'}]
+    points = [{a: 'a'}, {a: 'b'}, {a: 'c'}]
     c = 2 + b
     nose.tools.assert_sequence_equal(
-        [c.get_value(w) for w in atoms], [2, 3, 4])
+        [c.get_value(w) for w in points], [2, 3, 4])
     d = b + 2
     nose.tools.assert_sequence_equal(
-        [d.get_value(w) for w in atoms], [2, 3, 4])
+        [d.get_value(w) for w in points], [2, 3, 4])
     nose.tools.assert_equal(c, d)
 
 def test_func_sub_scalar():
     a = Var('abc')
     b = Func(a, [0, 1, 2])
-    atoms = [{a: 'a'}, {a: 'b'}, {a: 'c'}]
+    points = [{a: 'a'}, {a: 'b'}, {a: 'c'}]
     c = 2 - b
     nose.tools.assert_sequence_equal(
-        [c.get_value(w) for w in atoms], [2, 1, 0])
+        [c.get_value(w) for w in points], [2, 1, 0])
     d = b - 2
     nose.tools.assert_sequence_equal(
-        [d.get_value(w) for w in atoms], [-2, -1, 0])
+        [d.get_value(w) for w in points], [-2, -1, 0])
 
 def test_func_mul_scalar():
     a = Var('abc')
     b = Func(a, [0, 1, 2])
-    atoms = [{a: 'a'}, {a: 'b'}, {a: 'c'}]
+    points = [{a: 'a'}, {a: 'b'}, {a: 'c'}]
     c = 2 * b
     nose.tools.assert_sequence_equal(
-        [c.get_value(w) for w in atoms], [0, 2, 4])
+        [c.get_value(w) for w in points], [0, 2, 4])
     d = b * 2
     nose.tools.assert_sequence_equal(
-        [d.get_value(w) for w in atoms], [0, 2, 4])
+        [d.get_value(w) for w in points], [0, 2, 4])
     nose.tools.assert_equal(c, d)
 
 def test_func_truediv_scalar():
     a = Var('abc')
     b = Func(a, [0, 1, 2])
-    atoms = [{a: 'a'}, {a: 'b'}, {a: 'c'}]
+    points = [{a: 'a'}, {a: 'b'}, {a: 'c'}]
     c = b / 2
     nose.tools.assert_sequence_equal(
-        [c.get_value(w) for w in atoms], [0.0, 0.5, 1.0])
+        [c.get_value(w) for w in points], [0.0, 0.5, 1.0])
 
 def test_func_floordiv_scalar():
     a = Var('abc')
     b = Func(a, [0, 1, 2])
-    atoms = [{a: 'a'}, {a: 'b'}, {a: 'c'}]
+    points = [{a: 'a'}, {a: 'b'}, {a: 'c'}]
     c = b // 2
     nose.tools.assert_sequence_equal(
-        [c.get_value(w) for w in atoms], [0, 0, 1])
+        [c.get_value(w) for w in points], [0, 0, 1])
 
 def test_func_add_func():
     a1 = Var(xrange(3))
     a2 = Var('ab')
     b1 = Func([a1, a2], [1, 3, 4, 2, -1, 3])
     b2 = Func(a2, [0, 6])
-    atoms = [
+    points = [
         {a1: 0, a2: 'a'}, {a1: 0, a2: 'b'},
         {a1: 1, a2: 'a'}, {a1: 1, a2: 'b'},
         {a1: 2, a2: 'a'}, {a1: 2, a2: 'b'},
         ]
     b = b1 + b2
     nose.tools.assert_sequence_equal(
-        [b.get_value(w) for w in atoms],
+        [b.get_value(w) for w in points],
         [1, 9, 4, 8, -1, 9])
     b = b1 + a1
     nose.tools.assert_sequence_equal(
-        [b.get_value(w) for w in atoms],
+        [b.get_value(w) for w in points],
         [1, 3, 5, 3, 1, 5])
     b = a1 + b2
     nose.tools.assert_sequence_equal(
-        [b.get_value(w) for w in atoms],
+        [b.get_value(w) for w in points],
         [0, 6, 1, 7, 2, 8])
 
 def test_func_sub_func():
@@ -138,22 +138,22 @@ def test_func_sub_func():
     a2 = Var('ab')
     b1 = Func([a1, a2], [1, 3, 4, 2, -1, 3])
     b2 = Func(a2, [0, 6])
-    atoms = [
+    points = [
         {a1: 0, a2: 'a'}, {a1: 0, a2: 'b'},
         {a1: 1, a2: 'a'}, {a1: 1, a2: 'b'},
         {a1: 2, a2: 'a'}, {a1: 2, a2: 'b'},
         ]
     b = b1 - b2
     nose.tools.assert_sequence_equal(
-        [b.get_value(w) for w in atoms],
+        [b.get_value(w) for w in points],
         [1, -3, 4, -4, -1, -3])
     b = b1 - a1
     nose.tools.assert_sequence_equal(
-        [b.get_value(w) for w in atoms],
+        [b.get_value(w) for w in points],
         [1, 3, 3, 1, -3, 1])
     b = a1 - b2
     nose.tools.assert_sequence_equal(
-        [b.get_value(w) for w in atoms],
+        [b.get_value(w) for w in points],
         [0, -6, 1, -5, 2, -4])
 
 def test_func_mul_func():
@@ -161,47 +161,47 @@ def test_func_mul_func():
     a2 = Var('ab')
     b1 = Func([a1, a2], [1, 3, 4, 2, -1, 3])
     b2 = Func(a2, [0, 6])
-    atoms = [
+    points = [
         {a1: 0, a2: 'a'}, {a1: 0, a2: 'b'},
         {a1: 1, a2: 'a'}, {a1: 1, a2: 'b'},
         {a1: 2, a2: 'a'}, {a1: 2, a2: 'b'},
         ]
     b = b1 * b2
     nose.tools.assert_sequence_equal(
-        [b.get_value(w) for w in atoms],
+        [b.get_value(w) for w in points],
         [0, 18, 0, 12, 0, 18])
     b = b1 * a1
     nose.tools.assert_sequence_equal(
-        [b.get_value(w) for w in atoms],
+        [b.get_value(w) for w in points],
         [0, 0, 4, 2, -2, 6])
     b = a1 * b2
     nose.tools.assert_sequence_equal(
-        [b.get_value(w) for w in atoms],
+        [b.get_value(w) for w in points],
         [0, 0, 0, 6, 0, 12])
 
 def test_func_neg():
     a = Var('abc')
     b = Func(a, [0, 1, 2])
-    atoms = [{a: 'a'}, {a: 'b'}, {a: 'c'}]
+    points = [{a: 'a'}, {a: 'b'}, {a: 'c'}]
     c = -b
     nose.tools.assert_sequence_equal(
-        [c.get_value(w) for w in atoms], [0, -1, -2])
+        [c.get_value(w) for w in points], [0, -1, -2])
 
 def test_func_eq():
     a = Var('abcde')
     b = Func(a, [0, 1, 2, 2, 1])
-    atoms = [{a: 'a'}, {a: 'b'}, {a: 'c'}, {a: 'd'}, {a: 'e'}]
+    points = [{a: 'a'}, {a: 'b'}, {a: 'c'}, {a: 'd'}, {a: 'e'}]
     c = b.eq_(1)
     nose.tools.assert_sequence_equal(
-        [c.get_value(w) for w in atoms], [False, True, False, False, True])
+        [c.get_value(w) for w in points], [False, True, False, False, True])
 
 def test_func_ne():
     a = Var('abcde')
     b = Func(a, [0, 1, 2, 2, 1])
-    atoms = [{a: 'a'}, {a: 'b'}, {a: 'c'}, {a: 'd'}, {a: 'e'}]
+    points = [{a: 'a'}, {a: 'b'}, {a: 'c'}, {a: 'd'}, {a: 'e'}]
     c = b.ne_(2)
     nose.tools.assert_sequence_equal(
-        [c.get_value(w) for w in atoms], [True, True, False, False, True])
+        [c.get_value(w) for w in points], [True, True, False, False, True])
 
 def test_func_min_max():
     a = Var('abcde')

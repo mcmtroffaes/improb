@@ -73,8 +73,8 @@ class Domain(collections.Hashable, collections.Set):
     def __hash__(self):
         return self._hash()
 
-    def atoms(self):
-        """Generate all atoms of the domain."""
+    def points(self):
+        """Generate all points of the domain."""
         for values in itertools.product(*self._vars):
             yield OrderedDict(itertools.izip(self._vars, values))
 
@@ -219,7 +219,7 @@ class Domain(collections.Hashable, collections.Set):
         if not(contains <= event):
             # nothing to iterate over!!
             return
-        length = len([atom for atom in self.atoms() if event.get_value(atom)])
+        length = len([point for point in self.points() if event.get_value(point)])
         if size is None:
             size_range = xrange(0 if empty else 1,
                                 length + (1 if full else 0))
@@ -229,15 +229,15 @@ class Domain(collections.Hashable, collections.Set):
             size_range = (size,)
         else:
             raise TypeError('invalid size')
-        good_atoms = [
-            atom for atom in self.atoms()
-            if event.get_value(atom) and not contains.get_value(atom)]
+        good_points = [
+            point for point in self.points()
+            if event.get_value(point) and not contains.get_value(point)]
         for subset_size in size_range:
-            for subset in itertools.combinations(good_atoms, subset_size):
+            for subset in itertools.combinations(good_points, subset_size):
                 yield Func(
                     self, {
-                        tuple(atom.itervalues()): (atom in subset)
-                        for atom in self.atoms()}) | contains
+                        tuple(point.itervalues()): (point in subset)
+                        for point in self.points()}) | contains
 
 class ABCVar(collections.Hashable, collections.Mapping):
     """Abstract base class for variables."""
@@ -267,19 +267,19 @@ class ABCVar(collections.Hashable, collections.Mapping):
         raise NotImplementedError
 
     @abstractmethod
-    def get_value(self, atom):
-        """Return value of this variable on *atom*, relative to the
+    def get_value(self, point):
+        """Return value of this variable on *point*, relative to the
         given *domain*.
 
-        :param atom: An atom.
-        :type atom: :class:`dict` from :class:`Var` to any value in :class:`Var`
+        :param point: An point.
+        :type point: :class:`dict` from :class:`Var` to any value in :class:`Var`
         """
         raise NotImplementedError
 
     def __str__(self):
         return _str_keys_values(
-            [atom.values() for atom in self.domain.atoms()],
-            [self.get_value(atom) for atom in self.domain.atoms()]
+            [point.values() for point in self.domain.points()],
+            [self.get_value(point) for point in self.domain.points()]
             )
 
     def is_equivalent_to(self, other):
@@ -289,8 +289,8 @@ class ABCVar(collections.Hashable, collections.Mapping):
         :type other: :class:`ABCVar`
         """
         domain = self.domain | other.domain
-        for atom in domain.atoms():
-            if self.get_value(atom) != other.get_value(atom):
+        for point in domain.points():
+            if self.get_value(point) != other.get_value(point):
                 return False
         return True
 
@@ -447,7 +447,7 @@ class Var(ABCVar):
     def domain(self):
         return self._domain
 
-    def get_value(self, atom):
+    def get_value(self, point):
         """
         >>> a = Var(range(3))
         >>> b = Var(['rain', 'sun'])
@@ -460,8 +460,8 @@ class Var(ABCVar):
           ...
         KeyError: 'blabla'
         """
-        # we could simply return atom[self] but that might miss key errors
-        return self[atom[self]]
+        # we could simply return point[self] but that might miss key errors
+        return self[point[self]]
 
 class Func(ABCVar):
     """A function of other variables.
@@ -554,14 +554,14 @@ class Func(ABCVar):
             operator.or_, (inp.domain for inp in self._inputs))
         self._name = str(name) if name is not None else self._make_name()
         if validate:
-            for atom in self._domain.atoms():
-                self.get_value(atom)
+            for point in self._domain.points():
+                self.get_value(point)
 
     def reduced(self):
         return Func(
             self.domain, {
-                tuple(atom.itervalues()): self.get_value(atom)
-                for atom in self.domain.atoms()})
+                tuple(point.itervalues()): self.get_value(point)
+                for point in self.domain.points()})
 
     def __repr__(self):
         return (
@@ -595,8 +595,8 @@ class Func(ABCVar):
     def domain(self):
         return self._domain
 
-    def get_value(self, atom):
-        return self[tuple(inp.get_value(atom) for inp in self._inputs)]
+    def get_value(self, point):
+        return self[tuple(inp.get_value(point) for inp in self._inputs)]
 
 """
 Tests for gambles.
