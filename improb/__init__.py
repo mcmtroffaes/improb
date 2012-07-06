@@ -463,6 +463,18 @@ class Func(ABCVar):
     [0, 'sun']  : 2
     [1, 'rain'] : 0
     [1, 'sun']  : 2
+    >>> c = Func([a, b], [-1, 2, 0, 2])
+    >>> print(c)
+    [0, 'rain'] : -1
+    [0, 'sun']  : 2
+    [1, 'rain'] : 0
+    [1, 'sun']  : 2
+    >>> c = Func([a, b], lambda va, vb: 2 if vb == 'sun' else (va - 1))
+    >>> print(c)
+    [0, 'rain'] : -1
+    [0, 'sun']  : 2
+    [1, 'rain'] : 0
+    [1, 'sun']  : 2
     >>> d = Func(c, {-1: False, 0: False, 2: True})
     >>> print(d)
     [0, 'rain'] : False
@@ -500,8 +512,10 @@ class Func(ABCVar):
         :type inputs: :class:`improb.ABCVar` if there is only one input,
             or iterable of :class:`improb.ABCVar`\ s.
         :param data: Either maps each combination of values of input
-            variables to a value, or lists a value for each such combination.
-        :type mapping: :class:`collections.Mapping`
+            variables to a value, or lists a value for each such combination,
+            or provides a function to calculate the value from input
+            variable values.
+        :type data: :class:`collections.Mapping` or :class:`collections.Sequence` or :class:`collections.Callable`
         :param name: The name of this function.
         :type name: :class:`str`
         :param validate: Whether to validate the keys of the mapping.
