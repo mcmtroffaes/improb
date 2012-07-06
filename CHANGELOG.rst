@@ -9,6 +9,17 @@ Version 0.1.2 (in development)
 * Added LowPoly.stabilize method to work around numerical
   instabilities for instance in the random generator.
 
+* Refactored PSpace/Gamble/Event system to make it easier to work with
+  multivariate problems.
+
+  - PSpace is replaced by two classes: Var and Domain. Var is a
+    fundamental variable which is logically independent of all other
+    variables. Domain consists of a collection of these variables.
+
+  - Gamble and Event now derive from Func, which describe variables
+    that are defined as functions of other variables, on arbitary
+    domains.
+
 Version 0.1.1 (13 June 2011)
 ----------------------------
 

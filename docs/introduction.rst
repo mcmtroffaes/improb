@@ -52,83 +52,113 @@ or :class:`str`.
     :func:`cdd.get_number_type_from_value`
         Determine the number type from values.
 
-.. _possibility-spaces:
+.. _variables:
 
-Possibility Spaces
-------------------
+Variables
+---------
 
-Any :class:`collections.Iterable` of immutable objects can be used to
-specify a possibility space. Effectively, an
-:class:`collections.Iterable` *pspace* is interpreted as an ordered
-:class:`set`.
+All variables (including gambles and events)
+derive from the following base class:
 
-For convenience, you can also construct a possibility space from any
-integer ``n``---this is equivalent to specifying ``range(n)``.
+.. autoclass:: ABCVar
+   :members:
 
-For further convenience, you can construct Cartesian products simply
-by specifying multiple iterables or integers.
+We say that a collection :math:`\mathbf{X}=\{X_1,\dots,X_n\}`
+of (random) variables is
+*logically independent* whenever the collection of events
 
-.. autoclass:: PSpace
+.. math::
+
+   \{X_1=x_1\},\dots,\{X_n=x_n\}
+
+have a non-empty intersection, for all
+:math:`x_1\in\mathcal{X}_1,\dots,x_n\in\mathcal{X}_n`. This simply
+means that the random vector :math:`(X_1,\dots,X_n)` can take any
+value in :math:`\mathcal{X}_1\times\dots\times\mathcal{X}_n`.
+
+In improb, one specifies such collection :math:`\mathbf{X}`
+of logically independent
+variables simply by deriving each variable :math:`X_i` from :class:`improb.Var`.
+These variables are characterized solely by the values they can take.
+
+.. autoclass:: Var
+   :members:
+
+   .. automethod:: __init__
+
+Any variables which are *functions* of variables in :math:`\mathbf{X}`
+(obviously, these cannot be logically independent from :math:`\mathbf{X}`)
+are derived from:
+
+.. autoclass:: Func
+   :members:
+
+   .. automethod:: __init__
+
+They represent arbitrary functions of other variables. They
+are characterized by a sequence of (not necessarily primitive) input
+variables, and their value at any logically possible combination of
+values of input variables.
+
+.. _domains:
+
+Domains
+-------
+
+A domain is simply a subset of :math:`\mathbf{X}`.  Every variable has
+a canonical domain, which consists of a minimal subset of
+:math:`\mathbf{X}` for which its values are uniquely determined. One
+can think of a domain as a Cartesian product of sets, providing a
+possibility space for a random variable.
+
+.. autoclass:: Domain
    :members:
 
    .. automethod:: __init__
    .. automethod:: __repr__
    .. automethod:: __str__
 
-.. _gambles:
+.. _points:
 
-Gambles
--------
+Points
+------
 
-Any :class:`collections.Mapping` or :class:`collections.Sequence` can
-be used to specify a gamble. Effectively, given a possibility space
-*pspace*, a :class:`collections.Mapping` *mapping* corresponds to the
-mapping (specified as Python dictionary)::
+Sets can be refered to in various ways. First, a
+:class:`dict` that maps :class:`Var` instances to values::
 
-    {omega: mapping.get(omega, 0) for omega in pspace}
+    a = Var([1, 3, 4])
+    b = Var([7, 8, 9])
+    c = Var([12, 14, 19])
+    dom = Domain(a, c)
+    if dom.has_point({a: 3, b: 7, c: 19}):
+        print("ok")
 
-and a :class:`collections.Sequence` *sequence* corresponds to::
-
-    {omega: value for omega, value in zip(pspace, sequence)}
-
-This yields maximum flexibility so you can use the simplest possible
-specification for a gamble, depending on the situation.
-
-Internally, the following class is used to represent gambles; it is an
-immutable :class:`collections.Mapping`, and supports the usual
-pointwise arithmetic operations.
-
-.. autoclass:: Gamble
-   :members:
-
-   .. automethod:: __repr__
-   .. automethod:: __str__
+is called a *point*. Mathematically,
+``{a: 3, b: 7, c: 19}``
+is intended to denote the set
+:math:`\{A=3\}\cap\{B=7\}\cap\{C=19\}`.
 
 .. _events:
 
 Events
 ------
 
-Any :class:`collections.Iterable` can be used to specify an
-event. Effectively, given a possibility space *pspace*, an
-:class:`collections.Iterable` corresponds to the event (specified as a
-Python set)::
+More generally, you can use a :class:`Func`, which maps points to
+either ``True`` or ``False``::
 
-    {omega for omega in iterable}
+    a = Var('abc')
+    b = Var([2, 3, 5])
+    e = Func([a, b], lambda va, vb: va == 'c' and vb != 3)
+    if e.get_value({b: 2, a: 'c'}):
+        print("ok")
 
-where all elements *omega* must belong to the possibility space
-*pspace*.
+For improb, any :class:`Func` instance with values in
+``{True, False}`` is an event.
 
-For convenience, you can also specify an event as :const:`True` (which
-corresponds to the full set) or :const:`False` (which corresponds to
-the empty set).
+.. _gambles:
 
-Internally, the following class is used to represent events; it is an
-immutable :class:`collections.Set`, and supports a few more common
-operations.
+Gambles
+-------
 
-.. autoclass:: Event
-   :members:
-
-   .. automethod:: __repr__
-   .. automethod:: __str__
+For improb, any :class:`Func` which maps points to real numbers is a
+gamble.

@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 # improb is a Python module for working with imprecise probabilities
 # Copyright (c) 2008-2011, Matthias Troffaes
 #
@@ -17,14 +19,19 @@
 
 """improb is a Python module for working with imprecise probabilities."""
 
+# variable implementation is inspired by
+# http://openopt.org/FuncDesignerDoc
+
 from __future__ import division, absolute_import, print_function
 
 from abc import ABCMeta, abstractmethod, abstractproperty
-import cdd
 import collections
-import fractions
+import functools
 import itertools
 import numbers
+import operator
+
+from improb._compat import OrderedDict, OrderedSet
 
 def _str_keys_values(keys, values):
     """Turn dictionary with *keys* and *values* into a string.
@@ -36,279 +43,66 @@ def _str_keys_values(keys, values):
             key, maxlen_keys, value)
         for key, value in itertools.izip(keys, values))
 
-class PSpace(collections.Set, collections.Hashable):
-    """An immutable possibility space, derived from
-    :class:`collections.Set` and :class:`collections.Hashable`. This
-    is effectively an immutable ordered set with a fancy constructor.
-    """
+class Domain(collections.Hashable, collections.Set):
+    """An immutable set of :class:`Var`\ s."""
 
-    def __init__(self, *args):
-        """Convert *args* into a possibility space.
+    def __init__(self, *vars_):
+        """Construct a domain for the given *vars_*.
 
-        :param args: The components of the space.
-        :type args: :class:`collections.Iterable` or :class:`int`
-
-        Some examples of how components can be specified:
-
-        * A range of integers.
-
-          .. doctest::
-
-             >>> list(PSpace(xrange(2, 15, 3)))
-             [2, 5, 8, 11, 14]
-
-        * A string.
-
-          .. doctest::
-
-             >>> list(PSpace('abcdefg'))
-             ['a', 'b', 'c', 'd', 'e', 'f', 'g']
-
-        * A list of strings.
-
-          .. doctest::
-
-             >>> list(PSpace('rain cloudy sunny'.split(' ')))
-             ['rain', 'cloudy', 'sunny']
-
-        * As a special case, you can also specify just a single integer. This
-          will be converted to a tuple of integers of the corresponding length.
-
-          .. doctest::
-
-             >>> list(PSpace(3))
-             [0, 1, 2]
-
-        If multiple arguments are specified, the product is calculated:
-
-        .. doctest::
-
-           >>> list(PSpace(3, 'abc')) # doctest: +NORMALIZE_WHITESPACE
-           [(0, 'a'), (0, 'b'), (0, 'c'),
-            (1, 'a'), (1, 'b'), (1, 'c'),
-            (2, 'a'), (2, 'b'), (2, 'c')]
-           >>> list(PSpace(('rain', 'cloudy', 'sunny'), ('cold', 'warm'))) # doctest: +NORMALIZE_WHITESPACE
-           [('rain', 'cold'), ('rain', 'warm'),
-            ('cloudy', 'cold'), ('cloudy', 'warm'),
-            ('sunny', 'cold'), ('sunny', 'warm')]
-
-        Duplicates are automatically removed:
-
-        .. doctest::
-
-           >>> list(PSpace([2, 2, 5, 3, 9, 5, 1, 2]))
-           [2, 5, 3, 9, 1]
+        :param vars_: The components of the domain.
+        :type vars_: Each component is a :class:`Var`.
         """
-        if not args:
-            raise ValueError('specify at least one argument')
-        elif len(args) == 1:
-            arg = args[0]
-            if isinstance(arg, int):
-                self._data = tuple(xrange(arg))
-            elif isinstance(arg, collections.Iterable):
-                # rationale for removing duplicates: if elem is not in
-                # added, then added.add(elem) is executed and the
-                # expression returns True (since set.add() is always
-                # False); however, if elem is in added, then the
-                # expression returns False (and added.add(elem) is not
-                # executed)
-                added = set()
-                self._data = tuple(
-                    elem for elem in arg
-                    if elem not in added and not added.add(elem))
-            else:
-                raise TypeError(
-                    'specify possibility space as iterable or integer')
-        else:
-            self._data = tuple(
-                itertools.product(*[PSpace(arg) for arg in args]))
+        self._vars = OrderedSet(vars_)
+        if any(not isinstance(var, Var) for var in self._vars):
+            raise TypeError("expected Var (%s)" % self._vars)
 
+    # must override _from_iterable as __init__ does not accept an iterable
     @classmethod
-    def make(cls, pspace):
-        """If *pspace* is a :class:`~improb.PSpace`, then returns *pspace*.
-        Otherwise, converts *pspace* to a :class:`~improb.PSpace`.
-
-        :param pspace: The possibility space.
-        :type pspace: |pspacetype|
-        :return: A possibility space.
-        :rtype: :class:`~improb.PSpace`
-        """
-        return pspace if isinstance(pspace, cls) else cls(pspace)
-
-    def make_event(self, *args, **kwargs):
-        """If *event* is a :class:`Event`, then checks possibility
-        space and returns *event*. Otherwise, converts *event* to a
-        :class:`Event`.
-
-        If you wish to construct an event on a product space, which is
-        itself composed of a product of events, specify its components
-        as separate arguments---in this case, each of the components
-        must be a sequence.
-
-        :param event: The event.
-        :type event: |eventtype|
-        :param name: The name of the event (used for pretty printing).
-        :type name: :class:`str`
-        :return: A event.
-        :rtype: :class:`Event`
-        :raises: :exc:`~exceptions.ValueError` if possibility spaces do not match
-
-        >>> pspace = PSpace(2, 3)
-        >>> print(pspace.make_event([(1, 2), (0, 1)]))
-        (0, 0) : 0
-        (0, 1) : 1
-        (0, 2) : 0
-        (1, 0) : 0
-        (1, 1) : 0
-        (1, 2) : 1
-        >>> print(pspace.make_event((0, 1), (2,)))
-        (0, 0) : 0
-        (0, 1) : 0
-        (0, 2) : 1
-        (1, 0) : 0
-        (1, 1) : 0
-        (1, 2) : 1
-        """
-        name = kwargs.get("name")
-        if not args:
-            raise ValueError('specify at least one argument')
-        elif len(args) == 1:
-            event = args[0]
-            if isinstance(event, Event):
-                if self != event.pspace:
-                    raise ValueError('possibility space mismatch')
-                return event
-            elif event is True:
-                return Event(self, event, name=name)
-            elif event is False:
-                return Event(self, event, name=name)
-            elif isinstance(event, Gamble):
-                if self != event.pspace:
-                    raise ValueError('possibility space mismatch')
-                if not(set(event.itervalues()) <= set([0, 1])):
-                    raise ValueError("not an indicator gamble")
-                return Event(self,
-                             (omega for omega, value in event.iteritems()
-                              if value == 1),
-                             name=name)
-            else:
-                return Event(self, event, name=name)
-        else:
-            return Event(self, itertools.product(*args), name=name)
-
-    def make_gamble(self, gamble, number_type=None):
-        """If *gamble* is
-
-        * a :class:`Gamble`, then checks possibility space and number
-          type and returns *gamble*; if number type does not
-          correspond, returns a copy of *gamble* with requested number
-          type,
-
-        * an :class:`Event`, then checks possibility space and returns
-          the indicator of *gamble* with the correct number type,
-
-        * anything else, then construct a :class:`Gamble` using
-          *gamble* as data.
-
-        :param gamble: The gamble.
-        :type gamble: |gambletype|
-        :param number_type: The type to use for numbers: ``'float'``
-            or ``'fraction'``. If omitted, then
-            :func:`~cdd.get_number_type_from_sequences` is used to
-            determine the number type.
-        :type number_type: :class:`str`
-        :return: A gamble.
-        :rtype: :class:`Gamble`
-        :raises: :exc:`~exceptions.ValueError` if possibility spaces
-            or number types do not match
-
-        >>> from improb import PSpace, Event, Gamble
-        >>> pspace = PSpace('abc')
-        >>> event = Event(pspace, 'ac')
-        >>> gamble = event.indicator('fraction')
-        >>> fgamble = event.indicator() # float number type
-        >>> pevent = Event('ab', False)
-        >>> pgamble = Gamble('ab', [2, 5], number_type='fraction')
-        >>> print(pspace.make_gamble({'b': 1}, 'fraction'))
-        a : 0
-        b : 1
-        c : 0
-        >>> print(pspace.make_gamble(event, 'fraction'))
-        a : 1
-        b : 0
-        c : 1
-        >>> print(pspace.make_gamble(gamble, 'fraction'))
-        a : 1
-        b : 0
-        c : 1
-        >>> print(pspace.make_gamble(fgamble, 'fraction'))
-        a : 1
-        b : 0
-        c : 1
-        >>> print(pspace.make_gamble(pevent, 'fraction')) # doctest: +ELLIPSIS
-        Traceback (most recent call last):
-            ...
-        ValueError: ...
-        >>> print(pspace.make_gamble(pgamble, 'fraction')) # doctest: +ELLIPSIS
-        Traceback (most recent call last):
-            ...
-        ValueError: ...
-        >>> print(pspace.make_gamble({'a': 1, 'b': 0, 'c': 8}, 'fraction'))
-        a : 1
-        b : 0
-        c : 8
-        >>> print(pspace.make_gamble(range(2, 9, 3), 'fraction'))
-        a : 2
-        b : 5
-        c : 8
-        """
-        if isinstance(gamble, Gamble):
-            if self != gamble.pspace:
-                raise ValueError('possibility space mismatch')
-            if (number_type is not None) and (number_type != gamble.number_type):
-                return Gamble(self, gamble, number_type=number_type)
-            else:
-                return gamble
-        elif isinstance(gamble, Event):
-            if self != gamble.pspace:
-                raise ValueError('possibility space mismatch')
-            return gamble.indicator(number_type=number_type)
-        else:
-            return Gamble(self, gamble, number_type=number_type)
+    def _from_iterable(cls, it):
+        return cls(*list(it))
 
     def __len__(self):
-        return len(self._data)
-
-    def __contains__(self, omega):
-        return omega in self._data
-
-    def __getitem__(self, index):
-        return self._data[index]
+        return len(self._vars)
 
     def __iter__(self):
-        return iter(self._data)
+        return iter(self._vars)
+
+    def __contains__(self, var):
+        return var in self._vars
 
     def __hash__(self):
-        return hash(self._data)
+        return self._hash()
+
+    def points(self):
+        """Generate all points of the domain."""
+        for values in itertools.product(*self._vars):
+            yield OrderedDict(itertools.izip(self._vars, values))
 
     def __repr__(self):
-        """
-        >>> PSpace([2, 4, 5])
-        PSpace([2, 4, 5])
-        >>> PSpace([0, 1, 2])
-        PSpace(3)
-        """
-        if list(self) == list(xrange(len(self))):
-            return "PSpace(%i)" % len(self)
-        else:
-            return "PSpace(%s)" % repr(list(self))
+        return (
+            "Domain("
+            + ", ".join(repr(var) for var in self._vars)
+            + ")"
+            )
 
     def __str__(self):
-        """
-        >>> print(PSpace([2, 4, 5]))
-        2 4 5
-        """
-        return " ".join(str(omega) for omega in self)
+        return (
+            " × ".join(
+                "{" + ", ".join(str(val) for val in var) + "}"
+                for var in self)
+            )
+
+    def make_func(self, data):
+        _vars = list(self._vars)[0] if len(self._vars) == 1 else self._vars
+        if isinstance(data, ABCVar):
+            return data
+        elif isinstance(data, (collections.Mapping, collections.Sequence, collections.Callable)):
+            return Func(_vars, data)
+        elif isinstance(data, numbers.Real):
+            return Func(_vars, lambda *key: data)
+        else:
+            raise TypeError(
+                "cannot convert %s to ABCVar" % data.__class__.__name__)
 
     def subsets(self, event=True, empty=True, full=True,
                 size=None, contains=False):
@@ -329,111 +123,486 @@ class PSpace(collections.Set, collections.Hashable):
         :returns: Yields all subsets.
         :rtype: Iterator of :class:`Event`.
 
-        >>> pspace = PSpace([2, 4, 5])
+        >>> a = Var([2, 4, 5])
+        >>> pspace = Domain(a)
         >>> print("\n---\n".join(str(subset) for subset in pspace.subsets()))
-        2 : 0
-        4 : 0
-        5 : 0
+        [2] : False
+        [4] : False
+        [5] : False
         ---
-        2 : 1
-        4 : 0
-        5 : 0
+        [2] : True
+        [4] : False
+        [5] : False
         ---
-        2 : 0
-        4 : 1
-        5 : 0
+        [2] : False
+        [4] : True
+        [5] : False
         ---
-        2 : 0
-        4 : 0
-        5 : 1
+        [2] : False
+        [4] : False
+        [5] : True
         ---
-        2 : 1
-        4 : 1
-        5 : 0
+        [2] : True
+        [4] : True
+        [5] : False
         ---
-        2 : 1
-        4 : 0
-        5 : 1
+        [2] : True
+        [4] : False
+        [5] : True
         ---
-        2 : 0
-        4 : 1
-        5 : 1
+        [2] : False
+        [4] : True
+        [5] : True
         ---
-        2 : 1
-        4 : 1
-        5 : 1
-        >>> print("\n---\n".join(str(subset) for subset in pspace.subsets([2, 4])))
-        2 : 0
-        4 : 0
-        5 : 0
+        [2] : True
+        [4] : True
+        [5] : True
+        >>> print("\n---\n".join(str(subset) for subset in pspace.subsets(lambda x: x in [2, 4])))
+        [2] : False
+        [4] : False
+        [5] : False
         ---
-        2 : 1
-        4 : 0
-        5 : 0
+        [2] : True
+        [4] : False
+        [5] : False
         ---
-        2 : 0
-        4 : 1
-        5 : 0
+        [2] : False
+        [4] : True
+        [5] : False
         ---
-        2 : 1
-        4 : 1
-        5 : 0
-        >>> print("\n---\n".join(str(subset) for subset in pspace.subsets([2, 4], empty=False, full=False)))
-        2 : 1
-        4 : 0
-        5 : 0
+        [2] : True
+        [4] : True
+        [5] : False
+        >>> print("\n---\n".join(str(subset) for subset in pspace.subsets(lambda x: x in [2, 4], empty=False, full=False)))
+        [2] : True
+        [4] : False
+        [5] : False
         ---
-        2 : 0
-        4 : 1
-        5 : 0
-        >>> print("\n---\n".join(str(subset) for subset in pspace.subsets(True, contains=[4])))
-        2 : 0
-        4 : 1
-        5 : 0
+        [2] : False
+        [4] : True
+        [5] : False
+        >>> print("\n---\n".join(str(subset) for subset in pspace.subsets(True, contains=lambda x: x in [4])))
+        [2] : False
+        [4] : True
+        [5] : False
         ---
-        2 : 1
-        4 : 1
-        5 : 0
+        [2] : True
+        [4] : True
+        [5] : False
         ---
-        2 : 0
-        4 : 1
-        5 : 1
+        [2] : False
+        [4] : True
+        [5] : True
         ---
-        2 : 1
-        4 : 1
-        5 : 1
+        [2] : True
+        [4] : True
+        [5] : True
         """
-        event = self.make_event(event)
-        contains = self.make_event(contains)
+        event = self.make_func(event).bool_()
+        contains = self.make_func(contains).bool_()
         if not(contains <= event):
             # nothing to iterate over!!
             return
+        length = len([point for point in self.points() if event.get_value(point)])
         if size is None:
             size_range = xrange(0 if empty else 1,
-                                len(event) + (1 if full else 0))
+                                length + (1 if full else 0))
         elif isinstance(size, collections.Iterable):
             size_range = size
         elif isinstance(size, (int, long)):
             size_range = (size,)
         else:
             raise TypeError('invalid size')
+        good_points = [
+            point for point in self.points()
+            if event.get_value(point) and not contains.get_value(point)]
         for subset_size in size_range:
-            for subset in itertools.combinations(event - contains, subset_size):
-                yield Event(self, subset) | contains
+            for subset in itertools.combinations(good_points, subset_size):
+                yield Func(
+                    self, {
+                        tuple(point.itervalues()): (point in subset)
+                        for point in self.points()}) | contains
 
-class Gamble(collections.Mapping, collections.Hashable, cdd.NumberTypeable):
-    """An immutable gamble.
+class ABCVar(collections.Hashable, collections.Mapping):
+    """Abstract base class for variables."""
+    __metaclass__ = ABCMeta
+    _nextid = 0
 
-    >>> pspace = PSpace('abc')
-    >>> Gamble(pspace, {'a': 1, 'b': 4, 'c': 8}).number_type
-    'float'
-    >>> Gamble(pspace, [1, 2, 3]).number_type
-    'float'
-    >>> Gamble(pspace, {'a': '1/7', 'b': '4/3', 'c': '8/5'}).number_type
-    'fraction'
-    >>> Gamble(pspace, ['1', '2', '3/2']).number_type
-    'fraction'
-    >>> f1 = Gamble(pspace, {'a': 1, 'b': 4, 'c': 8}, number_type='fraction')
+    @staticmethod
+    def _make_name():
+        name = "unnamed_{0}".format(ABCVar._nextid)
+        ABCVar._nextid += 1
+        return name
+
+    @abstractproperty
+    def name(self):
+        """Name of the variable.
+
+        :rtype: :class:`str`
+        """
+        raise NotImplementedError
+
+    @abstractproperty
+    def domain(self):
+        """Return a domain on which the variable can be evaluated.
+
+        :rtype: :class:`Domain`
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_value(self, point):
+        """Return value of this variable on *point*, relative to the
+        given *domain*.
+
+        :param point: An point.
+        :type point: :class:`dict` from :class:`Var` to any value in :class:`Var`
+        """
+        raise NotImplementedError
+
+    def __str__(self):
+        return _str_keys_values(
+            [point.values() for point in self.domain.points()],
+            [self.get_value(point) for point in self.domain.points()]
+            )
+
+    def is_equivalent_to(self, other):
+        """Check whether two variables are equivalent.
+
+        :param other: The other variable.
+        :type other: :class:`ABCVar`
+        """
+        domain = self.domain | other.domain
+        for point in domain.points():
+            if self.get_value(point) != other.get_value(point):
+                return False
+        return True
+
+    def _scalar(self, other, oper):
+        return Func(
+            self,
+            {value: oper(value, other) for value in self.itervalues()})
+
+    def _pointwise(self, other, oper):
+        if isinstance(other, ABCVar):
+            return Func(
+                [self, other],
+                {(value, other_value): oper(value, other_value)
+                 for value, other_value
+                 in itertools.product(self.itervalues(), other.itervalues())}
+                )
+        else:
+            # will raise a type error if operand is not scalar
+            return self._scalar(other, oper)
+
+    __add__ = lambda self, other: self._pointwise(other, operator.add)
+    __sub__ = lambda self, other: self._pointwise(other, operator.sub)
+    __mul__ = lambda self, other: self._pointwise(other, operator.mul)
+    __truediv__ = lambda self, other: self._scalar(other, operator.truediv)
+    __floordiv__ = lambda self, other: self._scalar(other, operator.floordiv)
+    __div__ = lambda self, other: self._scalar(other, operator.div)
+    __and__ = lambda self, other: self._pointwise(other, operator.and_)
+    __or__ = lambda self, other: self._pointwise(other, operator.or_)
+    __xor__ = lambda self, other: self._pointwise(other, operator.xor)
+
+    def __invert__(self):
+        return Func(self, {value: ~value for value in self.itervalues()})
+
+    def __neg__(self):
+        return Func(self, {value: -value for value in self.itervalues()})
+
+    __radd__ = __add__
+    __rsub__ = lambda self, other: self.__sub__(other).__neg__()
+    __rmul__ = __mul__
+
+    le_ = lambda self, other: self._pointwise(other, operator.le)
+    lt_ = lambda self, other: self._pointwise(other, operator.lt)
+    eq_ = lambda self, other: self._pointwise(other, operator.eq)
+    ne_ = lambda self, other: self._pointwise(other, operator.ne)
+    ge_ = lambda self, other: self._pointwise(other, operator.ge)
+    gt_ = lambda self, other: self._pointwise(other, operator.gt)
+    not_ = lambda self: Func(self, {value: not value for value in self.itervalues()})
+    bool_ = lambda self: Func(self, {value: bool(value) for value in self.itervalues()})
+
+    __le__ = lambda self, other: self.le_(other).all()
+    __lt__ = lambda self, other: self.le_(other).all() and self.lt_(other).any()
+    __ge__ = lambda self, other: self.ge_(other).all()
+    __gt__ = lambda self, other: self.ge_(other).all() and self.gt_(other).any()
+
+    def minimum(self):
+        """Find minimum value of the gamble."""
+        return min(value for value in self.itervalues())
+
+    def maximum(self):
+        """Find maximum value of the gamble."""
+        return max(value for value in self.itervalues())
+
+    # follow numpy convention
+    def __nonzero__(self):
+        raise ValueError("The truth value of a variable is ambiguous. Use a.any() or a.all()")
+
+    all = lambda self: all(self.itervalues())
+    any = lambda self: any(self.itervalues())
+
+class Var(ABCVar):
+    """A variable, logically independent of all other :class:`Var`\ s.
+    """
+
+    def __init__(self, values, name=None):
+        """Construct a variable.
+
+        :param values: The values that the variable can take.
+        :type values: Any iterable.
+
+        Some examples of how variables can be specified:
+
+        * A range of integers.
+
+          .. doctest::
+
+             >>> Var(xrange(2, 15, 3), name='a')
+             Var([2, 5, 8, 11, 14], name='a')
+
+        * A string.
+
+          .. doctest::
+
+             >>> Var('abcdefg', name='x')
+             Var(['a', 'b', 'c', 'd', 'e', 'f', 'g'], name='x')
+
+        * A list of strings.
+
+          .. doctest::
+
+             >>> Var('rain cloudy sunny'.split(' '), name='weather')
+             Var(['rain', 'cloudy', 'sunny'], name='weather')
+
+        Duplicates are automatically removed:
+
+        .. doctest::
+
+           >>> Var([2, 2, 5, 3, 9, 5, 1, 2], name='c')
+           Var([2, 5, 3, 9, 1], name='c')
+        """
+        self._name = str(name) if name is not None else self._make_name()
+        self._values = OrderedSet(values)
+        self._domain = Domain(self)
+
+    def __repr__(self):
+        """Return string representation.
+
+        >>> Var(range(3)) # doctest: +ELLIPSIS
+        Var([0, 1, 2], name='unnamed...')
+        >>> Var(range(3), name='a')
+        Var([0, 1, 2], name='a')
+        """
+        return (
+            "Var(["
+            + ", ".join(repr(key) for key in self)
+            + "], name={0})".format(repr(self.name))
+            )
+
+    def __hash__(self):
+        return hash((self._name, self._values._hash()))
+
+    def __eq__(self, other):
+        return self._name == other._name and ABCVar.__eq__(self, other)
+
+    def __len__(self):
+        return len(self._values)
+
+    def __iter__(self):
+        return iter(self._values)
+
+    def __contains__(self, key):
+        return key in self._values
+
+    def __getitem__(self, key):
+        if key in self._values:
+            return key
+        else:
+            raise KeyError(str(key))
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def domain(self):
+        return self._domain
+
+    def get_value(self, point):
+        """
+        >>> a = Var(range(3))
+        >>> b = Var(['rain', 'sun'])
+        >>> a.get_value({b: 'sun', a: 2})
+        2
+        >>> b.get_value({b: 'sun', a: 2})
+        'sun'
+        >>> b.get_value({b: 'blabla', a: 2}) # doctest: +ELLIPSIS
+        Traceback (most recent call last):
+          ...
+        KeyError: 'blabla'
+        """
+        # we could simply return point[self] but that might miss key errors
+        return self[point[self]]
+
+class Func(ABCVar):
+    """A function of other variables.
+
+    >>> a = Var(range(2))
+    >>> b = Var(['rain', 'sun'])
+    >>> c = Func([a, b], {
+    ...     (0, 'rain'): -1,
+    ...     (0, 'sun'): 2,
+    ...     (1, 'rain'): 0,
+    ...     (1, 'sun'): 2,
+    ...     })
+    >>> print(c)
+    [0, 'rain'] : -1
+    [0, 'sun']  : 2
+    [1, 'rain'] : 0
+    [1, 'sun']  : 2
+    >>> c = Func([a, b], [-1, 2, 0, 2])
+    >>> print(c)
+    [0, 'rain'] : -1
+    [0, 'sun']  : 2
+    [1, 'rain'] : 0
+    [1, 'sun']  : 2
+    >>> c = Func([a, b], lambda va, vb: 2 if vb == 'sun' else (va - 1))
+    >>> print(c)
+    [0, 'rain'] : -1
+    [0, 'sun']  : 2
+    [1, 'rain'] : 0
+    [1, 'sun']  : 2
+    >>> d = Func(c, {-1: False, 0: False, 2: True})
+    >>> print(d)
+    [0, 'rain'] : False
+    [0, 'sun']  : True
+    [1, 'rain'] : False
+    [1, 'sun']  : True
+    >>> e = Func(b, {'rain': False, 'sun': True})
+    >>> e.is_equivalent_to(d)
+    True
+    >>> e.is_equivalent_to(a)
+    False
+    >>> print(b.eq_('rain'))
+    ['rain'] : True
+    ['sun']  : False
+    >>> print(2 * b.eq_('rain'))
+    ['rain'] : 2
+    ['sun']  : 0
+    >>> f = a + 2 * b.eq_('rain')
+    >>> print(f)
+    [0, 'rain'] : 2
+    [0, 'sun']  : 0
+    [1, 'rain'] : 3
+    [1, 'sun']  : 1
+    >>> print(f.reduced())
+    [0, 'rain'] : 2
+    [0, 'sun']  : 0
+    [1, 'rain'] : 3
+    [1, 'sun']  : 1
+    """
+
+    def __init__(self, inputs, data, name=None, validate=True):
+        """Construct a function.
+
+        :param inputs: The input variables.
+        :type inputs: :class:`improb.ABCVar` if there is only one input,
+            or iterable of :class:`improb.ABCVar`\ s.
+        :param data: Either maps each combination of values of input
+            variables to a value, or lists a value for each such combination,
+            or provides a function to calculate the value from input
+            variable values.
+        :type data: :class:`collections.Mapping` or :class:`collections.Sequence` or :class:`collections.Callable`
+        :param name: The name of this function.
+        :type name: :class:`str`
+        :param validate: Whether to validate the keys of the mapping.
+        :type validate: :class:`bool`
+        """
+        if isinstance(data, collections.Mapping):
+            if isinstance(inputs, ABCVar):
+                self._inputs = (inputs,)
+                self._mapping = {
+                    (key,): value for key, value in data.iteritems()}
+            else:
+                self._inputs = tuple(inputs)
+                self._mapping = dict(data)
+        elif isinstance(data, collections.Sequence):
+            if isinstance(inputs, ABCVar):
+                self._inputs = (inputs,)
+            else:
+                self._inputs = tuple(inputs)
+            self._mapping = dict(itertools.izip(
+                itertools.product(*self._inputs), data))
+        elif isinstance(data, collections.Callable):
+            if isinstance(inputs, ABCVar):
+                self._inputs = (inputs,)
+            else:
+                self._inputs = tuple(inputs)
+            self._mapping = {
+                key: data(*key) for key in itertools.product(*self._inputs)}
+        else:
+            raise TypeError(
+                "expected collections.Mapping or collections.Sequence for data")
+        if any(not isinstance(inp, ABCVar) for inp in self._inputs):
+            raise TypeError("expected ABCVar or sequence of ABCVar for inputs")
+        self._domain = functools.reduce(
+            operator.or_, (inp.domain for inp in self._inputs))
+        self._name = str(name) if name is not None else self._make_name()
+        if validate:
+            for point in self._domain.points():
+                self.get_value(point)
+
+    def reduced(self):
+        return Func(
+            self.domain, {
+                tuple(point.itervalues()): self.get_value(point)
+                for point in self.domain.points()})
+
+    def __repr__(self):
+        return (
+            "Func({0}, {1}, name={2})"
+            .format(repr(self._inputs), repr(self._mapping), repr(self._name))
+            )
+
+    def __len__(self):
+        return len(self._mapping)
+
+    def __iter__(self):
+        return iter(self._mapping)
+
+    def __contains__(self, key):
+        return key in self._mapping
+
+    def __getitem__(self, key):
+        return self._mapping[key]
+
+    def __hash__(self):
+        return hash(tuple(
+            self._inputs,
+            frozenset(self._mapping.iteritems()),
+            self._name))
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def domain(self):
+        return self._domain
+
+    def get_value(self, point):
+        return self[tuple(inp.get_value(point) for inp in self._inputs)]
+
+"""
+Tests for gambles.
+
+.. doctest::
+
+    >>> x = Var('abc')
+    >>> f1 = Func(x, {'a': 1, 'b': 4, 'c': 8})
     >>> print(f1)
     a : 1
     b : 4
@@ -456,7 +625,7 @@ class Gamble(collections.Mapping, collections.Hashable, cdd.NumberTypeable):
     c : 8/3
     >>> [f1 * 2, f1 + 2, f1 - 2] == [2 * f1, 2 + f1, -(2 - f1)]
     True
-    >>> f2 = Gamble(pspace, {'a': 5, 'b': 8, 'c': 7}, number_type='fraction')
+    >>> f2 = Gamble(x, {'a': 5, 'b': 8, 'c': 7}, number_type='fraction')
     >>> print(f1 + f2)
     a : 6
     b : 12
@@ -496,165 +665,13 @@ class Gamble(collections.Mapping, collections.Hashable, cdd.NumberTypeable):
     a : 0
     b : -4
     c : -7
-    """
-    def __init__(self, pspace, data, number_type=None):
-        """Construct a gamble on the given possibility space.
+"""
 
-        :param pspace: The possibility space.
-        :type pspace: |pspacetype|
-        :param data: The specification of a gamble, or a constant.
-        :type data: |gambletype|
-        :param number_type: The type to use for numbers: ``'float'``
-            or ``'fraction'``. If omitted, then
-            :func:`~cdd.get_number_type_from_sequences` is used to
-            determine the number type.
-        :type number_type: :class:`str`
-        """
-        self._pspace = PSpace.make(pspace)
-        if isinstance(data, collections.Mapping):
-            if number_type is None:
-                cdd.NumberTypeable.__init__(
-                    self,
-                    cdd.get_number_type_from_sequences(data.itervalues()))
-            else:
-                cdd.NumberTypeable.__init__(self, number_type)
-            self._data = dict((omega, self.make_number(data.get(omega, 0)))
-                              for omega in self.pspace)
-        elif isinstance(data, collections.Sequence):
-            if len(data) < len(self.pspace):
-                raise ValueError("data sequence too short")
-            if number_type is None:
-                cdd.NumberTypeable.__init__(
-                    self,
-                    cdd.get_number_type_from_sequences(data))
-            else:
-                cdd.NumberTypeable.__init__(self, number_type)
-            self._data = dict((omega, self.make_number(value))
-                              for omega, value
-                              in itertools.izip(self.pspace, data))
-        elif isinstance(data, numbers.Real):
-            if number_type is None:
-                cdd.NumberTypeable.__init__(
-                    self,
-                    cdd.get_number_type_from_value(data))
-            else:
-                cdd.NumberTypeable.__init__(self, number_type)
-            self._data = dict((omega, self.make_number(data))
-                              for omega in self.pspace)
-        else:
-            raise TypeError('specify data as sequence or mapping')
+"""
+Tests for events.
 
-    @property
-    def pspace(self):
-        """A :class:`~improb.PSpace` representing the possibility space."""
-        return self._pspace
-
-    def __len__(self):
-        return len(self._data)
-
-    def __iter__(self):
-        # preserve ordering of pspace! so not iter(self._data) but...
-        return iter(self._pspace)
-
-    def __contains__(self, omega):
-        return omega in self._data
-
-    def __getitem__(self, omega):
-        return self._data[omega]
-
-    def __hash__(self):
-        return hash((self._pspace,
-                     tuple(self._data[omega] for omega in self._pspace)))
-
-    def __repr__(self):
-        """
-        >>> Gamble([2, 3, 4], {2: 1, 3: 4, 4: 8}, number_type='float') # doctest: +NORMALIZE_WHITESPACE
-        Gamble(pspace=PSpace([2, 3, 4]),
-               mapping={2: 1.0,
-                        3: 4.0,
-                        4: 8.0})
-        >>> Gamble([2, 3, 4], {2: '2/6', 3: '4.0', 4: 8}, number_type='fraction') # doctest: +NORMALIZE_WHITESPACE
-        Gamble(pspace=PSpace([2, 3, 4]),
-               mapping={2: '1/3',
-                        3: 4,
-                        4: 8})
-        """
-        return "Gamble(pspace={0}, mapping={{{1}}})".format(
-            # custom formatting of self._data in order to preserve ordering
-            # of pspace
-            repr(self._pspace),
-            ", ".join("{0}: {1}".format(repr(omega), self.number_repr(value))
-                      for omega, value in self.iteritems()))
-
-    def __str__(self):
-        """
-        >>> pspace = PSpace('rain sun clouds'.split())
-        >>> print(Gamble(pspace, {'rain': -14, 'sun': 4, 'clouds': 20}, number_type='float'))
-        rain   : -14.0
-        sun    : 4.0
-        clouds : 20.0
-        """
-        return _str_keys_values(
-            self.pspace,
-            (self.number_str(value) for value in self.itervalues()))
-
-    def _scalar(self, other, oper):
-        """
-        :raises: :exc:`~exceptions.TypeError` if other is not a scalar
-        """
-        other = self.make_number(other)
-        return Gamble(self.pspace,
-                      [oper(value, other) for value in self.itervalues()],
-                      number_type=self.number_type)
-
-    def _pointwise(self, other, oper):
-        """
-        :raises: :exc:`~exceptions.ValueError` if possibility spaces do not match
-        """
-        if isinstance(other, Gamble):
-            if self.pspace != other.pspace:
-                raise ValueError("possibility space mismatch")
-            if self.number_type != other.number_type:
-                raise ValueError("number type mismatch")
-            return Gamble(
-                self.pspace,
-                [oper(value, other_value)
-                 for value, other_value
-                 in itertools.izip(self.itervalues(), other.itervalues())],
-                number_type=self.number_type)
-        elif isinstance(other, Event):
-            return self._pointwise(
-                other.indicator(number_type=self.number_type), oper)
-        else:
-            # will raise a type error if operand is not scalar
-            return self._scalar(other, oper)
-
-    __add__ = lambda self, other: self._pointwise(other, self.NumberType.__add__)
-    __sub__ = lambda self, other: self._pointwise(other, self.NumberType.__sub__)
-    __mul__ = lambda self, other: self._pointwise(other, self.NumberType.__mul__)
-    __truediv__ = lambda self, other: self._scalar(other, self.NumberType.__truediv__)
-
-    def __neg__(self):
-        return Gamble(self.pspace, [-value for value in self.itervalues()],
-                      number_type=self.number_type)
-
-    __radd__ = __add__
-    __rsub__ = lambda self, other: self.__sub__(other).__neg__()
-    __rmul__ = __mul__
-
-    def minimum(self):
-        """Find minimum value of the gamble."""
-        return min(value for value in self.itervalues())
-
-    def maximum(self):
-        """Find maximum value of the gamble."""
-        return max(value for value in self.itervalues())
-
-class Event(collections.Set, collections.Hashable):
-    """An immutable event.
-
-    >>> pspace = PSpace('abcdef')
-    >>> event1 = Event(pspace, 'acd')
+    >>> a = Var('abcdef')
+    >>> event1 = a.in_('acd')
     >>> print(event1)
     a : 1
     b : 0
@@ -662,7 +679,7 @@ class Event(collections.Set, collections.Hashable):
     d : 1
     e : 0
     f : 0
-    >>> event2 = Event(pspace, 'cdef')
+    >>> event2 = a.in_('cdef')
     >>> print(event2)
     a : 0
     b : 0
@@ -688,146 +705,4 @@ class Event(collections.Set, collections.Hashable):
     Traceback (most recent call last):
         ...
     ValueError: event has element (z) not in possibility space
-    """
-    def __init__(self, pspace, data=False, name=None):
-        """Construct an event on the given possibility space.
-
-        :param pspace: The possibility space.
-        :type pspace: |pspacetype|
-        :param data: The specification of an event.
-        :type data: |eventtype|
-        :param name: The name of the event (used for pretty printing).
-        :type name: :class:`str`
-        """
-        def validated(omega):
-            if omega in pspace:
-                return omega
-            else:
-                raise ValueError(
-                    "event has element ({0}) not in possibility space"
-                    .format(omega))
-        self._pspace = PSpace.make(pspace)
-        if isinstance(data, collections.Iterable):
-            self._data = frozenset(validated(omega) for omega in data)
-        elif data is True:
-            self._data = frozenset(self.pspace)
-        elif data is False:
-            self._data = frozenset()
-        else:
-            raise TypeError("specify data as iterable, True, or False")
-        if name is not None:
-            self._name = name
-        else:
-            self._name = "(" + ",".join(str(omega) for omega in self) + ")"
-
-    @property
-    def pspace(self):
-        """An :class:`~improb.PSpace` representing the possibility space."""
-        return self._pspace
-
-    @property
-    def name(self):
-        return self._name
-
-    # must override this because the class constructor does not accept
-    # an iterable for an input
-    def _from_iterable(self, it):
-        return Event(self._pspace, it)
-
-    def __len__(self):
-        return len(self._data)
-
-    def __iter__(self):
-        return (omega for omega in self._pspace if omega in self._data)
-
-    def __contains__(self, omega):
-        return omega in self._data
-
-    def __hash__(self):
-        return hash((self._pspace, self._data))
-
-    def __repr__(self):
-        """
-        >>> pspace = PSpace([2, 3, 4])
-        >>> Event(pspace, [3, 4])
-        Event(pspace=PSpace([2, 3, 4]), elements=set([3, 4]))
-        """
-        return "Event(pspace=%s, elements=%s)" % (repr(self.pspace), repr(set(self)))
-
-    def __str__(self):
-        """
-        >>> pspace = PSpace('rain sun clouds'.split())
-        >>> print(Event(pspace, 'rain clouds'.split()))
-        rain   : 1
-        sun    : 0
-        clouds : 1
-        """
-        return _str_keys_values(
-            self.pspace,
-            (1 if omega in self else 0 for omega in self.pspace))
-
-    def complement(self):
-        """Calculate the complement of the event.
-
-        >>> print(Event(pspace='abcde', data='bde').complement())
-        a : 1
-        b : 0
-        c : 1
-        d : 0
-        e : 0
-
-        :return: Complement.
-        :rtype: :class:`Event`
-        """
-        return Event(self.pspace, True) - self
-
-    def indicator(self, number_type=None):
-        """Return indicator gamble for the event.
-
-        :param number_type: The number type (defaults to ``'float'``
-            if omitted).
-        :type number_type: :class:`str`
-        :return: Indicator gamble.
-        :rtype: :class:`Gamble`
-
-        >>> pspace = PSpace(5)
-        >>> event = Event(pspace, [2, 4])
-        >>> event.indicator('fraction') # doctest: +NORMALIZE_WHITESPACE
-        Gamble(pspace=PSpace(5),
-               mapping={0: 0,
-                        1: 0,
-                        2: 1,
-                        3: 0,
-                        4: 1})
-        >>> event.indicator() # doctest: +NORMALIZE_WHITESPACE
-        Gamble(pspace=PSpace(5),
-               mapping={0: 0.0,
-                        1: 0.0,
-                        2: 1.0,
-                        3: 0.0,
-                        4: 1.0})
-        """
-        if number_type is None:
-            # float is default
-            number_type = 'float'
-        return Gamble(self.pspace,
-                      dict((omega, 1 if omega in self else 0)
-                           for omega in self.pspace),
-                      number_type=number_type)
-
-    def is_true(self):
-        return len(self) == len(self.pspace)
-
-    def is_false(self):
-        return len(self) == 0
-
-    def is_singleton(self):
-        return len(self) == 1
-
-    def __sub__(self, other):
-        # override this to make sure we only do set difference!
-        if isinstance(other, collections.Set):
-            return collections.Set.__sub__(self, other)
-        else:
-            # e.g. a Gamble: will be handled by Gamble.__rsub__
-            return NotImplemented
+"""
