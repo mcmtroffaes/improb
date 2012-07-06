@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """Tests for the Domain class."""
 
 import nose.tools
@@ -56,3 +58,21 @@ def test_domain_double_5():
          [['rain', 'cold'], ['rain', 'warm'],
           ['cloudy', 'cold'], ['cloudy', 'warm'],
           ['sunny', 'cold'], ['sunny', 'warm']])
+
+def test_domain_repr():
+    a = Var([2, 4, 5], name='a')
+    b = Var('xy', name='b')
+    nose.tools.assert_equal(
+        repr(Domain(a)),
+        "Domain(Var([2, 4, 5], name='a'))")
+    nose.tools.assert_equal(
+        repr(Domain(a, b)),
+        "Domain(Var([2, 4, 5], name='a'), Var(['x', 'y'], name='b'))")
+
+def test_domain_str():
+    a = Var([2, 4, 5])
+    b = Var('uv')
+    nose.tools.assert_equal(
+        str(Domain(a)), "{2, 4, 5}")
+    nose.tools.assert_equal(
+        str(Domain(a, b)), "{2, 4, 5} × {u, v}")

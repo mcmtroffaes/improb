@@ -79,14 +79,6 @@ class Domain(collections.Hashable, collections.Set):
             yield OrderedDict(itertools.izip(self._vars, values))
 
     def __repr__(self):
-        """
-        >>> a = Var([2, 4, 5], name='a')
-        >>> b = Var('xy', name='b')
-        >>> Domain(a)
-        Domain(Var([2, 4, 5], name='a'))
-        >>> Domain(a, b)
-        Domain(Var([2, 4, 5], name='a'), Var(['x', 'y'], name='b'))
-        """
         return (
             "Domain("
             + ", ".join(repr(var) for var in self._vars)
@@ -94,14 +86,6 @@ class Domain(collections.Hashable, collections.Set):
             )
 
     def __str__(self):
-        """
-        >>> a = Var([2, 4, 5])
-        >>> b = Var('uv')
-        >>> print(Domain(a))
-        {2, 4, 5}
-        >>> print(Domain(a, b))
-        {2, 4, 5} × {u, v}
-        """
         return (
             " × ".join(
                 "{" + ", ".join(str(val) for val in var) + "}"
