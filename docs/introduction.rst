@@ -123,7 +123,7 @@ possibility space for a random variable.
 Points
 ------
 
-Subsets domain can be refered to in various ways. First, a
+Sets can be refered to in various ways. First, a
 :class:`dict` that maps :class:`Var` instances to values::
 
     a = Var([1, 3, 4])
@@ -135,7 +135,7 @@ Subsets domain can be refered to in various ways. First, a
 
 is called a *point*. Mathematically,
 ``{a: 3, b: 7, c: 19}``
-is intended to denote the subset
+is intended to denote the set
 :math:`\{A=3\}\cap\{B=7\}\cap\{C=19\}`.
 
 .. _events:
