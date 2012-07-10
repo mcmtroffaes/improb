@@ -63,3 +63,4 @@ def test_event_equality_2():
     nose.tools.assert_true(b.is_equivalent_to(d))
     nose.tools.assert_true(b.eq_(d).all())
     nose.tools.assert_equal(b, d)
+    nose.tools.assert_equal(set(b.eq_(d).itervalues()), set([True])) # fails??
