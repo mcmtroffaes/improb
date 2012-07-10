@@ -38,6 +38,19 @@ def test_func_init_from_dict_2():
     nose.tools.assert_equal(b.get_value({a1: 'c', a2: 1}), 7)
     nose.tools.assert_equal(b.get_value({a1: 'c', a2: 2}), 4)
 
+def test_func_values_1():
+    a1 = Var('ab')
+    a2 = Var(xrange(2))
+    b = Func([a1, a2], {
+        ('a', 0): 3,
+        ('a', 1): 5,
+        ('b', 0): 8,
+        ('b', 1): 2,
+        ('c', 0): 100,
+        ('c', 1): 110,
+        })
+    nose.tools.assert_equal(set(b.itervalues()), set([2, 3, 5, 8]))
+
 def test_func_init_from_list_1():
     a = Var('abc')
     b = Func(a, [0, 2, 6])
