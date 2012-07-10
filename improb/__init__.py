@@ -613,10 +613,12 @@ class Func(ABCVar):
         return self._mapping[key]
 
     def __hash__(self):
-        return hash(tuple(
-            self._inputs,
-            frozenset(self._mapping.iteritems()),
-            self._name))
+        level_sets = collections.defaultdict(list)
+        for point in self.domain.points():
+            level_sets[self.get_value(point)].append(point)
+        return hash(frozenset(
+            (value, _points_hash(level_set))
+            for value, level_set in level_sets.iteritems()))
 
     @property
     def name(self):

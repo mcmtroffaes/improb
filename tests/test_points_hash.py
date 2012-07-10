@@ -4,7 +4,7 @@ from __future__ import division, print_function
 
 import nose.tools
 
-from improb import Var, _points_hash
+from improb import Var, Func, _points_hash
 
 def test_hash_1():
     a1 = Var('abc')
@@ -83,3 +83,17 @@ def test_hash_5():
     nose.tools.assert_equal(_points_hash(pts1), _points_hash(pts2))
     nose.tools.assert_equal(_points_hash(pts1), _points_hash(pts3))
     nose.tools.assert_equal(_points_hash(pts1), _points_hash(pts4))
+
+def test_hash_func_1():
+    a1 = Var('abc')
+    a2 = Var([1, 2])
+    f1 = Func(a1, [0, 1, 2])
+    f2 = Func([a1, a2], [0, 0, 1, 1, 2, 2])
+    nose.tools.assert_equal(hash(f1), hash(f2))
+
+def test_hash_func_2():
+    a1 = Var('abc')
+    a2 = Var([1, 2])
+    f1 = Func(a1, [0, 1, 2])
+    f2 = Func([a1, a2], [0, 1, 1, 0, 2, 2])
+    nose.tools.assert_not_equal(hash(f1), hash(f2))
