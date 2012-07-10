@@ -61,6 +61,5 @@ def test_event_equality_2():
     c = Func([a1, a2], [0, 2, 1, 1, 2, 0, 1, 1])
     d = Func(c, {0: False, 2: False, 1: True})
     nose.tools.assert_true(b.is_equivalent_to(d))
-    import sys; print(b.eq_(d), file=sys.stderr)
     nose.tools.assert_true(b.eq_(d).all()) # fails: bug in ABCVar.eq_
     nose.tools.assert_equal(b, d) # fails: bug in __hash__
