@@ -357,6 +357,8 @@ class ABCVar(collections.Hashable, collections.Mapping):
     not_ = lambda self: Func(self, {value: not value for value in self.itervalues()})
     bool_ = lambda self: Func(self, {value: bool(value) for value in self.itervalues()})
 
+    __eq__ = lambda self, other: self.eq_(other).all()
+    __ne__ = lambda self, other: self.ne_(other).any()
     __le__ = lambda self, other: self.le_(other).all()
     __lt__ = lambda self, other: self.le_(other).all() and self.lt_(other).any()
     __ge__ = lambda self, other: self.ge_(other).all()
@@ -439,7 +441,7 @@ class Var(ABCVar):
         return hash((self._name, self._values._hash()))
 
     def __eq__(self, other):
-        return self._name == other._name and ABCVar.__eq__(self, other)
+        return self._name == other._name and self._values == other._values
 
     def __len__(self):
         return len(self._values)
