@@ -43,6 +43,31 @@ def _str_keys_values(keys, values):
             key, maxlen_keys, value)
         for key, value in itertools.izip(keys, values))
 
+def _points_hash(points):
+    """Calculates hash value of a set that consists of the given
+    sequence of mutually exclusive *points*. Equal subsets return the
+    same hash value. This is a helper function for implementing hash
+    calculations for various objects.
+    """
+    hash_ = hash(frozenset())
+    vars_ = {}
+    for point in points:
+        for var, value in point.iteritems():
+            assert isinstance(var, Var)
+            if var not in vars_:
+                vars_[var] = hash(var)
+    visited = {var: set() for var in vars_}
+    for point in points:
+        for var, value in point.iteritems():
+            assert value in var
+            if value not in visited[var]:
+                hash_ ^= hash((vars_[var], value))
+                visited[var].add(value)
+    for var, var_hash in vars_.iteritems():
+        for value in var.itervalues():
+            hash_ ^= hash((var_hash, value))
+    return hash_
+
 class Domain(collections.Hashable, collections.Set):
     """An immutable set of :class:`Var`\ s."""
 
