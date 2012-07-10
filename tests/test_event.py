@@ -47,3 +47,19 @@ def test_event_points():
     b = Func(a, [False, True, False, True])
     nose.tools.assert_sequence_equal(
         list(b.points()), [{a: 'b'}, {a: 'd'}])
+
+def test_event_equality_1():
+    a1 = Var('abcd', name='a1')
+    a2 = Var('abcd', name='a2')
+    nose.tools.assert_false(a1.is_equivalent_to(a2))
+    nose.tools.assert_not_equal(a1, a2)
+
+def test_event_equality_2():
+    a1 = Var('abcd')
+    a2 = Var('gh')
+    b = Func(a1, [False, True, False, True])
+    c = Func([a1, a2], [0, 2, 1, 1, 2, 0, 1, 1])
+    d = Func(c, {0: False, 2: False, 1: True})
+    nose.tools.assert_true(b.is_equivalent_to(d))
+    nose.tools.assert_true(b.eq_(d).all())
+    nose.tools.assert_equal(b, d)

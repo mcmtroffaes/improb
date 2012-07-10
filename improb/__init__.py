@@ -43,6 +43,31 @@ def _str_keys_values(keys, values):
             key, maxlen_keys, value)
         for key, value in itertools.izip(keys, values))
 
+def _points_hash(points):
+    """Calculates hash value of a set that consists of the given
+    sequence of mutually exclusive *points*. Equal subsets return the
+    same hash value. This is a helper function for implementing hash
+    calculations for various objects.
+    """
+    hash_ = hash(frozenset())
+    vars_ = {}
+    for point in points:
+        for var, value in point.iteritems():
+            assert isinstance(var, Var)
+            if var not in vars_:
+                vars_[var] = hash(var)
+    visited = {var: set() for var in vars_}
+    for point in points:
+        for var, value in point.iteritems():
+            assert value in var
+            if value not in visited[var]:
+                hash_ ^= hash((vars_[var], value))
+                visited[var].add(value)
+    for var, var_hash in vars_.iteritems():
+        for value in var.itervalues():
+            hash_ ^= hash((var_hash, value))
+    return hash_
+
 class Domain(collections.Hashable, collections.Set):
     """An immutable set of :class:`Var`\ s."""
 
@@ -332,6 +357,8 @@ class ABCVar(collections.Hashable, collections.Mapping):
     not_ = lambda self: Func(self, {value: not value for value in self.itervalues()})
     bool_ = lambda self: Func(self, {value: bool(value) for value in self.itervalues()})
 
+    __eq__ = lambda self, other: self.eq_(other).all()
+    __ne__ = lambda self, other: self.ne_(other).any()
     __le__ = lambda self, other: self.le_(other).all()
     __lt__ = lambda self, other: self.le_(other).all() and self.lt_(other).any()
     __ge__ = lambda self, other: self.ge_(other).all()
@@ -349,8 +376,8 @@ class ABCVar(collections.Hashable, collections.Mapping):
     def __nonzero__(self):
         raise ValueError("The truth value of a variable is ambiguous. Use a.any() or a.all()")
 
-    all = lambda self: all(self.itervalues())
-    any = lambda self: any(self.itervalues())
+    all = lambda self: all(self.get_value(point) for point in self.domain.points()) #all(self.itervalues())
+    any = lambda self: any(self.get_value(point) for point in self.domain.points()) #any(self.itervalues())
 
 class Var(ABCVar):
     """A variable, logically independent of all other :class:`Var`\ s.
@@ -414,7 +441,7 @@ class Var(ABCVar):
         return hash((self._name, self._values._hash()))
 
     def __eq__(self, other):
-        return self._name == other._name and ABCVar.__eq__(self, other)
+        return self._name == other._name and self._values == other._values
 
     def __len__(self):
         return len(self._values)
@@ -588,10 +615,12 @@ class Func(ABCVar):
         return self._mapping[key]
 
     def __hash__(self):
-        return hash(tuple(
-            self._inputs,
-            frozenset(self._mapping.iteritems()),
-            self._name))
+        level_sets = collections.defaultdict(list)
+        for point in self.domain.points():
+            level_sets[self.get_value(point)].append(point)
+        return hash(frozenset(
+            (value, _points_hash(level_set))
+            for value, level_set in level_sets.iteritems()))
 
     @property
     def name(self):
