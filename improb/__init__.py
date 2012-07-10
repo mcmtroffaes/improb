@@ -376,8 +376,8 @@ class ABCVar(collections.Hashable, collections.Mapping):
     def __nonzero__(self):
         raise ValueError("The truth value of a variable is ambiguous. Use a.any() or a.all()")
 
-    all = lambda self: all(self.itervalues())
-    any = lambda self: any(self.itervalues())
+    all = lambda self: all(self.get_value(point) for point in self.domain.points()) #all(self.itervalues())
+    any = lambda self: any(self.get_value(point) for point in self.domain.points()) #any(self.itervalues())
 
 class Var(ABCVar):
     """A variable, logically independent of all other :class:`Var`\ s.
