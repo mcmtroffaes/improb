@@ -376,8 +376,8 @@ class ABCVar(collections.Hashable, collections.Mapping):
     def __nonzero__(self):
         raise ValueError("The truth value of a variable is ambiguous. Use a.any() or a.all()")
 
-    all = lambda self: all(self.get_value(point) for point in self.domain.points()) #all(self.itervalues())
-    any = lambda self: any(self.get_value(point) for point in self.domain.points()) #any(self.itervalues())
+    all = lambda self: all(self.itervalues())
+    any = lambda self: any(self.itervalues())
 
 class Var(ABCVar):
     """A variable, logically independent of all other :class:`Var`\ s.
@@ -540,7 +540,7 @@ class Func(ABCVar):
     [1, 'sun']  : 1
     """
 
-    def __init__(self, inputs, data, name=None, validate=True):
+    def __init__(self, inputs, data, name=None):
         """Construct a function.
 
         :param inputs: The input variables.
@@ -559,24 +559,24 @@ class Func(ABCVar):
         if isinstance(data, collections.Mapping):
             if isinstance(inputs, ABCVar):
                 self._inputs = (inputs,)
-                self._mapping = {
+                mapping = {
                     (key,): value for key, value in data.iteritems()}
             else:
                 self._inputs = tuple(inputs)
-                self._mapping = dict(data)
+                mapping = dict(data)
         elif isinstance(data, collections.Sequence):
             if isinstance(inputs, ABCVar):
                 self._inputs = (inputs,)
             else:
                 self._inputs = tuple(inputs)
-            self._mapping = dict(itertools.izip(
+            mapping = dict(itertools.izip(
                 itertools.product(*self._inputs), data))
         elif isinstance(data, collections.Callable):
             if isinstance(inputs, ABCVar):
                 self._inputs = (inputs,)
             else:
                 self._inputs = tuple(inputs)
-            self._mapping = {
+            mapping = {
                 key: data(*key) for key in itertools.product(*self._inputs)}
         else:
             raise TypeError(
@@ -586,9 +586,10 @@ class Func(ABCVar):
         self._domain = functools.reduce(
             operator.or_, (inp.domain for inp in self._inputs))
         self._name = str(name) if name is not None else self._make_name()
-        if validate:
-            for point in self._domain.points():
-                self.get_value(point)
+        self._mapping = {}
+        for point in self._domain.points():
+            key = tuple(inp.get_value(point) for inp in self._inputs)
+            self._mapping[key] = mapping[key]
 
     def reduced(self):
         return Func(
