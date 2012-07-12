@@ -91,7 +91,7 @@ class Set(collections.Hashable, collections.Set):
 
     def __init__(self, data):
         if not isinstance(data, collections.Iterable):
-            raise TypeError("expected an interable")
+            raise TypeError("expected an iterable")
         points = set()
         vars_ = set()
         for point in data:
@@ -160,6 +160,61 @@ class Set(collections.Hashable, collections.Set):
 
     def __hash__(self):
         return hash(self._points)
+
+    def __str__(self):
+        return "{%s}" % (", ".join(str(tuple(point.values())) for point in self._points))
+
+    def __repr__(self):
+        return "Set({%s})" % (", ".join(repr(point) for point in self._points))
+
+    def points(self, domain):
+        """Return a list of points relative to the given domain."""
+        if not(domain >= self.domain):
+            raise ValueError("domain too small, must also contain %s" % str(self.domain - domain))
+        extra_vars = tuple(domain - self.domain)
+        if extra_vars:
+            for point in self:
+                for values in itertools.product(*extra_vars):
+                    point2 = dict(point)
+                    point2.update(itertools.izip(extra_vars, values))
+                    yield Point(point2)
+        else:
+            for point in self:
+                yield point
+
+    # we need to override more methods to get the right behaviour
+
+    def __and__(self, other):
+        if not isinstance(other, Set):
+            if not isinstance(other, collections.Iterable):
+                return NotImplemented
+            other = self._from_iterable(other)
+        dom = self.domain | other.domain
+        self_points = set(self.points(dom))
+        return self._from_iterable(
+            point for point in other.points(dom) if point in self_points)
+
+    def isdisjoint(self, other):
+        if not isinstance(other, Set):
+            if not isinstance(other, collections.Iterable):
+                return NotImplemented
+            other = self._from_iterable(other)
+        dom = self.domain | other.domain
+        self_points = set(self.points(dom))
+        for point in other.points(dom):
+            if point in self_points:
+                return False
+        return True
+
+    def __sub__(self, other):
+        if not isinstance(other, Set):
+            if not isinstance(other, collections.Iterable):
+                return NotImplemented
+            other = self._from_iterable(other)
+        dom = self.domain | other.domain
+        return self._from_iterable(set(self.points(dom)) - set(other.points(dom)))
+
+    # _abcoll.py implementation of Set.__or__ and Set.__xor__ work
 
 def _points_hash(points):
     """Calculates hash value of a set that consists of the given
@@ -235,20 +290,8 @@ class Domain(collections.Hashable, collections.Set):
                 for var in self)
             )
 
-    def make_func(self, data):
-        _vars = list(self._vars)[0] if len(self._vars) == 1 else self._vars
-        if isinstance(data, ABCVar):
-            return data
-        elif isinstance(data, (collections.Mapping, collections.Sequence, collections.Callable)):
-            return Func(_vars, data)
-        elif isinstance(data, numbers.Real):
-            return Func(_vars, lambda *key: data)
-        else:
-            raise TypeError(
-                "cannot convert %s to ABCVar" % data.__class__.__name__)
-
-    def subsets(self, event=True, empty=True, full=True,
-                size=None, contains=False):
+    def subsets(self, event=None, empty=True, full=True,
+                size=None, contains=None):
         r"""Iterates over all subsets of the possibility space.
 
         :param event: An event (optional).
@@ -300,7 +343,8 @@ class Domain(collections.Hashable, collections.Set):
         [2] : True
         [4] : True
         [5] : True
-        >>> print("\n---\n".join(str(subset) for subset in pspace.subsets(lambda x: x in [2, 4])))
+        >>> s = Set([{a: 2}, {a: 4}])
+        >>> print("\n---\n".join(str(subset) for subset in pspace.subsets(s)))
         [2] : False
         [4] : False
         [5] : False
@@ -316,7 +360,7 @@ class Domain(collections.Hashable, collections.Set):
         [2] : True
         [4] : True
         [5] : False
-        >>> print("\n---\n".join(str(subset) for subset in pspace.subsets(lambda x: x in [2, 4], empty=False, full=False)))
+        >>> print("\n---\n".join(str(subset) for subset in pspace.subsets(s, empty=False, full=False)))
         [2] : True
         [4] : False
         [5] : False
@@ -324,7 +368,8 @@ class Domain(collections.Hashable, collections.Set):
         [2] : False
         [4] : True
         [5] : False
-        >>> print("\n---\n".join(str(subset) for subset in pspace.subsets(True, contains=lambda x: x in [4])))
+        >>> s = Set([{a: 4}])
+        >>> print("\n---\n".join(str(subset) for subset in pspace.subsets(contains=s)))
         [2] : False
         [4] : True
         [5] : False
@@ -341,30 +386,27 @@ class Domain(collections.Hashable, collections.Set):
         [4] : True
         [5] : True
         """
-        event = self.make_func(event).bool_()
-        contains = self.make_func(contains).bool_()
+        if event is None:
+            event = Set([{}]) # full space
+        if contains is None:
+            contains = Set([]) # empty set
+        event = Set(event) if not isinstance(event, Set) else event
+        contains = Set(contains) if not isinstance(contains, Set) else contains
         if not(contains <= event):
             # nothing to iterate over!!
             return
-        length = len([point for point in self.points() if event.get_value(point)])
         if size is None:
             size_range = xrange(0 if empty else 1,
-                                length + (1 if full else 0))
+                                len(list(event.points(self))) + (1 if full else 0))
         elif isinstance(size, collections.Iterable):
             size_range = size
         elif isinstance(size, (int, long)):
             size_range = (size,)
         else:
             raise TypeError('invalid size')
-        good_points = [
-            point for point in self.points()
-            if event.get_value(point) and not contains.get_value(point)]
         for subset_size in size_range:
-            for subset in itertools.combinations(good_points, subset_size):
-                yield Func(
-                    self, {
-                        tuple(point.itervalues()): (point in subset)
-                        for point in self.points()}) | contains
+            for subset in itertools.combinations((event - contains).points(self), subset_size):
+                yield Set(subset) | contains
 
 class ABCVar(collections.Hashable, collections.Mapping):
     """Abstract base class for variables."""

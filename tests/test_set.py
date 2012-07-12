@@ -47,3 +47,70 @@ def test_set_contains_3():
     b = Var(xrange(2))
     s = Set([{a: 'b', b: 0}, {a: 'b', b: 1}, {a: 'c', b: 0}])
     nose.tools.assert_true({a: 'b'} in s)
+
+def test_set_and_1():
+    a = Var('abc')
+    s1 = Set([{}])
+    s2 = Set([{a: 'b'}, {a: 'c'}])
+    nose.tools.assert_equal(s1 & s2, s2)
+
+def test_set_and_2():
+    a = Var('abc')
+    s1 = Set([])
+    s2 = Set([{a: 'b'}, {a: 'c'}])
+    nose.tools.assert_equal(s1 & s2, s1)
+
+def test_set_and_3():
+    a = Var('abc')
+    b = Var(xrange(2))
+    s1 = Set([{a: 'a'}])
+    s2 = Set([{b: 0}])
+    s3 = Set([{a: 'a', b: 0}])
+    nose.tools.assert_equal(s1 & s2, s3)
+
+def test_set_or_1():
+    a = Var('abc')
+    s1 = Set([{}])
+    s2 = Set([{a: 'b'}, {a: 'c'}])
+    nose.tools.assert_equal(s1 | s2, s1)
+
+def test_set_or_2():
+    a = Var('abc')
+    s1 = Set([])
+    s2 = Set([{a: 'b'}, {a: 'c'}])
+    nose.tools.assert_equal(s1 | s2, s2)
+
+def test_set_or_3():
+    a = Var('abc')
+    b = Var(xrange(3))
+    s1 = Set([{a: 'a'}])
+    s2 = Set([{b: 0}])
+    s3 = Set([{a: 'a', b: 0}, {a: 'a', b: 1}, {a: 'a', b: 2},
+              {a: 'a', b: 0}, {a: 'b', b: 0}, {a: 'c', b: 0},
+              ])
+    nose.tools.assert_equal(s1 | s2, s3)
+
+def test_set_sub_1():
+    a = Var('abc')
+    s1 = Set([{}])
+    s2 = Set([{a: 'a'}])
+    s3 = Set([{a: 'b'}, {a: 'c'}])
+    nose.tools.assert_equal(s1 - s2, s3)
+    nose.tools.assert_equal(s2 - s1, Set([]))
+
+def test_set_sub_2():
+    a = Var('abc')
+    s1 = Set([])
+    s2 = Set([{a: 'a'}])
+    nose.tools.assert_equal(s1 - s2, s1)
+    nose.tools.assert_equal(s2 - s1, s2)
+
+def test_set_sub_3():
+    a = Var('abc')
+    b = Var(xrange(2))
+    s1 = Set([{a: 'a'}])
+    s2 = Set([{b: 0}])
+    s3 = Set([{a: 'a', b: 1}])
+    s4 = Set([{a: 'b', b: 0}, {a: 'c', b: 0}])
+    nose.tools.assert_equal(s1 - s2, s3)
+    nose.tools.assert_equal(s2 - s1, s4)
