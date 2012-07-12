@@ -80,6 +80,87 @@ class Point(collections.Hashable, collections.Mapping):
     def __hash__(self):
         return hash(frozenset(self._data.iteritems()))
 
+    def __str__(self):
+        return "Point(%s)" % str(self._data)
+
+    def __repr__(self):
+        return "Point(%s)" % repr(self._data)
+
+class Set(collections.Hashable, collections.Set):
+    """An immutable mutually exclusive set of points."""
+
+    def __init__(self, data):
+        if not isinstance(data, collections.Iterable):
+            raise TypeError("expected an interable")
+        points = set()
+        vars_ = set()
+        for point in data:
+            if not isinstance(point, Point):
+                point = Point(point)
+            points.add(point)
+            vars_ |= set(point)
+        # force canonical representation, so hash respects equality:
+        # 1. ensure all points have the same domain
+        # 2. remove unnecessary variables, i.e. use minimal representation
+        # iterate over a copy of points because we may change it
+        for point in list(points):
+            extra_vars = tuple(vars_ - set(point))
+            if extra_vars:
+                points.remove(point)
+                for values in itertools.product(*extra_vars):
+                    point2 = dict(point)
+                    point2.update(itertools.izip(extra_vars, values))
+                    points.add(Point(point2))
+        # iterate over a copy of vars_ because we may change it
+        for var in list(vars_):
+            # for speed: first check if all values are attained
+            if set(var) == set(point[var] for point in points):
+                # check if variable can be removed
+                reduced_points = set() # points without var
+                extra_points = set() # points with all values of var
+                for point in points:
+                    point2 = dict(point)
+                    del point2[var]
+                    reduced_points.add(Point(point2))
+                    for value in var:
+                        point2[var] = value
+                        extra_points.add(Point(point2))
+                if extra_points == points:
+                    points = reduced_points
+                    vars_.remove(var)
+        self._domain = Domain(*vars_)
+        self._points = frozenset(points)
+
+    @property
+    def domain(self):
+        return self._domain
+
+    def __len__(self):
+        return len(self._points)
+
+    def __iter__(self):
+        return iter(self._points)
+
+    def __contains__(self, point):
+        point2 = dict(point)
+        for var in list(point2):
+            if var not in self._domain:
+                del point2[var]
+        # ensure equal domain for comparison
+        extra_vars = tuple(self.domain - set(point2))
+        if extra_vars:
+            points3 = set()
+            for values in itertools.product(*extra_vars):
+                point3 = dict(point2)
+                point3.update(itertools.izip(extra_vars, values))
+                points3.add(Point(point3))
+            return points3 <= self._points
+        else:
+            return Point(point2) in self._points
+
+    def __hash__(self):
+        return hash(self._points)
+
 def _points_hash(points):
     """Calculates hash value of a set that consists of the given
     sequence of mutually exclusive *points*. Equal subsets return the
