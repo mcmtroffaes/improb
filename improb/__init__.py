@@ -43,6 +43,43 @@ def _str_keys_values(keys, values):
             key, maxlen_keys, value)
         for key, value in itertools.izip(keys, values))
 
+class Point(collections.Hashable, collections.Mapping):
+    """A point. Basically, it is an immutable
+    :class:`~collections.Mapping` from :class:`Var` instances to
+    values.
+    """
+
+    def __init__(self, data):
+        """Construct a point for the given *data*.
+
+        :param data: A mapping from :class:`Var` instances to values.
+        :type data: :class:`~collections.Mapping` (such as a :class:`dict`).
+        :raises: ValueError, TypeError
+        """
+
+        if not isinstance(data, collections.Mapping):
+            raise TypeError("expected a mapping")
+        for var, value in data.iteritems():
+            if not isinstance(var, Var):
+                raise TypeError(
+                    "expected Var key but got %s" % var.__class__.__name__)
+            if not value in var:
+                raise ValueError(
+                    "%s not a value of %s" % (value, var))
+        self._data = dict(data)
+
+    def __len__(self):
+        return len(self._data)
+
+    def __iter__(self):
+        return iter(self._data)
+
+    def __getitem__(self, key):
+        return self._data[key]
+
+    def __hash__(self):
+        return hash(frozenset(self._data.iteritems()))
+
 def _points_hash(points):
     """Calculates hash value of a set that consists of the given
     sequence of mutually exclusive *points*. Equal subsets return the

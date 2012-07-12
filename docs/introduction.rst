@@ -138,6 +138,11 @@ is called a *point*. Mathematically,
 is intended to denote the set
 :math:`\{A=3\}\cap\{B=7\}\cap\{C=19\}`.
 
+.. autoclass:: Point
+   :members:
+
+   .. automethod:: __init__
+
 .. _events:
 
 Events
