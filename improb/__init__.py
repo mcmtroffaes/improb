@@ -43,6 +43,179 @@ def _str_keys_values(keys, values):
             key, maxlen_keys, value)
         for key, value in itertools.izip(keys, values))
 
+class Point(collections.Hashable, collections.Mapping):
+    """A point. Basically, it is an immutable
+    :class:`~collections.Mapping` from :class:`Var` instances to
+    values.
+    """
+
+    def __init__(self, data):
+        """Construct a point for the given *data*.
+
+        :param data: A mapping from :class:`Var` instances to values.
+        :type data: :class:`~collections.Mapping` (such as a :class:`dict`).
+        :raises: ValueError, TypeError
+        """
+
+        if not isinstance(data, collections.Mapping):
+            raise TypeError("expected a mapping")
+        for var, value in data.iteritems():
+            if not isinstance(var, Var):
+                raise TypeError(
+                    "expected Var key but got %s" % var.__class__.__name__)
+            if not value in var:
+                raise ValueError(
+                    "%s not a value of %s" % (value, var))
+        self._data = dict(data)
+
+    def __len__(self):
+        return len(self._data)
+
+    def __iter__(self):
+        return iter(self._data)
+
+    def __getitem__(self, key):
+        return self._data[key]
+
+    def __hash__(self):
+        return hash(frozenset(self._data.iteritems()))
+
+    def __str__(self):
+        return "Point(%s)" % str(self._data)
+
+    def __repr__(self):
+        return "Point(%s)" % repr(self._data)
+
+class Set(collections.Hashable, collections.Set):
+    """An immutable mutually exclusive set of points."""
+
+    def __init__(self, data):
+        if not isinstance(data, collections.Iterable):
+            raise TypeError("expected an iterable")
+        points = set()
+        vars_ = set()
+        for point in data:
+            if not isinstance(point, Point):
+                point = Point(point)
+            points.add(point)
+            vars_ |= set(point)
+        # force canonical representation, so hash respects equality:
+        # 1. ensure all points have the same domain
+        # 2. remove unnecessary variables, i.e. use minimal representation
+        # iterate over a copy of points because we may change it
+        for point in list(points):
+            extra_vars = tuple(vars_ - set(point))
+            if extra_vars:
+                points.remove(point)
+                for values in itertools.product(*extra_vars):
+                    point2 = dict(point)
+                    point2.update(itertools.izip(extra_vars, values))
+                    points.add(Point(point2))
+        # iterate over a copy of vars_ because we may change it
+        for var in list(vars_):
+            # for speed: first check if all values are attained
+            if set(var) == set(point[var] for point in points):
+                # check if variable can be removed
+                reduced_points = set() # points without var
+                extra_points = set() # points with all values of var
+                for point in points:
+                    point2 = dict(point)
+                    del point2[var]
+                    reduced_points.add(Point(point2))
+                    for value in var:
+                        point2[var] = value
+                        extra_points.add(Point(point2))
+                if extra_points == points:
+                    points = reduced_points
+                    vars_.remove(var)
+        self._domain = Domain(*vars_)
+        self._points = frozenset(points)
+
+    @property
+    def domain(self):
+        return self._domain
+
+    def __len__(self):
+        return len(self._points)
+
+    def __iter__(self):
+        return iter(self._points)
+
+    def __contains__(self, point):
+        point2 = dict(point)
+        for var in list(point2):
+            if var not in self._domain:
+                del point2[var]
+        # ensure equal domain for comparison
+        extra_vars = tuple(self.domain - set(point2))
+        if extra_vars:
+            points3 = set()
+            for values in itertools.product(*extra_vars):
+                point3 = dict(point2)
+                point3.update(itertools.izip(extra_vars, values))
+                points3.add(Point(point3))
+            return points3 <= self._points
+        else:
+            return Point(point2) in self._points
+
+    def __hash__(self):
+        return hash(self._points)
+
+    def __str__(self):
+        return "{%s}" % (", ".join(str(tuple(point.values())) for point in self._points))
+
+    def __repr__(self):
+        return "Set({%s})" % (", ".join(repr(point) for point in self._points))
+
+    def points(self, domain):
+        """Return a list of points relative to the given domain."""
+        if not(domain >= self.domain):
+            raise ValueError("domain too small, must also contain %s" % str(self.domain - domain))
+        extra_vars = tuple(domain - self.domain)
+        if extra_vars:
+            for point in self:
+                for values in itertools.product(*extra_vars):
+                    point2 = dict(point)
+                    point2.update(itertools.izip(extra_vars, values))
+                    yield Point(point2)
+        else:
+            for point in self:
+                yield point
+
+    # we need to override more methods to get the right behaviour
+
+    def __and__(self, other):
+        if not isinstance(other, Set):
+            if not isinstance(other, collections.Iterable):
+                return NotImplemented
+            other = self._from_iterable(other)
+        dom = self.domain | other.domain
+        self_points = set(self.points(dom))
+        return self._from_iterable(
+            point for point in other.points(dom) if point in self_points)
+
+    def isdisjoint(self, other):
+        if not isinstance(other, Set):
+            if not isinstance(other, collections.Iterable):
+                return NotImplemented
+            other = self._from_iterable(other)
+        dom = self.domain | other.domain
+        self_points = set(self.points(dom))
+        for point in other.points(dom):
+            if point in self_points:
+                return False
+        return True
+
+    def __sub__(self, other):
+        if not isinstance(other, Set):
+            if not isinstance(other, collections.Iterable):
+                return NotImplemented
+            other = self._from_iterable(other)
+        dom = self.domain | other.domain
+        return self._from_iterable(set(self.points(dom)) - set(other.points(dom)))
+
+    # _abcoll.py implementation of Set.__or__ and Set.__xor__ work
+
 def _points_hash(points):
     """Calculates hash value of a set that consists of the given
     sequence of mutually exclusive *points*. Equal subsets return the
@@ -117,21 +290,9 @@ class Domain(collections.Hashable, collections.Set):
                 for var in self)
             )
 
-    def make_func(self, data):
-        _vars = list(self._vars)[0] if len(self._vars) == 1 else self._vars
-        if isinstance(data, ABCVar):
-            return data
-        elif isinstance(data, (collections.Mapping, collections.Sequence, collections.Callable)):
-            return Func(_vars, data)
-        elif isinstance(data, numbers.Real):
-            return Func(_vars, lambda *key: data)
-        else:
-            raise TypeError(
-                "cannot convert %s to ABCVar" % data.__class__.__name__)
-
-    def subsets(self, event=True, empty=True, full=True,
-                size=None, contains=False):
-        r"""Iterates over all subsets of the possibility space.
+    def subsets(self, event=None, empty=True, full=True,
+                size=None, contains=None):
+        """Iterates over all subsets of the possibility space.
 
         :param event: An event (optional).
         :type event: |eventtype|
@@ -147,106 +308,30 @@ class Domain(collections.Hashable, collections.Set):
         :type contains: |eventtype|
         :returns: Yields all subsets.
         :rtype: Iterator of :class:`Event`.
-
-        >>> a = Var([2, 4, 5])
-        >>> pspace = Domain(a)
-        >>> print("\n---\n".join(str(subset) for subset in pspace.subsets()))
-        [2] : False
-        [4] : False
-        [5] : False
-        ---
-        [2] : True
-        [4] : False
-        [5] : False
-        ---
-        [2] : False
-        [4] : True
-        [5] : False
-        ---
-        [2] : False
-        [4] : False
-        [5] : True
-        ---
-        [2] : True
-        [4] : True
-        [5] : False
-        ---
-        [2] : True
-        [4] : False
-        [5] : True
-        ---
-        [2] : False
-        [4] : True
-        [5] : True
-        ---
-        [2] : True
-        [4] : True
-        [5] : True
-        >>> print("\n---\n".join(str(subset) for subset in pspace.subsets(lambda x: x in [2, 4])))
-        [2] : False
-        [4] : False
-        [5] : False
-        ---
-        [2] : True
-        [4] : False
-        [5] : False
-        ---
-        [2] : False
-        [4] : True
-        [5] : False
-        ---
-        [2] : True
-        [4] : True
-        [5] : False
-        >>> print("\n---\n".join(str(subset) for subset in pspace.subsets(lambda x: x in [2, 4], empty=False, full=False)))
-        [2] : True
-        [4] : False
-        [5] : False
-        ---
-        [2] : False
-        [4] : True
-        [5] : False
-        >>> print("\n---\n".join(str(subset) for subset in pspace.subsets(True, contains=lambda x: x in [4])))
-        [2] : False
-        [4] : True
-        [5] : False
-        ---
-        [2] : True
-        [4] : True
-        [5] : False
-        ---
-        [2] : False
-        [4] : True
-        [5] : True
-        ---
-        [2] : True
-        [4] : True
-        [5] : True
         """
-        event = self.make_func(event).bool_()
-        contains = self.make_func(contains).bool_()
+
+        if event is None:
+            event = Set([{}]) # full space
+        if contains is None:
+            contains = Set([]) # empty set
+        event = Set(event) if not isinstance(event, Set) else event
+        contains = Set(contains) if not isinstance(contains, Set) else contains
         if not(contains <= event):
             # nothing to iterate over!!
             return
-        length = len([point for point in self.points() if event.get_value(point)])
+        extra_points = list((event - contains).points(self))
         if size is None:
             size_range = xrange(0 if empty else 1,
-                                length + (1 if full else 0))
+                                len(extra_points) + (1 if full else 0))
         elif isinstance(size, collections.Iterable):
             size_range = size
         elif isinstance(size, (int, long)):
             size_range = (size,)
         else:
             raise TypeError('invalid size')
-        good_points = [
-            point for point in self.points()
-            if event.get_value(point) and not contains.get_value(point)]
         for subset_size in size_range:
-            for subset in itertools.combinations(good_points, subset_size):
-                yield Func(
-                    self, {
-                        tuple(point.itervalues()): (point in subset)
-                        for point in self.points()}) | contains
+            for subset in itertools.combinations(extra_points, subset_size):
+                yield Set(subset) | contains
 
 class ABCVar(collections.Hashable, collections.Mapping):
     """Abstract base class for variables."""

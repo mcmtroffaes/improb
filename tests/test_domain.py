@@ -5,7 +5,7 @@
 import nose.tools
 import itertools
 
-from improb import Domain, Var
+from improb import Domain, Var, Set
 
 def test_domain_single():
     a = Var(xrange(3))
@@ -76,3 +76,60 @@ def test_domain_str():
         str(Domain(a)), "{2, 4, 5}")
     nose.tools.assert_equal(
         str(Domain(a, b)), "{2, 4, 5} × {u, v}")
+
+def test_domain_subsets_1():
+    a = Var([2, 4, 5])
+    dom = Domain(a)
+    nose.tools.assert_equal(
+        set(dom.subsets()),
+        set([
+            Set([]),
+            Set([{a: 2}]),
+            Set([{a: 4}]),
+            Set([{a: 5}]),
+            Set([{a: 2}, {a: 4}]),
+            Set([{a: 2}, {a: 5}]),
+            Set([{a: 4}, {a: 5}]),
+            Set([{}]),
+            ])
+        )
+
+def test_domain_subsets_2():
+    a = Var([2, 4, 5])
+    dom = Domain(a)
+    s = Set([{a: 2}, {a: 4}])
+    nose.tools.assert_equal(
+        set(dom.subsets(s)),
+        set([
+            Set([]),
+            Set([{a: 2}]),
+            Set([{a: 4}]),
+            Set([{a: 2}, {a: 4}]),
+            ])
+        )
+
+def test_domain_subsets_3():
+    a = Var([2, 4, 5])
+    dom = Domain(a)
+    s = Set([{a: 2}, {a: 4}])
+    nose.tools.assert_equal(
+        set(dom.subsets(s, empty=False, full=False)),
+        set([
+            Set([{a: 2}]),
+            Set([{a: 4}]),
+            ])
+        )
+
+def test_domain_subsets_4():
+    a = Var([2, 4, 5])
+    dom = Domain(a)
+    s = Set([{a: 4}])
+    nose.tools.assert_equal(
+        set(dom.subsets(contains=s)),
+        set([
+            Set([{a: 4}]),
+            Set([{a: 2}, {a: 4}]),
+            Set([{a: 4}, {a: 5}]),
+            Set([{}]),
+            ])
+        )
