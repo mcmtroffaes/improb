@@ -464,6 +464,14 @@ class ABCVar(collections.Hashable, collections.Mapping):
     all = lambda self: all(self.itervalues())
     any = lambda self: any(self.itervalues())
 
+    def get_level_set(self, value):
+        """Return :class:`Set` of points where the variable attains
+        *value*.
+        """
+        return Set(
+            point for point in self.domain.points()
+            if self.get_value(point) == value)
+
 class Var(ABCVar):
     """A variable, logically independent of all other :class:`Var`\ s.
     """
@@ -718,14 +726,6 @@ class Func(ABCVar):
 
     def get_value(self, point):
         return self[tuple(inp.get_value(point) for inp in self._inputs)]
-
-    def get_level_set(self, value):
-        """Return :class:`Set` of points where the function attains
-        *value*.
-        """
-        return Set(
-            point for point in self.domain.points()
-            if self.get_value(point) == value)
 
 """
 Tests for gambles.

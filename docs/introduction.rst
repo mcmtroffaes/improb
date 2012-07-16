@@ -163,7 +163,7 @@ For the empty set, use ``Set([])``. For the full space, use ``Set([{}])``.
 
    .. automethod:: __init__
 
-You can also use :meth:`Func.get_level_set` to construct sets from
+You can also use :meth:`ABCVar.get_level_set` to construct sets from
 functions::
 
     a = Var('abc')
