@@ -96,7 +96,11 @@ class Set(collections.Hashable, collections.Set):
         :type data: :class:`collections.Iterable` of :class:`Point`\ s
 
         >>> a = Var([1, 2, 3])
-        >>> Set([{a: 2}, {a: 3}])
+        >>> s = Set([{a: 2}, {a: 3}])
+        >>> {a: 1} in s
+        False
+        >>> {a: 2} in s
+        True
         """
 
         if not isinstance(data, collections.Iterable):
