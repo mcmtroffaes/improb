@@ -254,7 +254,7 @@ def _points_hash(points):
             hash_ ^= hash((var_hash, value))
     return hash_
 
-class Domain(collections.Hashable, collections.Set):
+class Domain(collections.Set):
     """An immutable set of :class:`Var`\ s."""
 
     def __init__(self, *vars_):
@@ -345,6 +345,17 @@ class Domain(collections.Hashable, collections.Set):
         for subset_size in size_range:
             for subset in itertools.combinations(extra_points, subset_size):
                 yield Set(subset) | contains
+
+class MutableDomain(Domain, collections.MutableSet):
+    __hash__ = None
+
+    def add(self, var):
+        if not isinstance(var, Var):
+            raise TypeError("expected Var but got %s" % var.__class__.__name__)
+        self._vars.add(var)
+
+    def discard(self, var):
+        self._vars.discard(var)
 
 class ABCVar(collections.Hashable, collections.Mapping):
     """Abstract base class for variables."""

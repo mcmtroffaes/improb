@@ -3,9 +3,18 @@
 """Tests for the Domain class."""
 
 import nose.tools
+import collections
 import itertools
 
-from improb import Domain, Var, Set
+from improb import Domain, MutableDomain, Var, Set
+
+def test_domain_bases():
+    assert issubclass(Domain, collections.Set)
+    assert not issubclass(Domain, collections.MutableSet)
+    assert issubclass(Domain, collections.Hashable)
+    assert issubclass(MutableDomain, collections.Set)
+    assert issubclass(MutableDomain, collections.MutableSet)
+    assert not issubclass(MutableDomain, collections.Hashable)
 
 def test_domain_single():
     a = Var(xrange(3))
@@ -132,4 +141,18 @@ def test_domain_subsets_4():
             Set([{a: 4}, {a: 5}]),
             Set([{}]),
             ])
+        )
+
+def test_mutable_domain_1():
+    a = Var(xrange(3))
+    dom = MutableDomain(a)
+    nose.tools.assert_sequence_equal(
+        list(dom.points()), [{a: val} for val in xrange(3)])
+    b = Var('abc')
+    dom.add(b)
+    nose.tools.assert_sequence_equal(
+        list(dom.points()), [
+            {a: x, b: y}
+            for (x, y) in itertools.product(xrange(3), 'abc')
+            ]
         )
