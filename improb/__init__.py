@@ -719,6 +719,14 @@ class Func(ABCVar):
     def get_value(self, point):
         return self[tuple(inp.get_value(point) for inp in self._inputs)]
 
+    def get_level_set(self, value):
+        """Return :class:`Set` of points where the function attains
+        *value*.
+        """
+        return Set(
+            point for point in self.domain.points()
+            if self.get_value(point) == value)
+
 """
 Tests for gambles.
 

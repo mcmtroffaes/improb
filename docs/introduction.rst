@@ -79,7 +79,8 @@ value in :math:`\mathcal{X}_1\times\dots\times\mathcal{X}_n`.
 In improb, one specifies such collection :math:`\mathbf{X}`
 of logically independent
 variables simply by deriving each variable :math:`X_i` from :class:`improb.Var`.
-These variables are characterized solely by the values they can take.
+These variables are characterized solely by the values they can take,
+and their name.
 
 .. autoclass:: Var
    :members:
@@ -148,17 +149,27 @@ is intended to denote the set
 Events
 ------
 
-More generally, you can use a :class:`Func`, which maps points to
-either ``True`` or ``False``::
+More generally, you can use :class:`Set`, which represents a
+collection of points::
+
+    a = Var([1, 2, 3])
+    s = Set([{a: 1}, {a: 3}])
+    assert {a: 1} in s
+
+For the empty set, use ``Set([])``. For the full space, use ``Set([{}])``.
+
+.. autoclass:: Set
+   :members:
+
+   .. automethod:: __init__
+
+You can also use :meth:`Func.get_level_set` to construct sets from
+functions::
 
     a = Var('abc')
     b = Var([2, 3, 5])
-    e = Func([a, b], lambda va, vb: va == 'c' and vb != 3)
-    if e.get_value({b: 2, a: 'c'}):
-        print("ok")
-
-For improb, any :class:`Func` instance with values in
-``{True, False}`` is an event.
+    f = Func([a, b], lambda va, vb: va == 'c' and vb != 3)
+    s = f.get_level_set(True)
 
 .. _gambles:
 

@@ -5,7 +5,7 @@ from __future__ import division, print_function
 import nose.tools
 import itertools
 
-from improb import Domain, Var, Func
+from improb import Domain, Var, Func, Set
 
 def test_func_init_from_dict_1():
     a = Var('abc')
@@ -221,3 +221,9 @@ def test_func_min_max():
     b = Func(a, [5, 2, 3, 8, 4])
     nose.tools.assert_equal(b.minimum(), 2)
     nose.tools.assert_equal(b.maximum(), 8)
+
+def test_func_get_level_set_1():
+    a = Var('abcde')
+    b = Func(a, [0, 1, 2, 2, 1])
+    nose.tools.assert_equal(
+        b.get_level_set(2), Set([{a: 'c'}, {a: 'd'}]))
