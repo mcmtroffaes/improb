@@ -292,7 +292,7 @@ class Domain(collections.Hashable, collections.Set):
 
     def subsets(self, event=None, empty=True, full=True,
                 size=None, contains=None):
-        r"""Iterates over all subsets of the possibility space.
+        """Iterates over all subsets of the possibility space.
 
         :param event: An event (optional).
         :type event: |eventtype|
@@ -308,84 +308,8 @@ class Domain(collections.Hashable, collections.Set):
         :type contains: |eventtype|
         :returns: Yields all subsets.
         :rtype: Iterator of :class:`Event`.
-
-        >>> a = Var([2, 4, 5])
-        >>> pspace = Domain(a)
-        >>> print("\n---\n".join(str(subset) for subset in pspace.subsets()))
-        [2] : False
-        [4] : False
-        [5] : False
-        ---
-        [2] : True
-        [4] : False
-        [5] : False
-        ---
-        [2] : False
-        [4] : True
-        [5] : False
-        ---
-        [2] : False
-        [4] : False
-        [5] : True
-        ---
-        [2] : True
-        [4] : True
-        [5] : False
-        ---
-        [2] : True
-        [4] : False
-        [5] : True
-        ---
-        [2] : False
-        [4] : True
-        [5] : True
-        ---
-        [2] : True
-        [4] : True
-        [5] : True
-        >>> s = Set([{a: 2}, {a: 4}])
-        >>> print("\n---\n".join(str(subset) for subset in pspace.subsets(s)))
-        [2] : False
-        [4] : False
-        [5] : False
-        ---
-        [2] : True
-        [4] : False
-        [5] : False
-        ---
-        [2] : False
-        [4] : True
-        [5] : False
-        ---
-        [2] : True
-        [4] : True
-        [5] : False
-        >>> print("\n---\n".join(str(subset) for subset in pspace.subsets(s, empty=False, full=False)))
-        [2] : True
-        [4] : False
-        [5] : False
-        ---
-        [2] : False
-        [4] : True
-        [5] : False
-        >>> s = Set([{a: 4}])
-        >>> print("\n---\n".join(str(subset) for subset in pspace.subsets(contains=s)))
-        [2] : False
-        [4] : True
-        [5] : False
-        ---
-        [2] : True
-        [4] : True
-        [5] : False
-        ---
-        [2] : False
-        [4] : True
-        [5] : True
-        ---
-        [2] : True
-        [4] : True
-        [5] : True
         """
+
         if event is None:
             event = Set([{}]) # full space
         if contains is None:
@@ -395,9 +319,10 @@ class Domain(collections.Hashable, collections.Set):
         if not(contains <= event):
             # nothing to iterate over!!
             return
+        extra_points = list((event - contains).points(self))
         if size is None:
             size_range = xrange(0 if empty else 1,
-                                len(list(event.points(self))) + (1 if full else 0))
+                                len(extra_points) + (1 if full else 0))
         elif isinstance(size, collections.Iterable):
             size_range = size
         elif isinstance(size, (int, long)):
@@ -405,7 +330,7 @@ class Domain(collections.Hashable, collections.Set):
         else:
             raise TypeError('invalid size')
         for subset_size in size_range:
-            for subset in itertools.combinations((event - contains).points(self), subset_size):
+            for subset in itertools.combinations(extra_points, subset_size):
                 yield Set(subset) | contains
 
 class ABCVar(collections.Hashable, collections.Mapping):
