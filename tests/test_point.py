@@ -66,3 +66,10 @@ def test_point_iter_1():
     p = Point({a: 'c', b: 2})
     nose.tools.assert_equal(set(p), {a, b})
     nose.tools.assert_equal(set(p.itervalues()), {'c', 2})
+
+def test_point_str_repr():
+    a = Var('abc', name='X1')
+    b = Var(xrange(5), name='X2')
+    p = Point({a: 'c', b: 2})
+    nose.tools.assert_equal(str(p), "X1=c & X2=2")
+    nose.tools.assert_equal(repr(p), "Point({Var(['a', 'b', 'c'], name='X1'): 'c', Var([0, 1, 2, 3, 4], name='X2'): 2})")

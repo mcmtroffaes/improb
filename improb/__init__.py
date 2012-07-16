@@ -43,7 +43,16 @@ def _str_keys_values(keys, values):
             key, maxlen_keys, value)
         for key, value in itertools.izip(keys, values))
 
-class Point(collections.Hashable, collections.Mapping):
+# define a _make method to construct a flexible interface to various methods
+class _Make:
+    @classmethod
+    def _make(cls, data):
+        if isinstance(data, cls):
+            return data
+        else:
+            return cls(data)
+
+class Point(collections.Hashable, collections.Mapping, _Make):
     """A point. Basically, it is an immutable
     :class:`~collections.Mapping` from :class:`Var` instances to
     values.
@@ -81,12 +90,16 @@ class Point(collections.Hashable, collections.Mapping):
         return hash(frozenset(self._data.iteritems()))
 
     def __str__(self):
-        return "Point(%s)" % str(self._data)
+        return (
+            " & ".join(
+                "%s=%s" % (var.name, value)
+                for var, value in self._data.iteritems())
+            )
 
     def __repr__(self):
         return "Point(%s)" % repr(self._data)
 
-class Set(collections.Hashable, collections.Set):
+class Set(collections.Hashable, collections.Set, _Make):
     """An immutable mutually exclusive set of points."""
 
     def __init__(self, data):
@@ -175,10 +188,15 @@ class Set(collections.Hashable, collections.Set):
         return hash(self._points)
 
     def __str__(self):
-        return "{%s}" % (", ".join(str(tuple(point.values())) for point in self._points))
+        if len(self) > 1:
+            return "(" + ") | (".join(str(point) for point in self._points) + ")"
+        elif len(self) == 1:
+            return str(point)
+        else:
+            return "∅"
 
     def __repr__(self):
-        return "Set({%s})" % (", ".join(repr(point) for point in self._points))
+        return "Set([%s])" % (", ".join(repr(point._data) for point in self._points))
 
     def points(self, domain):
         """Return a list of points relative to the given domain."""
@@ -254,7 +272,7 @@ def _points_hash(points):
             hash_ ^= hash((var_hash, value))
     return hash_
 
-class Domain(collections.Set):
+class Domain(collections.Set, _Make):
     """An immutable set of :class:`Var`\ s."""
 
     def __init__(self, *vars_):
@@ -599,7 +617,7 @@ class Var(ABCVar):
         # we could simply return point[self] but that might miss key errors
         return self[point[self]]
 
-class Func(ABCVar):
+class Func(ABCVar, _Make):
     """A function of other variables.
 
     >>> a = Var(range(2))

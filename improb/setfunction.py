@@ -24,85 +24,65 @@ import collections
 import itertools
 import operator
 
-from improb import Domain, Func
+from improb._compat import OrderedDict
+from improb import MutableDomain, Func, Set
 
-class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
+class SetFunction(collections.MutableMapping):
     """A real-valued set function defined on the power set of a
     possibility space.
 
-    Bases: :class:`collections.MutableMapping`, :class:`cdd.NumberTypeable`
+    Bases: :class:`collections.MutableMapping`
     """
 
-    def __init__(self, domain, data=None, number_type=None):
-        """Construct a set function on the power set of the given
-        domain.
+    def __init__(self, data=None):
+        """Construct a set function.
 
-        :param domain: The domain.
-        :type domain: :class:`~improb.Domain`
-        :param data: A mapping that defines the value on each event (missing values default to zero).
-        :type data: :class:`dict`
+        :param data: A mapping that defines the value on each event.
+            Events that are not in the domain map to zero.
+        :type data: :class:`~collections.Mapping`
         """
-        if number_type is None:
-            if data is not None:
-                number_type = cdd.get_number_type_from_sequences(
-                    data.itervalues())
-            else:
-                number_type = 'float'
-        cdd.NumberTypeable.__init__(self, number_type)
-        self._domain = domain.make(domain)
-        self._data = {}
+        self._data = OrderedDict()
+        self._domain = MutableDomain()
         if data is not None:
             for event, value in data.iteritems():
                 self[event] = value
+
+    @property
+    def domain(self):
+        return self._domain
 
     def __len__(self):
         return len(self._data)
 
     def __iter__(self):
-        # iter(self._data) has no stable ordering
-        # therefore use self.domain.subsets() instead
-        for subset in self.domain.subsets():
-            if subset in self._data:
-                yield subset
+        return iter(self._data)
 
     def __contains__(self, event):
-        return self.domain.make_event(event) in self._data
+        return Set._make(event) in self._data
 
     def __getitem__(self, event):
-        event = self.domain.make_event(event)
-        return self._data[event]
+        return self._data[Set._make(event)]
 
     def __setitem__(self, event, value):
-        event = self.domain.make_event(event)
-        value = self.make_number(value)
+        event = Set._make(event)
         self._data[event] = value
+        self._domain |= event.domain
 
     def __delitem__(self, event):
-        del self._data[self.domain.make_event(event)]
+        del self._data[Set._make(event)]
+        # should we update self._domain? slow...
 
     def __repr__(self):
         """
-        >>> SetFunction(domain=3, data={(): 1, (0, 2): 2.1, (0, 1, 2): '1/3'}) # doctest: +NORMALIZE_WHITESPACE, +ELLIPSIS
-        SetFunction(domain=domain(3),
-                    data={(): 1.0,
-                          (0, 2): 2.1,
-                          (0, 1, 2): 0.333...},
-                    number_type='float')
-        >>> SetFunction(domain=3, data={(): '1.0', (0, 2): '2.1', (0, 1, 2): '1/3'}) # doctest: +NORMALIZE_WHITESPACE
-        SetFunction(domain=domain(3),
-                    data={(): 1,
-                          (0, 2): '21/10',
-                          (0, 1, 2): '1/3'},
-                    number_type='fraction')
+        >>> from improb import Var
+        >>> a = Var([0, 1, 2], name='A')
+        >>> SetFunction(data={Set([]): 1, Set([{a: 0}, {a: 2}]): 2.1, Set([{}]): 1/3}) # doctest: +NORMALIZE_WHITESPACE, +ELLIPSIS
+        SetFunction(data={(): 2.1, (Var([0, 1, 2], name='A'),): 0.3333333333333333, (): 1})
         """
-        dict_ = [(tuple(omega for omega in self.domain
-                        if omega in event),
-                  self.number_repr(value))
+        dict_ = [(repr(event), repr(value))
                  for event, value in self.iteritems()]
-        return "SetFunction(domain={0}, data={{{1}}}, number_type={2})".format(
-            repr(self.domain),
-            ", ".join("{0}: {1}".format(*element) for element in dict_),
-            repr(self.number_type))
+        return "SetFunction(data={{{0}}})".format(
+            ", ".join("{0}: {1}".format(*element) for element in dict_))
 
     def __str__(self):
         """
