@@ -144,10 +144,8 @@ is intended to denote the set
 
    .. automethod:: __init__
 
-.. _events:
-
-Events
-------
+Sets
+----
 
 More generally, you can use :class:`Set`, which represents a
 collection of points::
@@ -171,10 +169,12 @@ functions::
     f = Func([a, b], lambda va, vb: va == 'c' and vb != 3)
     s = f.get_level_set(True)
 
+.. _events:
+
 .. _gambles:
 
-Gambles
--------
+Events and Gambles
+------------------
 
-For improb, any :class:`Func` which maps points to real numbers is a
-gamble.
+For improb, any :class:`Set` is an event, and any :class:`Func` which
+maps points to real numbers is a gamble.
