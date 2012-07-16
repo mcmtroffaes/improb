@@ -90,6 +90,15 @@ class Set(collections.Hashable, collections.Set):
     """An immutable mutually exclusive set of points."""
 
     def __init__(self, data):
+        """Construct a set.
+
+        :param data: The points of the set.
+        :type data: :class:`collections.Iterable` of :class:`Point`\ s
+
+        >>> a = Var([1, 2, 3])
+        >>> Set([{a: 2}, {a: 3}])
+        """
+
         if not isinstance(data, collections.Iterable):
             raise TypeError("expected an iterable")
         points = set()
