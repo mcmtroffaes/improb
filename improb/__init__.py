@@ -255,7 +255,7 @@ class Set(collections.Hashable, collections.Set, _Make):
         return set(self.points(dom)) <= set(other.points(dom))
 
     def is_false(self):
-        return bool(self._points)
+        return not self._points
 
     # _abcoll.py implementation of Set.__or__ and Set.__xor__ work
 
