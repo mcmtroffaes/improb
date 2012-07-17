@@ -521,6 +521,13 @@ class ABCVar(collections.Hashable, collections.Mapping):
             point for point in self.domain.points()
             if self.get_value(point) == value)
 
+    def get_level_sets(self):
+        """Return :class:`~collections.Mapping` which maps values to sets."""
+        level_sets = collections.defaultdict(list)
+        for point in self.domain.points():
+            level_sets[self.get_value(point)].append(point)
+        return {value: Set(points) for value, points in level_sets.iteritems()}
+
 class Var(ABCVar):
     """A variable, logically independent of all other :class:`Var`\ s.
     """
@@ -758,12 +765,9 @@ class Func(ABCVar):
         return self._mapping[key]
 
     def __hash__(self):
-        level_sets = collections.defaultdict(list)
-        for point in self.domain.points():
-            level_sets[self.get_value(point)].append(point)
         return hash(frozenset(
             (value, _points_hash(level_set))
-            for value, level_set in level_sets.iteritems()))
+            for value, level_set in self.get_level_sets().iteritems()))
 
     @property
     def name(self):
