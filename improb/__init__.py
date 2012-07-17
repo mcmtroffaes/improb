@@ -191,10 +191,10 @@ class Set(collections.Hashable, collections.Set, _Make):
         return hash(self._points)
 
     def __str__(self):
-        if len(self) > 1:
-            return "(" + ") | (".join(str(point) for point in self._points) + ")"
-        elif len(self) == 1:
-            return str(list(self._points)[0])
+        if len(self) >= 1:
+            point_strs = [str(point) if len(point) <= 1 else "(%s)" % point
+                          for point in self._points]
+            return " | ".join(point_strs)
         else:
             return "∅"
 

@@ -85,6 +85,7 @@ class SetFunction(collections.MutableMapping):
         """
         >>> from improb import Var
         >>> a = Var([0, 1, 2], name='A')
+        >>> SetFunction(data={Set([]): 1, Set([{a: 0}, {a: 2}]): 2.1, Set([{}]): 1/3})
         >>> print(SetFunction(data={Set([]): 1, Set([{a: 0}, {a: 2}]): 2.1, Set([{}]): 1/3}))
               : 1
         a   c : 2
