@@ -315,17 +315,15 @@ class SetFunction(collections.MutableMapping):
         """
         if monotonicity == 0:
             # check empty set and sum
-            if self.number_cmp(self[False]) != 0:
+            if self[Set([])] != 0:
                 return False
-            if self.number_cmp(
-                sum(self[event] for event in self.domain.subsets()), 1) != 0:
+            if sum(self[event] for event in self.domain.subsets()) != 1:
                 return False
         # iterate over all constraints
         for constraint in self.get_constraints_bba_n_monotone(
             self.domain, monotonicity):
             # check the constraint
-            if self.number_cmp(
-                sum(self[event] for event in constraint)) < 0:
+            if sum(self[event] for event in constraint) < 0:
                 return False
         return True
 
@@ -534,7 +532,7 @@ class SetFunction(collections.MutableMapping):
 
         # debug: simplify matrix
         #print(domain, monotonicity) # debug
-        ##print("original:", len(matrix))
+        #print("original:", len(matrix))
         #matrix.canonicalize()
         #print("new     :", len(matrix))
         #print(matrix) # debug
@@ -545,10 +543,8 @@ class SetFunction(collections.MutableMapping):
         #print(poly.get_generators()) # debug
         for vert in poly.get_generators():
             yield cls(
-                domain=domain,
                 data=dict((event, vert[1 + index])
-                           for index, event in enumerate(domain.subsets())),
-                number_type='fraction')
+                           for index, event in enumerate(domain.subsets())))
 
 if __name__ == "__main__":
     import doctest
