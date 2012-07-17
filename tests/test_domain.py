@@ -146,10 +146,9 @@ def test_domain_subsets_4():
 def test_domain_subsets_5():
     a = Var('abc')
     dom = Domain(a)
-    s1 = Set([{}])
-    s2 = Set([{a: 'a'}, {a: 'b'}])
+    s = Set([{a: 'a'}, {a: 'b'}])
     nose.tools.assert_equal(
-        set(dom.subsets(contains=s2)),
+        set(dom.subsets(contains=s)),
         set([
             Set([{}]),
             Set([{a: 'a'}, {a: 'b'}]),
