@@ -116,6 +116,13 @@ def test_set_sub_3():
     nose.tools.assert_equal(s1 - s2, s3)
     nose.tools.assert_equal(s2 - s1, s4)
 
+def test_set_le_1():
+    a = Var('abc')
+    dom = Domain(a)
+    event = Set([{}])
+    contains = Set([{a: 'a'}, {a: 'b'}])
+    nose.tools.assert_true(contains <= event)
+
 def test_set_str_repr_0():
     s = Set([])
     nose.tools.assert_equal(str(s), "∅")
