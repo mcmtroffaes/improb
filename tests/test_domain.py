@@ -179,3 +179,32 @@ def test_domain_size_2():
     b = Var(xrange(11))
     dom = Domain(a, b)
     nose.tools.assert_equal(dom.size(), 33)
+
+def test_domain_le_1():
+    a = Var(xrange(4))
+    b = Var('ab')
+    nose.tools.assert_true(Domain(a) <= Domain(a, b))
+    nose.tools.assert_true(Domain(a) <= Domain(a))
+    nose.tools.assert_false(Domain(a, b) <= Domain(a))
+
+def test_mutable_domain_le_1():
+    a = Var(xrange(4))
+    b = Var('ab')
+    nose.tools.assert_true(MutableDomain(a) <= MutableDomain(a, b))
+    nose.tools.assert_true(MutableDomain(a) <= MutableDomain(a))
+    nose.tools.assert_false(MutableDomain(a, b) <= MutableDomain(a))
+
+def test_mutable_domain_le_2():
+    a = Var(xrange(4))
+    b = Var('ab')
+    nose.tools.assert_true(MutableDomain(a) <= Domain(a, b))
+    nose.tools.assert_true(MutableDomain(a) <= Domain(a))
+    nose.tools.assert_false(MutableDomain(a, b) <= Domain(a))
+
+def test_mutable_domain_le_3():
+    a = Var(xrange(4))
+    b = Var('ab')
+    nose.tools.assert_true(Domain(a) <= MutableDomain(a, b))
+    nose.tools.assert_true(Domain(a) <= MutableDomain(a))
+    nose.tools.assert_false(Domain(a, b) <= MutableDomain(a))
+
