@@ -156,3 +156,14 @@ def test_mutable_domain_1():
             for (x, y) in itertools.product(xrange(3), 'abc')
             ]
         )
+
+def test_domain_size_1():
+    a = Var(xrange(3))
+    dom = Domain(a)
+    nose.tools.assert_equal(dom.size(), 3)
+
+def test_domain_size_2():
+    a = Var(xrange(3))
+    b = Var(xrange(11))
+    dom = Domain(a, b)
+    nose.tools.assert_equal(dom.size(), 33)

@@ -310,6 +310,10 @@ class Domain(collections.Set, _Make):
         for values in itertools.product(*self._vars):
             yield OrderedDict(itertools.izip(self._vars, values))
 
+    def size(self):
+        """Number of points."""
+        return reduce(operator.mul, (len(var) for var in self._vars))
+
     def __repr__(self):
         return (
             "Domain("
