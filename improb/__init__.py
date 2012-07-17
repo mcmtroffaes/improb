@@ -250,9 +250,7 @@ class Set(collections.Hashable, collections.Set, _Make):
 
     def __le__(self, other):
         if not isinstance(other, Set):
-            if not isinstance(other, collections.Iterable):
-                return NotImplemented
-            other = self._from_iterable(other)
+            return NotImplemented
         dom = self.domain | other.domain
         return set(self.points(dom)) <= set(other.points(dom))
 
@@ -324,7 +322,7 @@ class Domain(collections.Set):
 
     def __repr__(self):
         return (
-            "Domain("
+            "%s(" % self.__class__.__name__
             + ", ".join(repr(var) for var in self._vars)
             + ")"
             )
@@ -380,6 +378,7 @@ class Domain(collections.Set):
                 yield Set(subset) | contains
 
 class MutableDomain(Domain, collections.MutableSet):
+
     __hash__ = None
 
     def add(self, var):
@@ -389,6 +388,15 @@ class MutableDomain(Domain, collections.MutableSet):
 
     def discard(self, var):
         self._vars.discard(var)
+
+    # XXX Python bug? should investigate
+    def __ge__(self, other):
+        if not isinstance(other, collections.Set):
+            return NotImplemented
+        # other <= self, which is what _abcoll.py has,
+        # is here _not_ the same
+        # and apparently leads to self.__ge__(other) being called again???
+        return other.__le__(self)
 
 class ABCVar(collections.Hashable, collections.Mapping):
     """Abstract base class for variables."""
