@@ -83,16 +83,15 @@ class SetFunction(collections.MutableMapping):
         >>> from improb import Var
         >>> a = Var([0, 1, 2], name='A')
         >>> print(SetFunction(data={Set([]): 1, Set([{a: 0}, {a: 2}]): 2.1, Set([{}]): 1/3}))
-        {∅       : 1
-         Ω        : 0.333333333333
-         A=2 | A=0 : 2.1}
+        {∅: 1,
+         Ω: 0.333333333333,
+         A=2 | A=0: 2.1}
         """
         items = [(str(event), str(value)) for event, value in self.iteritems()]
         if not items:
             return "{}"
-        event_maxlen = max(len(event) for event, value in items)
-        return "{" + "\n ".join(
-            "{0: <{2}} : {1}".format(event, value, event_maxlen)
+        return "{" + ",\n ".join(
+            "{0}: {1}".format(event, value)
             for event, value in items) + "}"
 
     @property
@@ -125,21 +124,20 @@ class SetFunction(collections.MutableMapping):
         ...     Set([{}]): 1,
         ...     })
         >>> print(setfunc)
-        {Ω  : 1
-         ∅ : 0
-         A=b : 0.3
-         A=a : 0.25}
+        {Ω: 1,
+         ∅: 0,
+         A=b: 0.3,
+         A=a: 0.25}
         >>> inv = SetFunction(data=dict(
         ...     (event, setfunc.get_mobius(event))
         ...     for event in setfunc.domain.subsets()))
         >>> print(inv)
-            : 0.0
-        a   : 0.25
-          b : 0.3
-        a b : 0.45
+        {Ω: 0.45,
+         ∅: 0,
+         A=b: 0.3,
+         A=a: 0.25}
         """
-        event = self.domain.make_event(event)
-        return sum(((-1) ** len(event - subevent)) * self[subevent]
+        return sum(((-1) ** len(list((event - subevent).points(self.domain)))) * self[subevent]
                    for subevent in self.domain.subsets(event))
 
     def get_zeta(self, event):
@@ -160,24 +158,21 @@ class SetFunction(collections.MutableMapping):
            The set function must be defined for all subsets of the
            given event.
 
-        >>> setfunc = SetFunction(
-        ...     domain='ab',
-        ...     data={'': 0, 'a': 0.25, 'b': 0.3, 'ab': 0.45})
-        >>> print(setfunc)
-            : 0.0
-        a   : 0.25
-          b : 0.3
-        a b : 0.45
-        >>> inv = SetFunction(domain='ab',
-        ...                   data=dict((event, setfunc.get_zeta(event))
+        >>> a = Var('ab', 'A')
+        >>> setfunc = SetFunction(data={
+        ...     Set([]): 0,
+        ...     Set([{a: 'a'}]): 0.25,
+        ...     Set([{a: 'b'}]): 0.3,
+        ...     Set([{}]): 0.45,
+        ...     })
+        >>> inv = SetFunction(data=dict((event, setfunc.get_zeta(event))
         ...                             for event in setfunc.domain.subsets()))
         >>> print(inv)
-            : 0.0
-        a   : 0.25
-          b : 0.3
-        a b : 1.0
+        {Ω: 1.0,
+         ∅: 0,
+         A=b: 0.3,
+         A=a: 0.25}
         """
-        event = self.domain.make_event(event)
         return sum(self[subevent] for subevent in self.domain.subsets(event))
 
     def get_choquet(self, gamble):
@@ -470,21 +465,25 @@ class SetFunction(collections.MutableMapping):
            Currently this doesn't work very well except for the cases
            below.
 
-        >>> bbas = list(SetFunction.make_extreme_bba_n_monotone('abc', monotonicity=2))
+        >>> a = Var('abc')
+        >>> dom = Domain(a)
+        >>> bbas = list(SetFunction.make_extreme_bba_n_monotone(dom, monotonicity=2))
         >>> len(bbas)
         8
         >>> all(bba.is_bba_n_monotone(2) for bba in bbas)
         True
         >>> all(bba.is_bba_n_monotone(3) for bba in bbas)
         False
-        >>> bbas = list(SetFunction.make_extreme_bba_n_monotone('abc', monotonicity=3))
+        >>> bbas = list(SetFunction.make_extreme_bba_n_monotone(dom, monotonicity=3))
         >>> len(bbas)
         7
         >>> all(bba.is_bba_n_monotone(2) for bba in bbas)
         True
         >>> all(bba.is_bba_n_monotone(3) for bba in bbas)
         True
-        >>> bbas = list(SetFunction.make_extreme_bba_n_monotone('abcd', monotonicity=2))
+        >>> a = Var('abcd')
+        >>> dom = Domain(a)
+        >>> bbas = list(SetFunction.make_extreme_bba_n_monotone(dom, monotonicity=2))
         >>> len(bbas)
         41
         >>> all(bba.is_bba_n_monotone(2) for bba in bbas)
@@ -493,7 +492,7 @@ class SetFunction(collections.MutableMapping):
         False
         >>> all(bba.is_bba_n_monotone(4) for bba in bbas)
         False
-        >>> bbas = list(SetFunction.make_extreme_bba_n_monotone('abcd', monotonicity=3))
+        >>> bbas = list(SetFunction.make_extreme_bba_n_monotone(dom, monotonicity=3))
         >>> len(bbas)
         16
         >>> all(bba.is_bba_n_monotone(2) for bba in bbas)
@@ -502,7 +501,7 @@ class SetFunction(collections.MutableMapping):
         True
         >>> all(bba.is_bba_n_monotone(4) for bba in bbas)
         False
-        >>> bbas = list(SetFunction.make_extreme_bba_n_monotone('abcd', monotonicity=4))
+        >>> bbas = list(SetFunction.make_extreme_bba_n_monotone(dom, monotonicity=4))
         >>> len(bbas)
         15
         >>> all(bba.is_bba_n_monotone(2) for bba in bbas)
@@ -512,9 +511,12 @@ class SetFunction(collections.MutableMapping):
         >>> all(bba.is_bba_n_monotone(4) for bba in bbas)
         True
         >>> # cddlib hangs on larger possibility spaces
-        >>> #bbas = list(SetFunction.make_extreme_bba_n_monotone('abcde', monotonicity=2))
+        >>> #a = Var('abcde')
+        >>> #dom = Domain(a)
+        >>> #bbas = list(SetFunction.make_extreme_bba_n_monotone(dom, monotonicity=2))
         """
-        domain = domain.make(domain)
+        if not isinstance(domain, Domain):
+            raise TypeError("expected Domain")
         # constraint for empty set and full set
         matrix = cdd.Matrix(
             [[0] + [1 if event.is_false() else 0 for event in domain.subsets()],
