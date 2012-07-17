@@ -43,7 +43,16 @@ def _str_keys_values(keys, values):
             key, maxlen_keys, value)
         for key, value in itertools.izip(keys, values))
 
-class Point(collections.Hashable, collections.Mapping):
+# define a _make method to construct a flexible interface to various methods
+class _Make:
+    @classmethod
+    def _make(cls, data):
+        if isinstance(data, cls):
+            return data
+        else:
+            return cls(data)
+
+class Point(collections.Hashable, collections.Mapping, _Make):
     """A point. Basically, it is an immutable
     :class:`~collections.Mapping` from :class:`Var` instances to
     values.
@@ -81,12 +90,19 @@ class Point(collections.Hashable, collections.Mapping):
         return hash(frozenset(self._data.iteritems()))
 
     def __str__(self):
-        return "Point(%s)" % str(self._data)
+        if len(self) >= 1:
+            return (
+                " & ".join(
+                    "%s=%s" % (var.name, value)
+                    for var, value in self._data.iteritems())
+                )
+        else:
+            return "Ω"
 
     def __repr__(self):
         return "Point(%s)" % repr(self._data)
 
-class Set(collections.Hashable, collections.Set):
+class Set(collections.Hashable, collections.Set, _Make):
     """An immutable mutually exclusive set of points."""
 
     def __init__(self, data):
@@ -175,10 +191,15 @@ class Set(collections.Hashable, collections.Set):
         return hash(self._points)
 
     def __str__(self):
-        return "{%s}" % (", ".join(str(tuple(point.values())) for point in self._points))
+        if len(self) >= 1:
+            point_strs = [str(point) if len(point) <= 1 else "(%s)" % point
+                          for point in self._points]
+            return " | ".join(point_strs)
+        else:
+            return "∅"
 
     def __repr__(self):
-        return "Set({%s})" % (", ".join(repr(point) for point in self._points))
+        return "Set([%s])" % (", ".join(repr(point._data) for point in self._points))
 
     def points(self, domain):
         """Return a list of points relative to the given domain."""
@@ -227,6 +248,15 @@ class Set(collections.Hashable, collections.Set):
         dom = self.domain | other.domain
         return self._from_iterable(set(self.points(dom)) - set(other.points(dom)))
 
+    def __le__(self, other):
+        if not isinstance(other, Set):
+            return NotImplemented
+        dom = self.domain | other.domain
+        return set(self.points(dom)) <= set(other.points(dom))
+
+    def is_false(self):
+        return not self._points
+
     # _abcoll.py implementation of Set.__or__ and Set.__xor__ work
 
 def _points_hash(points):
@@ -254,7 +284,7 @@ def _points_hash(points):
             hash_ ^= hash((var_hash, value))
     return hash_
 
-class Domain(collections.Hashable, collections.Set):
+class Domain(collections.Set):
     """An immutable set of :class:`Var`\ s."""
 
     def __init__(self, *vars_):
@@ -289,9 +319,13 @@ class Domain(collections.Hashable, collections.Set):
         for values in itertools.product(*self._vars):
             yield OrderedDict(itertools.izip(self._vars, values))
 
+    def size(self):
+        """Number of points."""
+        return reduce(operator.mul, (len(var) for var in self._vars))
+
     def __repr__(self):
         return (
-            "Domain("
+            "%s(" % self.__class__.__name__
             + ", ".join(repr(var) for var in self._vars)
             + ")"
             )
@@ -345,6 +379,27 @@ class Domain(collections.Hashable, collections.Set):
         for subset_size in size_range:
             for subset in itertools.combinations(extra_points, subset_size):
                 yield Set(subset) | contains
+
+class MutableDomain(Domain, collections.MutableSet):
+
+    __hash__ = None
+
+    def add(self, var):
+        if not isinstance(var, Var):
+            raise TypeError("expected Var but got %s" % var.__class__.__name__)
+        self._vars.add(var)
+
+    def discard(self, var):
+        self._vars.discard(var)
+
+    # XXX Python bug? should investigate
+    def __ge__(self, other):
+        if not isinstance(other, collections.Set):
+            return NotImplemented
+        # other <= self, which is what _abcoll.py has,
+        # is here _not_ the same
+        # and apparently leads to self.__ge__(other) being called again???
+        return other.__le__(self)
 
 class ABCVar(collections.Hashable, collections.Mapping):
     """Abstract base class for variables."""
@@ -484,6 +539,13 @@ class ABCVar(collections.Hashable, collections.Mapping):
         return Set(
             point for point in self.domain.points()
             if self.get_value(point) == value)
+
+    def get_level_sets(self):
+        """Return :class:`~collections.Mapping` which maps values to sets."""
+        level_sets = collections.defaultdict(list)
+        for point in self.domain.points():
+            level_sets[self.get_value(point)].append(point)
+        return {value: Set(points) for value, points in level_sets.iteritems()}
 
 class Var(ABCVar):
     """A variable, logically independent of all other :class:`Var`\ s.
@@ -722,12 +784,9 @@ class Func(ABCVar):
         return self._mapping[key]
 
     def __hash__(self):
-        level_sets = collections.defaultdict(list)
-        for point in self.domain.points():
-            level_sets[self.get_value(point)].append(point)
         return hash(frozenset(
             (value, _points_hash(level_set))
-            for value, level_set in level_sets.iteritems()))
+            for value, level_set in self.get_level_sets().iteritems()))
 
     @property
     def name(self):

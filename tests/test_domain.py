@@ -3,9 +3,18 @@
 """Tests for the Domain class."""
 
 import nose.tools
+import collections
 import itertools
 
-from improb import Domain, Var, Set
+from improb import Domain, MutableDomain, Var, Set
+
+def test_domain_bases():
+    assert issubclass(Domain, collections.Set)
+    assert not issubclass(Domain, collections.MutableSet)
+    assert issubclass(Domain, collections.Hashable)
+    assert issubclass(MutableDomain, collections.Set)
+    assert issubclass(MutableDomain, collections.MutableSet)
+    assert not issubclass(MutableDomain, collections.Hashable)
 
 def test_domain_single():
     a = Var(xrange(3))
@@ -133,3 +142,69 @@ def test_domain_subsets_4():
             Set([{}]),
             ])
         )
+
+def test_domain_subsets_5():
+    a = Var('abc')
+    dom = Domain(a)
+    s = Set([{a: 'a'}, {a: 'b'}])
+    nose.tools.assert_equal(
+        set(dom.subsets(contains=s)),
+        set([
+            Set([{}]),
+            Set([{a: 'a'}, {a: 'b'}]),
+            ])
+        )
+
+def test_mutable_domain_1():
+    a = Var(xrange(3))
+    dom = MutableDomain(a)
+    nose.tools.assert_sequence_equal(
+        list(dom.points()), [{a: val} for val in xrange(3)])
+    b = Var('abc')
+    dom.add(b)
+    nose.tools.assert_sequence_equal(
+        list(dom.points()), [
+            {a: x, b: y}
+            for (x, y) in itertools.product(xrange(3), 'abc')
+            ]
+        )
+
+def test_domain_size_1():
+    a = Var(xrange(3))
+    dom = Domain(a)
+    nose.tools.assert_equal(dom.size(), 3)
+
+def test_domain_size_2():
+    a = Var(xrange(3))
+    b = Var(xrange(11))
+    dom = Domain(a, b)
+    nose.tools.assert_equal(dom.size(), 33)
+
+def test_domain_le_1():
+    a = Var(xrange(4))
+    b = Var('ab')
+    nose.tools.assert_true(Domain(a) <= Domain(a, b))
+    nose.tools.assert_true(Domain(a) <= Domain(a))
+    nose.tools.assert_false(Domain(a, b) <= Domain(a))
+
+def test_mutable_domain_le_1():
+    a = Var(xrange(4))
+    b = Var('ab')
+    nose.tools.assert_true(MutableDomain(a) <= MutableDomain(a, b))
+    nose.tools.assert_true(MutableDomain(a) <= MutableDomain(a))
+    nose.tools.assert_false(MutableDomain(a, b) <= MutableDomain(a))
+
+def test_mutable_domain_le_2():
+    a = Var(xrange(4))
+    b = Var('ab')
+    nose.tools.assert_true(MutableDomain(a) <= Domain(a, b))
+    nose.tools.assert_true(MutableDomain(a) <= Domain(a))
+    nose.tools.assert_false(MutableDomain(a, b) <= Domain(a))
+
+def test_mutable_domain_le_3():
+    a = Var(xrange(4))
+    b = Var('ab')
+    nose.tools.assert_true(Domain(a) <= MutableDomain(a, b))
+    nose.tools.assert_true(Domain(a) <= MutableDomain(a))
+    nose.tools.assert_false(Domain(a, b) <= MutableDomain(a))
+

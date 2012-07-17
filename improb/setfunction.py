@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # improb is a Python module for working with imprecise probabilities
 # Copyright (c) 2008-2011, Matthias Troffaes
 #
@@ -24,33 +25,25 @@ import collections
 import itertools
 import operator
 
-from improb import PSpace, Gamble, Event
+from improb._compat import OrderedDict
+from improb import Domain, MutableDomain, Func, Set, ABCVar, Var
 
-class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
+class SetFunction(collections.MutableMapping):
     """A real-valued set function defined on the power set of a
     possibility space.
 
-    Bases: :class:`collections.MutableMapping`, :class:`cdd.NumberTypeable`
+    Bases: :class:`collections.MutableMapping`
     """
 
-    def __init__(self, pspace, data=None, number_type=None):
-        """Construct a set function on the power set of the given
-        possibility space.
+    def __init__(self, data=None):
+        """Construct a set function.
 
-        :param pspace: The possibility space.
-        :type pspace: |pspacetype|
-        :param data: A mapping that defines the value on each event (missing values default to zero).
-        :type data: :class:`dict`
+        :param data: A mapping that defines the value on each event.
+            Events that are not in the domain map to zero.
+        :type data: :class:`~collections.Mapping`
         """
-        if number_type is None:
-            if data is not None:
-                number_type = cdd.get_number_type_from_sequences(
-                    data.itervalues())
-            else:
-                number_type = 'float'
-        cdd.NumberTypeable.__init__(self, number_type)
-        self._pspace = PSpace.make(pspace)
         self._data = {}
+        self._domain = MutableDomain()
         if data is not None:
             for event, value in data.iteritems():
                 self[event] = value
@@ -59,73 +52,52 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
         return len(self._data)
 
     def __iter__(self):
-        # iter(self._data) has no stable ordering
-        # therefore use self.pspace.subsets() instead
-        for subset in self.pspace.subsets():
-            if subset in self._data:
-                yield subset
+        return iter(self._data)
 
     def __contains__(self, event):
-        return self.pspace.make_event(event) in self._data
+        return Set._make(event) in self._data
 
     def __getitem__(self, event):
-        event = self.pspace.make_event(event)
-        return self._data[event]
+        return self._data[Set._make(event)]
 
     def __setitem__(self, event, value):
-        event = self.pspace.make_event(event)
-        value = self.make_number(value)
+        event = Set._make(event)
         self._data[event] = value
+        self._domain |= event.domain
 
     def __delitem__(self, event):
-        del self._data[self.pspace.make_event(event)]
+        del self._data[Set._make(event)]
+        # should we update self._domain? slow...
 
     def __repr__(self):
         """
-        >>> SetFunction(pspace=3, data={(): 1, (0, 2): 2.1, (0, 1, 2): '1/3'}) # doctest: +NORMALIZE_WHITESPACE, +ELLIPSIS
-        SetFunction(pspace=PSpace(3),
-                    data={(): 1.0,
-                          (0, 2): 2.1,
-                          (0, 1, 2): 0.333...},
-                    number_type='float')
-        >>> SetFunction(pspace=3, data={(): '1.0', (0, 2): '2.1', (0, 1, 2): '1/3'}) # doctest: +NORMALIZE_WHITESPACE
-        SetFunction(pspace=PSpace(3),
-                    data={(): 1,
-                          (0, 2): '21/10',
-                          (0, 1, 2): '1/3'},
-                    number_type='fraction')
+        >>> from improb import Var
+        >>> a = Var([0, 1, 2], name='A')
+        >>> SetFunction(data={Set([]): 1, Set([{a: 0}, {a: 2}]): 2.1, Set([{}]): 1/3})
+        SetFunction(data={Set([]): 1, Set([{}]): 0.3333333333333333, Set([{Var([0, 1, 2], name='A'): 2}, {Var([0, 1, 2], name='A'): 0}]): 2.1})
         """
-        dict_ = [(tuple(omega for omega in self.pspace
-                        if omega in event),
-                  self.number_repr(value))
-                 for event, value in self.iteritems()]
-        return "SetFunction(pspace={0}, data={{{1}}}, number_type={2})".format(
-            repr(self.pspace),
-            ", ".join("{0}: {1}".format(*element) for element in dict_),
-            repr(self.number_type))
+        return "SetFunction(data=%s)" % repr(self._data)
 
     def __str__(self):
         """
-        >>> print(SetFunction(pspace='abc', data={'': '1', 'ac': '2', 'abc': '3.1'}))
-              : 1
-        a   c : 2
-        a b c : 31/10
+        >>> from improb import Var
+        >>> a = Var([0, 1, 2], name='A')
+        >>> print(SetFunction(data={Set([]): 1, Set([{a: 0}, {a: 2}]): 2.1, Set([{}]): 1/3}))
+        {∅: 1,
+         Ω: 0.333333333333,
+         A=2 | A=0: 2.1}
         """
-        maxlen_pspace = max(len(str(omega)) for omega in self._pspace)
-        return "\n".join(
-            " ".join("{0: <{1}}".format(omega if omega in event else '',
-                                        maxlen_pspace)
-                      for omega in self._pspace) +
-            " : {0}".format(self.number_str(value))
-            for event, value in self.iteritems())
+        items = [(str(event), str(value)) for event, value in self.iteritems()]
+        if not items:
+            return "{}"
+        return "{" + ",\n ".join(
+            "{0}: {1}".format(event, value)
+            for event, value in items) + "}"
 
     @property
-    def pspace(self):
-        """An :class:`~improb.PSpace` representing the possibility space."""
-        return self._pspace
-
-    def make_gamble(self, gamble):
-        return self.pspace.make_gamble(gamble, self.number_type)
+    def domain(self):
+        """A :class:`~improb.MutableDomain` representing the domain."""
+        return self._domain
 
     def get_mobius(self, event):
         """Calculate the value of the Mobius transform of the given
@@ -144,24 +116,29 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
            The set function must be defined for all subsets of the
            given event.
 
-        >>> setfunc = SetFunction(pspace='ab', data={'': 0, 'a': 0.25, 'b': 0.3, 'ab': 1})
+        >>> a = Var('ab', 'A')
+        >>> setfunc = SetFunction(data={
+        ...     Set([]): 0,
+        ...     Set([{a: 'a'}]): 0.25,
+        ...     Set([{a: 'b'}]): 0.3,
+        ...     Set([{}]): 1,
+        ...     })
         >>> print(setfunc)
-            : 0.0
-        a   : 0.25
-          b : 0.3
-        a b : 1.0
-        >>> inv = SetFunction(pspace='ab',
-        ...                   data=dict((event, setfunc.get_mobius(event))
-        ...                        for event in setfunc.pspace.subsets()))
+        {Ω: 1,
+         ∅: 0,
+         A=b: 0.3,
+         A=a: 0.25}
+        >>> inv = SetFunction(data=dict(
+        ...     (event, setfunc.get_mobius(event))
+        ...     for event in setfunc.domain.subsets()))
         >>> print(inv)
-            : 0.0
-        a   : 0.25
-          b : 0.3
-        a b : 0.45
+        {Ω: 0.45,
+         ∅: 0,
+         A=b: 0.3,
+         A=a: 0.25}
         """
-        event = self.pspace.make_event(event)
-        return sum(((-1) ** len(event - subevent)) * self[subevent]
-                   for subevent in self.pspace.subsets(event))
+        return sum(((-1) ** len(list((event - subevent).points(self.domain)))) * self[subevent]
+                   for subevent in self.domain.subsets(event))
 
     def get_zeta(self, event):
         """Calculate the value of the zeta transform (inverse Mobius
@@ -181,25 +158,22 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
            The set function must be defined for all subsets of the
            given event.
 
-        >>> setfunc = SetFunction(
-        ...     pspace='ab',
-        ...     data={'': 0, 'a': 0.25, 'b': 0.3, 'ab': 0.45})
-        >>> print(setfunc)
-            : 0.0
-        a   : 0.25
-          b : 0.3
-        a b : 0.45
-        >>> inv = SetFunction(pspace='ab',
-        ...                   data=dict((event, setfunc.get_zeta(event))
-        ...                             for event in setfunc.pspace.subsets()))
+        >>> a = Var('ab', 'A')
+        >>> setfunc = SetFunction(data={
+        ...     Set([]): 0,
+        ...     Set([{a: 'a'}]): 0.25,
+        ...     Set([{a: 'b'}]): 0.3,
+        ...     Set([{}]): 0.45,
+        ...     })
+        >>> inv = SetFunction(data=dict((event, setfunc.get_zeta(event))
+        ...                             for event in setfunc.domain.subsets()))
         >>> print(inv)
-            : 0.0
-        a   : 0.25
-          b : 0.3
-        a b : 1.0
+        {Ω: 1.0,
+         ∅: 0,
+         A=b: 0.3,
+         A=a: 0.25}
         """
-        event = self.pspace.make_event(event)
-        return sum(self[subevent] for subevent in self.pspace.subsets(event))
+        return sum(self[subevent] for subevent in self.domain.subsets(event))
 
     def get_choquet(self, gamble):
         """Calculate the Choquet integral of the given gamble.
@@ -229,44 +203,54 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
         and :math:`A_i=\{\omega\in\Omega:f(\omega)\geq v_i\}` are the
         level sets induced.
 
-        >>> s = SetFunction(pspace='abc', data={'': 0,
-        ...                                     'a': 0, 'b': 0, 'c': 0,
-        ...                                     'ab': .5, 'bc': .5, 'ca': .5,
-        ...                                     'abc': 1})
-        >>> s.get_choquet([1, 2, 3])
+        >>> from improb import Var
+        >>> a = Var('abc')
+        >>> s = SetFunction(data={
+        ...     Set([]): 0,
+        ...     Set([{a: 'a'}]): 0,
+        ...     Set([{a: 'b'}]): 0,
+        ...     Set([{a: 'c'}]): 0,
+        ...     Set([{a: 'a'}, {a: 'b'}]): .5,
+        ...     Set([{a: 'a'}, {a: 'c'}]): .5,
+        ...     Set([{a: 'b'}, {a: 'c'}]): .5,
+        ...     Set([{}]): 1})
+        >>> s.get_choquet(Func(a, [1, 2, 3]))
         1.5
-        >>> s.get_choquet([1, 2, 2])
+        >>> s.get_choquet(Func(a, [1, 2, 2]))
         1.5
-        >>> s.get_choquet([1, 2, 1])
-        1.0
+        >>> s.get_choquet(Func(a, [1, 2, 1]))
+        1
 
         .. warning::
 
            The set function must be defined for all level sets :math:`A_i`
            induced by the argument gamble.
 
-           >>> s = SetFunction(pspace='abc', data={'ab': .5, 'bc': .5, 'ca': .5,
-           ...                                     'abc': 1})
-           >>> s.get_choquet([1, 2, 2])
+           >>> a = Var('abc', name='A')
+           >>> s = SetFunction(data={
+           ...     Set([{a: 'a'}, {a: 'b'}]): .5,
+           ...     Set([{a: 'a'}, {a: 'c'}]): .5,
+           ...     Set([{a: 'b'}, {a: 'c'}]): .5,
+           ...     Set([{}]): 1})
+           >>> s.get_choquet(Func(a, [1, 2, 2]))
            1.5
-           >>> s.get_choquet([2, 2, 1])
+           >>> s.get_choquet(Func(a, [2, 2, 1]))
            1.5
-           >>> s.get_choquet([-1, -1, -2])
+           >>> s.get_choquet(Func(a, [-1, -1, -2]))
            -1.5
-           >>> s.get_choquet([1, 2, 3])
+           >>> s.get_choquet(Func(a, [1, 2, 3]))
            Traceback (most recent call last):
                ...
-           KeyError: Event(pspace=PSpace(['a', 'b', 'c']), elements=set(['c']))
+           KeyError: Set([{Var(['a', 'b', 'c'], name='A'): 'c'}])
         """
         result = 0
-        gamble = self.make_gamble(gamble)
+        if not isinstance(gamble, ABCVar):
+            raise TypeError(
+                "expected ABCVar but got %s" % gamble.__class__.__name__)
         # find values and level sets of the gamble
-        gamble_inverse = collections.defaultdict(set)
-        for key, value in gamble.iteritems():
-            gamble_inverse[value].add(key)
-        items = sorted(gamble_inverse.iteritems())
+        items = sorted(gamble.get_level_sets().iteritems())
         # now calculate the Choquet integral
-        event = set(self.pspace)
+        event = Set([{}])
         previous_value = 0
         for value, keys in items:
             result += (value - previous_value) * self[event]
@@ -304,9 +288,11 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
             :meth:`improb.setfunction.SetFunction.get_mobius`
                 Mobius transform of an arbitrary set function.
         """
-        gamble = self.make_gamble(gamble)
-        return sum(self[event_] * min(gamble[omega] for omega in event_)
-                   for event_ in self.pspace.subsets(empty=False))
+        if not isinstance(gamble, ABCVar):
+            raise TypeError(
+                "expected ABCVar but got %s" % gamble.__class__.__name__)
+        return sum(self[event_] * min(gamble.get_value(point) for point in event_)
+                   for event_ in self.domain.subsets(empty=False))
 
     def is_bba_n_monotone(self, monotonicity=None):
         """Is the set function, as basic belief assignment,
@@ -329,27 +315,25 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
         """
         if monotonicity == 0:
             # check empty set and sum
-            if self.number_cmp(self[False]) != 0:
+            if self[Set([])] != 0:
                 return False
-            if self.number_cmp(
-                sum(self[event] for event in self.pspace.subsets()), 1) != 0:
+            if sum(self[event] for event in self.domain.subsets()) != 1:
                 return False
         # iterate over all constraints
         for constraint in self.get_constraints_bba_n_monotone(
-            self.pspace, monotonicity):
+            self.domain, monotonicity):
             # check the constraint
-            if self.number_cmp(
-                sum(self[event] for event in constraint)) < 0:
+            if sum(self[event] for event in constraint) < 0:
                 return False
         return True
 
     @classmethod
-    def get_constraints_bba_n_monotone(cls, pspace, monotonicity=None):
+    def get_constraints_bba_n_monotone(cls, domain, monotonicity=None):
         """Yields constraints for basic belief assignments with given
         monotonicity.
 
-        :param pspace: The possibility space.
-        :type pspace: |pspacetype|
+        :param domain: The possibility space.
+        :type domain: |domaintype|
         :param monotonicity: Requested level of monotonicity (see
             notes below for details).
         :type monotonicity: :class:`int` or
@@ -405,19 +389,20 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
             included: so for *monotonicity=0* this method returns an
             empty iterator.
 
-        >>> pspace = "abc"
-        >>> for mono in xrange(1, len(pspace) + 1):
+        >>> a = Var('abc', name='A')
+        >>> dom = Domain(a)
+        >>> for mono in xrange(1, len(a) + 1):
         ...     print("{0} monotonicity:".format(mono))
-        ...     print(" ".join("{0:<{1}}".format("".join(i for i in event), len(pspace))
-        ...                    for event in PSpace(pspace).subsets()))
-        ...     constraints = SetFunction.get_constraints_bba_n_monotone(pspace, mono)
+        ...     print(" ".join("{0:<{1}}".format("".join(sorted(point[a] for point in event.points(dom))), len(a))
+        ...                    for event in dom.subsets()))
+        ...     constraints = SetFunction.get_constraints_bba_n_monotone(dom, mono)
         ...     constraints = [set(constraint) for constraint in constraints]
         ...     constraints = [[1 if event in constraint else 0
-        ...                     for event in PSpace(pspace).subsets()]
+        ...                     for event in dom.subsets()]
         ...                    for constraint in constraints]
         ...     for constraint in sorted(constraints):
         ...         print(" ".join("{0:<{1}}"
-        ...                        .format(value, len(pspace))
+        ...                        .format(str(value), len(a))
         ...                        for value in constraint))
         1 monotonicity:
             a   b   c   ab  ac  bc  abc
@@ -445,14 +430,15 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
             a   b   c   ab  ac  bc  abc
         0   0   0   0   0   0   0   1  
         """
-        pspace = PSpace.make(pspace)
         # check type
+        if not isinstance(domain, Domain):
+            raise TypeError("expected a Domain")
         if monotonicity is None:
             raise ValueError("specify monotonicity")
         elif isinstance(monotonicity, collections.Iterable):
             # special case: return it for all values in the iterable
             for mono in monotonicity:
-                for constraint in cls.get_constraints_bba_n_monotone(pspace, mono):
+                for constraint in cls.get_constraints_bba_n_monotone(domain, mono):
                     yield constraint
             return
         elif not isinstance(monotonicity, (int, long)):
@@ -464,12 +450,12 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
             # don't return constraints in this case
             return
         # yield all constraints
-        for event in pspace.subsets(size=xrange(monotonicity, len(pspace) + 1)):
-            for subevent in pspace.subsets(event, size=monotonicity):
-                yield pspace.subsets(event, contains=subevent)
+        for event in domain.subsets(size=xrange(monotonicity, domain.size() + 1)):
+            for subevent in domain.subsets(event, size=monotonicity):
+                yield domain.subsets(event, contains=subevent)
 
     @classmethod
-    def make_extreme_bba_n_monotone(cls, pspace, monotonicity=None):
+    def make_extreme_bba_n_monotone(cls, domain, monotonicity=None):
         """Yield extreme basic belief assignments with given monotonicity.
 
         .. warning::
@@ -477,21 +463,25 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
            Currently this doesn't work very well except for the cases
            below.
 
-        >>> bbas = list(SetFunction.make_extreme_bba_n_monotone('abc', monotonicity=2))
+        >>> a = Var('abc')
+        >>> dom = Domain(a)
+        >>> bbas = list(SetFunction.make_extreme_bba_n_monotone(dom, monotonicity=2))
         >>> len(bbas)
         8
         >>> all(bba.is_bba_n_monotone(2) for bba in bbas)
         True
         >>> all(bba.is_bba_n_monotone(3) for bba in bbas)
         False
-        >>> bbas = list(SetFunction.make_extreme_bba_n_monotone('abc', monotonicity=3))
+        >>> bbas = list(SetFunction.make_extreme_bba_n_monotone(dom, monotonicity=3))
         >>> len(bbas)
         7
         >>> all(bba.is_bba_n_monotone(2) for bba in bbas)
         True
         >>> all(bba.is_bba_n_monotone(3) for bba in bbas)
         True
-        >>> bbas = list(SetFunction.make_extreme_bba_n_monotone('abcd', monotonicity=2))
+        >>> a = Var('abcd')
+        >>> dom = Domain(a)
+        >>> bbas = list(SetFunction.make_extreme_bba_n_monotone(dom, monotonicity=2))
         >>> len(bbas)
         41
         >>> all(bba.is_bba_n_monotone(2) for bba in bbas)
@@ -500,7 +490,7 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
         False
         >>> all(bba.is_bba_n_monotone(4) for bba in bbas)
         False
-        >>> bbas = list(SetFunction.make_extreme_bba_n_monotone('abcd', monotonicity=3))
+        >>> bbas = list(SetFunction.make_extreme_bba_n_monotone(dom, monotonicity=3))
         >>> len(bbas)
         16
         >>> all(bba.is_bba_n_monotone(2) for bba in bbas)
@@ -509,7 +499,7 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
         True
         >>> all(bba.is_bba_n_monotone(4) for bba in bbas)
         False
-        >>> bbas = list(SetFunction.make_extreme_bba_n_monotone('abcd', monotonicity=4))
+        >>> bbas = list(SetFunction.make_extreme_bba_n_monotone(dom, monotonicity=4))
         >>> len(bbas)
         15
         >>> all(bba.is_bba_n_monotone(2) for bba in bbas)
@@ -519,27 +509,30 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
         >>> all(bba.is_bba_n_monotone(4) for bba in bbas)
         True
         >>> # cddlib hangs on larger possibility spaces
-        >>> #bbas = list(SetFunction.make_extreme_bba_n_monotone('abcde', monotonicity=2))
+        >>> #a = Var('abcde')
+        >>> #dom = Domain(a)
+        >>> #bbas = list(SetFunction.make_extreme_bba_n_monotone(dom, monotonicity=2))
         """
-        pspace = PSpace.make(pspace)
+        if not isinstance(domain, Domain):
+            raise TypeError("expected Domain")
         # constraint for empty set and full set
         matrix = cdd.Matrix(
-            [[0] + [1 if event.is_false() else 0 for event in pspace.subsets()],
-             [-1] + [1 for event in pspace.subsets()]],
+            [[0] + [1 if event.is_false() else 0 for event in domain.subsets()],
+             [-1] + [1 for event in domain.subsets()]],
             linear=True,
             number_type='fraction')
         # constraints for monotonicity
         constraints = [set(constraint) for constraint in
                        cls.get_constraints_bba_n_monotone(
-                           pspace, xrange(1, monotonicity + 1))]
+                           domain, xrange(1, monotonicity + 1))]
         matrix.extend([[0] + [1 if event in constraint else 0
-                              for event in pspace.subsets()]
+                              for event in domain.subsets()]
                        for constraint in constraints])
         matrix.rep_type = cdd.RepType.INEQUALITY
 
         # debug: simplify matrix
-        #print(pspace, monotonicity) # debug
-        ##print("original:", len(matrix))
+        #print(domain, monotonicity) # debug
+        #print("original:", len(matrix))
         #matrix.canonicalize()
         #print("new     :", len(matrix))
         #print(matrix) # debug
@@ -550,10 +543,8 @@ class SetFunction(collections.MutableMapping, cdd.NumberTypeable):
         #print(poly.get_generators()) # debug
         for vert in poly.get_generators():
             yield cls(
-                pspace=pspace,
                 data=dict((event, vert[1 + index])
-                           for index, event in enumerate(pspace.subsets())),
-                number_type='fraction')
+                           for index, event in enumerate(domain.subsets())))
 
 if __name__ == "__main__":
     import doctest
