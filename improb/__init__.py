@@ -275,7 +275,7 @@ def _points_hash(points):
             hash_ ^= hash((var_hash, value))
     return hash_
 
-class Domain(collections.Set, _Make):
+class Domain(collections.Set):
     """An immutable set of :class:`Var`\ s."""
 
     def __init__(self, *vars_):
@@ -624,7 +624,7 @@ class Var(ABCVar):
         # we could simply return point[self] but that might miss key errors
         return self[point[self]]
 
-class Func(ABCVar, _Make):
+class Func(ABCVar):
     """A function of other variables.
 
     >>> a = Var(range(2))
