@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Tests for the Set class."""
 
 from __future__ import division, print_function
@@ -115,7 +116,17 @@ def test_set_sub_3():
     nose.tools.assert_equal(s1 - s2, s3)
     nose.tools.assert_equal(s2 - s1, s4)
 
-def test_set_str_repr():
+def test_set_str_repr_0():
+    s = Set([])
+    nose.tools.assert_equal(str(s), "∅")
+    nose.tools.assert_equal(repr(s), "Set([])")
+
+def test_set_str_repr_1():
+    s = Set([{}])
+    nose.tools.assert_equal(str(s), "Ω")
+    nose.tools.assert_equal(repr(s), "Set([{}])")
+
+def test_set_str_repr_2():
     a = Var('abc', name="X1")
     b = Var(xrange(2), name="X2")
     s = Set([{a: 'a'}, {a: 'b', b: 1}])

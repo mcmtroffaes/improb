@@ -41,7 +41,7 @@ class SetFunction(collections.MutableMapping):
             Events that are not in the domain map to zero.
         :type data: :class:`~collections.Mapping`
         """
-        self._data = OrderedDict()
+        self._data = {}
         self._domain = MutableDomain()
         if data is not None:
             for event, value in data.iteritems():
@@ -76,27 +76,22 @@ class SetFunction(collections.MutableMapping):
         """
         >>> from improb import Var
         >>> a = Var([0, 1, 2], name='A')
-        >>> SetFunction(data={Set([]): 1, Set([{a: 0}, {a: 2}]): 2.1, Set([{}]): 1/3}) # doctest: +NORMALIZE_WHITESPACE, +ELLIPSIS
-        SetFunction(data={(): 2.1, (Var([0, 1, 2], name='A'),): 0.3333333333333333, (): 1})
+        >>> SetFunction(data={Set([]): 1, Set([{a: 0}, {a: 2}]): 2.1, Set([{}]): 1/3})
+        SetFunction(data={Set([]): 1, Set([{}]): 0.3333333333333333, Set([{Var([0, 1, 2], name='A'): 2}, {Var([0, 1, 2], name='A'): 0}]): 2.1})
         """
-        dict_ = [(repr(event), repr(value))
-                 for event, value in self.iteritems()]
-        return "SetFunction(data={{{0}}})".format(
-            ", ".join("{0}: {1}".format(*element) for element in dict_))
+        return "SetFunction(data=%s)" % repr(self._data)
 
     def __str__(self):
         """
-        >>> print(SetFunction(domain='abc', data={'': '1', 'ac': '2', 'abc': '3.1'}))
+        >>> from improb import Var
+        >>> a = Var([0, 1, 2], name='A')
+        >>> print(SetFunction(data={Set([]): 1, Set([{a: 0}, {a: 2}]): 2.1, Set([{}]): 1/3}))
               : 1
         a   c : 2
         a b c : 31/10
         """
-        maxlen_domain = max(len(str(omega)) for omega in self._domain)
         return "\n".join(
-            " ".join("{0: <{1}}".format(omega if omega in event else '',
-                                        maxlen_domain)
-                      for omega in self._domain) +
-            " : {0}".format(self.number_str(value))
+            "{0} : {1}".format(str(event), str(value))
             for event, value in self.iteritems())
 
     @property

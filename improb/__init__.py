@@ -90,11 +90,14 @@ class Point(collections.Hashable, collections.Mapping, _Make):
         return hash(frozenset(self._data.iteritems()))
 
     def __str__(self):
-        return (
-            " & ".join(
-                "%s=%s" % (var.name, value)
-                for var, value in self._data.iteritems())
-            )
+        if len(self) >= 1:
+            return (
+                " & ".join(
+                    "%s=%s" % (var.name, value)
+                    for var, value in self._data.iteritems())
+                )
+        else:
+            return "Ω"
 
     def __repr__(self):
         return "Point(%s)" % repr(self._data)
@@ -191,7 +194,7 @@ class Set(collections.Hashable, collections.Set, _Make):
         if len(self) > 1:
             return "(" + ") | (".join(str(point) for point in self._points) + ")"
         elif len(self) == 1:
-            return str(point)
+            return str(list(self._points)[0])
         else:
             return "∅"
 
