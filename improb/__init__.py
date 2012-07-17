@@ -248,6 +248,14 @@ class Set(collections.Hashable, collections.Set, _Make):
         dom = self.domain | other.domain
         return self._from_iterable(set(self.points(dom)) - set(other.points(dom)))
 
+    def __le__(self, other):
+        if not isinstance(other, Set):
+            if not isinstance(other, collections.Iterable):
+                return NotImplemented
+            other = self._from_iterable(other)
+        dom = self.domain | other.domain
+        return set(self.points(dom)) <= set(other.points(dom))
+
     # _abcoll.py implementation of Set.__or__ and Set.__xor__ work
 
 def _points_hash(points):
