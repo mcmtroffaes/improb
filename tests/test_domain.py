@@ -53,20 +53,23 @@ def test_domain_double_4():
     b = Var('abc')
     dom = Domain(a, b)
     nose.tools.assert_sequence_equal(
-        list(list(point.values()) for point in dom.points()),
-        [[0, 'a'], [0, 'b'], [0, 'c'],
-         [1, 'a'], [1, 'b'], [1, 'c'],
-         [2, 'a'], [2, 'b'], [2, 'c']])
+        list(dom.points()),
+        [{a: va, b: vb} for va, vb in [
+             [0, 'a'], [0, 'b'], [0, 'c'],
+             [1, 'a'], [1, 'b'], [1, 'c'],
+             [2, 'a'], [2, 'b'], [2, 'c'],
+             ]])
 
 def test_domain_double_5():
      a = Var(['rain', 'cloudy', 'sunny'])
      b = Var(['cold', 'warm'])
      dom = Domain(a, b)
      nose.tools.assert_sequence_equal(
-         list(list(point.values()) for point in dom.points()),
-         [['rain', 'cold'], ['rain', 'warm'],
-          ['cloudy', 'cold'], ['cloudy', 'warm'],
-          ['sunny', 'cold'], ['sunny', 'warm']])
+         list(dom.points()),
+         [{a: va, b: vb} for va, vb in [
+             ['rain', 'cold'], ['rain', 'warm'],
+             ['cloudy', 'cold'], ['cloudy', 'warm'],
+             ['sunny', 'cold'], ['sunny', 'warm']]])
 
 def test_domain_repr():
     a = Var([2, 4, 5], name='a')

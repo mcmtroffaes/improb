@@ -292,7 +292,7 @@ class Domain(collections.Set):
     def points(self):
         """Generate all points of the domain."""
         for values in itertools.product(*self._vars):
-            yield OrderedDict(itertools.izip(self._vars, values))
+            yield Point(dict(itertools.izip(self._vars, values)))
 
     def size(self):
         """Number of points."""
