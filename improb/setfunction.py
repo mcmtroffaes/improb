@@ -70,23 +70,9 @@ class SetFunction(collections.MutableMapping):
         # should we update self._domain? slow...
 
     def __repr__(self):
-        """
-        >>> from improb import Var
-        >>> a = Var([0, 1, 2], name='A')
-        >>> SetFunction(data={Set([]): 1, Set([{a: 0}, {a: 2}]): 2.1, Set([{}]): 1/3})
-        SetFunction(data={Set([]): 1, Set([{}]): 0.3333333333333333, Set([{Var([0, 1, 2], name='A'): 2}, {Var([0, 1, 2], name='A'): 0}]): 2.1})
-        """
         return "SetFunction(data=%s)" % repr(self._data)
 
     def __str__(self):
-        """
-        >>> from improb import Var
-        >>> a = Var([0, 1, 2], name='A')
-        >>> print(SetFunction(data={Set([]): 1, Set([{a: 0}, {a: 2}]): 2.1, Set([{}]): 1/3}))
-        {∅: 1,
-         Ω: 0.333333333333,
-         A=2 | A=0: 2.1}
-        """
         items = [(str(event), str(value)) for event, value in self.iteritems()]
         if not items:
             return "{}"
@@ -115,27 +101,6 @@ class SetFunction(collections.MutableMapping):
 
            The set function must be defined for all subsets of the
            given event.
-
-        >>> a = Var('ab', 'A')
-        >>> setfunc = SetFunction(data={
-        ...     Set([]): 0,
-        ...     Set([{a: 'a'}]): 0.25,
-        ...     Set([{a: 'b'}]): 0.3,
-        ...     Set([{}]): 1,
-        ...     })
-        >>> print(setfunc)
-        {Ω: 1,
-         ∅: 0,
-         A=b: 0.3,
-         A=a: 0.25}
-        >>> inv = SetFunction(data=dict(
-        ...     (event, setfunc.get_mobius(event))
-        ...     for event in setfunc.domain.subsets()))
-        >>> print(inv)
-        {Ω: 0.45,
-         ∅: 0,
-         A=b: 0.3,
-         A=a: 0.25}
         """
         return sum(((-1) ** len(list((event - subevent).points(self.domain)))) * self[subevent]
                    for subevent in self.domain.subsets(event))
@@ -157,21 +122,6 @@ class SetFunction(collections.MutableMapping):
 
            The set function must be defined for all subsets of the
            given event.
-
-        >>> a = Var('ab', 'A')
-        >>> setfunc = SetFunction(data={
-        ...     Set([]): 0,
-        ...     Set([{a: 'a'}]): 0.25,
-        ...     Set([{a: 'b'}]): 0.3,
-        ...     Set([{}]): 0.45,
-        ...     })
-        >>> inv = SetFunction(data=dict((event, setfunc.get_zeta(event))
-        ...                             for event in setfunc.domain.subsets()))
-        >>> print(inv)
-        {Ω: 1.0,
-         ∅: 0,
-         A=b: 0.3,
-         A=a: 0.25}
         """
         return sum(self[subevent] for subevent in self.domain.subsets(event))
 
@@ -203,45 +153,10 @@ class SetFunction(collections.MutableMapping):
         and :math:`A_i=\{\omega\in\Omega:f(\omega)\geq v_i\}` are the
         level sets induced.
 
-        >>> from improb import Var
-        >>> a = Var('abc')
-        >>> s = SetFunction(data={
-        ...     Set([]): 0,
-        ...     Set([{a: 'a'}]): 0,
-        ...     Set([{a: 'b'}]): 0,
-        ...     Set([{a: 'c'}]): 0,
-        ...     Set([{a: 'a'}, {a: 'b'}]): .5,
-        ...     Set([{a: 'a'}, {a: 'c'}]): .5,
-        ...     Set([{a: 'b'}, {a: 'c'}]): .5,
-        ...     Set([{}]): 1})
-        >>> s.get_choquet(Func(a, [1, 2, 3]))
-        1.5
-        >>> s.get_choquet(Func(a, [1, 2, 2]))
-        1.5
-        >>> s.get_choquet(Func(a, [1, 2, 1]))
-        1
-
         .. warning::
 
            The set function must be defined for all level sets :math:`A_i`
            induced by the argument gamble.
-
-           >>> a = Var('abc', name='A')
-           >>> s = SetFunction(data={
-           ...     Set([{a: 'a'}, {a: 'b'}]): .5,
-           ...     Set([{a: 'a'}, {a: 'c'}]): .5,
-           ...     Set([{a: 'b'}, {a: 'c'}]): .5,
-           ...     Set([{}]): 1})
-           >>> s.get_choquet(Func(a, [1, 2, 2]))
-           1.5
-           >>> s.get_choquet(Func(a, [2, 2, 1]))
-           1.5
-           >>> s.get_choquet(Func(a, [-1, -1, -2]))
-           -1.5
-           >>> s.get_choquet(Func(a, [1, 2, 3]))
-           Traceback (most recent call last):
-               ...
-           KeyError: Set([{Var(['a', 'b', 'c'], name='A'): 'c'}])
         """
         result = 0
         if not isinstance(gamble, ABCVar):
@@ -460,58 +375,8 @@ class SetFunction(collections.MutableMapping):
 
         .. warning::
 
-           Currently this doesn't work very well except for the cases
-           below.
-
-        >>> a = Var('abc')
-        >>> dom = Domain(a)
-        >>> bbas = list(SetFunction.make_extreme_bba_n_monotone(dom, monotonicity=2))
-        >>> len(bbas)
-        8
-        >>> all(bba.is_bba_n_monotone(2) for bba in bbas)
-        True
-        >>> all(bba.is_bba_n_monotone(3) for bba in bbas)
-        False
-        >>> bbas = list(SetFunction.make_extreme_bba_n_monotone(dom, monotonicity=3))
-        >>> len(bbas)
-        7
-        >>> all(bba.is_bba_n_monotone(2) for bba in bbas)
-        True
-        >>> all(bba.is_bba_n_monotone(3) for bba in bbas)
-        True
-        >>> a = Var('abcd')
-        >>> dom = Domain(a)
-        >>> bbas = list(SetFunction.make_extreme_bba_n_monotone(dom, monotonicity=2))
-        >>> len(bbas)
-        41
-        >>> all(bba.is_bba_n_monotone(2) for bba in bbas)
-        True
-        >>> all(bba.is_bba_n_monotone(3) for bba in bbas)
-        False
-        >>> all(bba.is_bba_n_monotone(4) for bba in bbas)
-        False
-        >>> bbas = list(SetFunction.make_extreme_bba_n_monotone(dom, monotonicity=3))
-        >>> len(bbas)
-        16
-        >>> all(bba.is_bba_n_monotone(2) for bba in bbas)
-        True
-        >>> all(bba.is_bba_n_monotone(3) for bba in bbas)
-        True
-        >>> all(bba.is_bba_n_monotone(4) for bba in bbas)
-        False
-        >>> bbas = list(SetFunction.make_extreme_bba_n_monotone(dom, monotonicity=4))
-        >>> len(bbas)
-        15
-        >>> all(bba.is_bba_n_monotone(2) for bba in bbas)
-        True
-        >>> all(bba.is_bba_n_monotone(3) for bba in bbas)
-        True
-        >>> all(bba.is_bba_n_monotone(4) for bba in bbas)
-        True
-        >>> # cddlib hangs on larger possibility spaces
-        >>> #a = Var('abcde')
-        >>> #dom = Domain(a)
-        >>> #bbas = list(SetFunction.make_extreme_bba_n_monotone(dom, monotonicity=2))
+           This will take a very long time if the domain has five or
+           more points.
         """
         if not isinstance(domain, Domain):
             raise TypeError("expected Domain")
