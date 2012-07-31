@@ -259,31 +259,6 @@ class Set(collections.Hashable, collections.Set, _Make):
 
     # _abcoll.py implementation of Set.__or__ and Set.__xor__ work
 
-def _points_hash(points):
-    """Calculates hash value of a set that consists of the given
-    sequence of mutually exclusive *points*. Equal subsets return the
-    same hash value. This is a helper function for implementing hash
-    calculations for various objects.
-    """
-    hash_ = hash(frozenset())
-    vars_ = {}
-    for point in points:
-        for var, value in point.iteritems():
-            assert isinstance(var, Var)
-            if var not in vars_:
-                vars_[var] = hash(var)
-    visited = {var: set() for var in vars_}
-    for point in points:
-        for var, value in point.iteritems():
-            assert value in var
-            if value not in visited[var]:
-                hash_ ^= hash((vars_[var], value))
-                visited[var].add(value)
-    for var, var_hash in vars_.iteritems():
-        for value in var.itervalues():
-            hash_ ^= hash((var_hash, value))
-    return hash_
-
 class Domain(collections.Set):
     """An immutable set of :class:`Var`\ s."""
 
@@ -785,7 +760,7 @@ class Func(ABCVar):
 
     def __hash__(self):
         return hash(frozenset(
-            (value, _points_hash(level_set))
+            (value, level_set)
             for value, level_set in self.get_level_sets().iteritems()))
 
     @property
