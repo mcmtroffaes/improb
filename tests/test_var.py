@@ -57,7 +57,9 @@ def test_var_add_var():
     a1 = Var(xrange(3))
     a2 = Var(xrange(5, 15, 3))
     b = a1 + a2
-    points = list(b.domain.points())
+    points = list({a1: a1v, a2: a2v}
+                  for a1v, a2v in itertools.product(
+                      xrange(3), xrange(5, 15, 3)))
     nose.tools.assert_sequence_equal(
         [b.get_value(w) for w in points],
         [5, 8, 11, 14, 6, 9, 12, 15, 7, 10, 13, 16])
@@ -66,7 +68,9 @@ def test_var_sub_var():
     a1 = Var(xrange(3))
     a2 = Var(xrange(5, 15, 3))
     b = a1 - a2
-    points = list(b.domain.points())
+    points = list({a1: a1v, a2: a2v}
+                  for a1v, a2v in itertools.product(
+                      xrange(3), xrange(5, 15, 3)))
     nose.tools.assert_sequence_equal(
         [b.get_value(w) for w in points],
         [-5, -8, -11, -14, -4, -7, -10, -13, -3, -6, -9, -12])
@@ -75,28 +79,30 @@ def test_var_mul_var():
     a1 = Var(xrange(3))
     a2 = Var(xrange(5, 15, 3))
     b = a1 * a2
-    points = list(b.domain.points())
+    points = list({a1: a1v, a2: a2v}
+                  for a1v, a2v in itertools.product(
+                      xrange(3), xrange(5, 15, 3)))
     nose.tools.assert_sequence_equal(
         [b.get_value(w) for w in points],
         [0, 0, 0, 0, 5, 8, 11, 14, 10, 16, 22, 28])
 
 def test_var_neg():
     a = Var(xrange(3))
-    points = list(a.domain.points())
+    points = list({a: av} for av in xrange(3))
     b = -a
     nose.tools.assert_sequence_equal(
         [b.get_value(w) for w in points], [0, -1, -2])
 
 def test_var_eq():
     a = Var('abcde')
-    points = list(a.domain.points())
+    points = list({a: av} for av in 'abcde')
     b = a.eq_('d')
     nose.tools.assert_sequence_equal(
         [b.get_value(w) for w in points], [False, False, False, True, False])
 
 def test_var_ne():
     a = Var('abcde')
-    points = list(a.domain.points())
+    points = list({a: av} for av in 'abcde')
     b = a.ne_('b')
     nose.tools.assert_sequence_equal(
         [b.get_value(w) for w in points], [True, False, True, True, True])
