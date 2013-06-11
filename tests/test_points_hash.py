@@ -86,13 +86,27 @@ def test_hash_5():
 def test_hash_func_1():
     a1 = Var('abc')
     a2 = Var([1, 2])
-    f1 = Func(a1, [0, 1, 2])
-    f2 = Func([a1, a2], [0, 0, 1, 1, 2, 2])
+    f1 = Func(a1, dict(zip('abc', [0, 1, 2])))
+    f2 = Func([a1, a2], {
+        ('a', 1): 0,
+        ('a', 2): 0,
+        ('b', 1): 1,
+        ('b', 2): 1,
+        ('c', 1): 2,
+        ('c', 2): 2,
+        })
     nose.tools.assert_equal(hash(f1), hash(f2))
 
 def test_hash_func_2():
     a1 = Var('abc')
     a2 = Var([1, 2])
-    f1 = Func(a1, [0, 1, 2])
-    f2 = Func([a1, a2], [0, 1, 1, 0, 2, 2])
+    f1 = Func(a1, dict(zip('abc', [0, 1, 2])))
+    f2 = Func([a1, a2], {
+        ('a', 1): 0,
+        ('a', 2): 1,
+        ('b', 1): 1,
+        ('b', 2): 2,
+        ('c', 1): 2,
+        ('c', 2): 0,
+        })
     nose.tools.assert_not_equal(hash(f1), hash(f2))
