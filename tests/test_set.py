@@ -139,10 +139,4 @@ def test_set_str_repr_2():
     s = Set([{a: 'a'}, {a: 'b', b: 1}])
     nose.tools.assert_equal(
         str(s), "(X1=a & X2=0) | (X1=a & X2=1) | (X1=b & X2=1)")
-    nose.tools.assert_equal(
-        repr(s),
-        "Set(["
-        "{Var(['a', 'b', 'c'], name='X1'): 'a', Var([0, 1], name='X2'): 0}, "
-        "{Var(['a', 'b', 'c'], name='X1'): 'a', Var([0, 1], name='X2'): 1}, "
-        "{Var(['a', 'b', 'c'], name='X1'): 'b', Var([0, 1], name='X2'): 1}"
-        "])")
+    nose.tools.assert_equal(eval(repr(s)), s)
