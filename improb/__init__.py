@@ -670,7 +670,7 @@ class Func(ABCVar):
             variables to a value, or lists a value for each such combination,
             or provides a function to calculate the value from input
             variable values.
-        :type data: :class:`collections.Mapping` or :class:`collections.Sequence` or :class:`collections.Callable`
+        :type data: :class:`collections.Mapping` or :class:`collections.Callable`
         :param name: The name of this function.
         :type name: :class:`str`
         :param validate: Whether to validate the keys of the mapping.
@@ -684,13 +684,6 @@ class Func(ABCVar):
             else:
                 self._inputs = tuple(inputs)
                 mapping = dict(data)
-        elif isinstance(data, collections.Sequence):
-            if isinstance(inputs, ABCVar):
-                self._inputs = (inputs,)
-            else:
-                self._inputs = tuple(inputs)
-            mapping = dict(itertools.izip(
-                itertools.product(*self._inputs), data))
         elif isinstance(data, collections.Callable):
             if isinstance(inputs, ABCVar):
                 self._inputs = (inputs,)
@@ -700,7 +693,7 @@ class Func(ABCVar):
                 key: data(*key) for key in itertools.product(*self._inputs)}
         else:
             raise TypeError(
-                "expected collections.Mapping or collections.Sequence for data")
+                "expected collections.Mapping or collections.Callable for data")
         if any(not isinstance(inp, ABCVar) for inp in self._inputs):
             raise TypeError("expected ABCVar or sequence of ABCVar for inputs")
         self._domain = functools.reduce(
