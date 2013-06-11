@@ -92,7 +92,7 @@ class Point(collections.Hashable, collections.Mapping, _Make):
             return (
                 " & ".join(
                     "%s=%s" % (var.name, value)
-                    for var, value in sorted(self._data.iteritems()))
+                    for var, value in sorted(self._data.iteritems(), key=lambda x: (x[0].name, x[1])))
                 )
         else:
             return "Ω"

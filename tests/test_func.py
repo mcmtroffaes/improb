@@ -51,30 +51,9 @@ def test_func_values_1():
         })
     nose.tools.assert_equal(set(b.itervalues()), set([2, 3, 5, 8]))
 
-def test_func_init_from_list_1():
-    a = Var('abc')
-    b = Func(a, [0, 2, 6])
-    nose.tools.assert_equal(b.get_value({a: 'a'}), 0)
-    nose.tools.assert_equal(b.get_value({a: 'b'}), 2)
-    nose.tools.assert_equal(b.get_value({a: 'c'}), 6)
-
-def test_func_init_from_list_2():
-    a1 = Var('abc')
-    a2 = Var(xrange(3))
-    b = Func([a1, a2], [3, 5, 2, 8, 2, 1, 6, 7, 4])
-    nose.tools.assert_equal(b.get_value({a1: 'a', a2: 0}), 3)
-    nose.tools.assert_equal(b.get_value({a1: 'a', a2: 1}), 5)
-    nose.tools.assert_equal(b.get_value({a1: 'a', a2: 2}), 2)
-    nose.tools.assert_equal(b.get_value({a1: 'b', a2: 0}), 8)
-    nose.tools.assert_equal(b.get_value({a1: 'b', a2: 1}), 2)
-    nose.tools.assert_equal(b.get_value({a1: 'b', a2: 2}), 1)
-    nose.tools.assert_equal(b.get_value({a1: 'c', a2: 0}), 6)
-    nose.tools.assert_equal(b.get_value({a1: 'c', a2: 1}), 7)
-    nose.tools.assert_equal(b.get_value({a1: 'c', a2: 2}), 4)
-
 def test_func_add_scalar():
     a = Var('abc')
-    b = Func(a, [0, 1, 2])
+    b = Func(a, dict(zip('abc', [0, 1, 2])))
     points = [{a: 'a'}, {a: 'b'}, {a: 'c'}]
     c = 2 + b
     nose.tools.assert_sequence_equal(
@@ -86,7 +65,7 @@ def test_func_add_scalar():
 
 def test_func_sub_scalar():
     a = Var('abc')
-    b = Func(a, [0, 1, 2])
+    b = Func(a, dict(zip('abc', [0, 1, 2])))
     points = [{a: 'a'}, {a: 'b'}, {a: 'c'}]
     c = 2 - b
     nose.tools.assert_sequence_equal(
@@ -97,7 +76,7 @@ def test_func_sub_scalar():
 
 def test_func_mul_scalar():
     a = Var('abc')
-    b = Func(a, [0, 1, 2])
+    b = Func(a, dict(zip('abc', [0, 1, 2])))
     points = [{a: 'a'}, {a: 'b'}, {a: 'c'}]
     c = 2 * b
     nose.tools.assert_sequence_equal(
@@ -109,7 +88,7 @@ def test_func_mul_scalar():
 
 def test_func_truediv_scalar():
     a = Var('abc')
-    b = Func(a, [0, 1, 2])
+    b = Func(a, dict(zip('abc', [0, 1, 2])))
     points = [{a: 'a'}, {a: 'b'}, {a: 'c'}]
     c = b / 2
     nose.tools.assert_sequence_equal(
@@ -117,7 +96,7 @@ def test_func_truediv_scalar():
 
 def test_func_floordiv_scalar():
     a = Var('abc')
-    b = Func(a, [0, 1, 2])
+    b = Func(a, dict(zip('abc', [0, 1, 2])))
     points = [{a: 'a'}, {a: 'b'}, {a: 'c'}]
     c = b // 2
     nose.tools.assert_sequence_equal(
@@ -126,8 +105,15 @@ def test_func_floordiv_scalar():
 def test_func_add_func():
     a1 = Var(xrange(3))
     a2 = Var('ab')
-    b1 = Func([a1, a2], [1, 3, 4, 2, -1, 3])
-    b2 = Func(a2, [0, 6])
+    b1 = Func([a1, a2], {
+        (0, 'a'): 1,
+        (0, 'b'): 3,
+        (1, 'a'): 4,
+        (1, 'b'): 2,
+        (2, 'a'): -1,
+        (2, 'b'): 3
+        })
+    b2 = Func(a2, dict(zip('ab', [0, 6])))
     points = [
         {a1: 0, a2: 'a'}, {a1: 0, a2: 'b'},
         {a1: 1, a2: 'a'}, {a1: 1, a2: 'b'},
@@ -149,8 +135,15 @@ def test_func_add_func():
 def test_func_sub_func():
     a1 = Var(xrange(3))
     a2 = Var('ab')
-    b1 = Func([a1, a2], [1, 3, 4, 2, -1, 3])
-    b2 = Func(a2, [0, 6])
+    b1 = Func([a1, a2], {
+        (0, 'a'): 1,
+        (0, 'b'): 3,
+        (1, 'a'): 4,
+        (1, 'b'): 2,
+        (2, 'a'): -1,
+        (2, 'b'): 3
+        })
+    b2 = Func(a2, dict(zip('ab', [0, 6])))
     points = [
         {a1: 0, a2: 'a'}, {a1: 0, a2: 'b'},
         {a1: 1, a2: 'a'}, {a1: 1, a2: 'b'},
@@ -172,8 +165,15 @@ def test_func_sub_func():
 def test_func_mul_func():
     a1 = Var(xrange(3))
     a2 = Var('ab')
-    b1 = Func([a1, a2], [1, 3, 4, 2, -1, 3])
-    b2 = Func(a2, [0, 6])
+    b1 = Func([a1, a2], {
+        (0, 'a'): 1,
+        (0, 'b'): 3,
+        (1, 'a'): 4,
+        (1, 'b'): 2,
+        (2, 'a'): -1,
+        (2, 'b'): 3
+        })
+    b2 = Func(a2, dict(zip('ab', [0, 6])))
     points = [
         {a1: 0, a2: 'a'}, {a1: 0, a2: 'b'},
         {a1: 1, a2: 'a'}, {a1: 1, a2: 'b'},
@@ -194,7 +194,7 @@ def test_func_mul_func():
 
 def test_func_neg():
     a = Var('abc')
-    b = Func(a, [0, 1, 2])
+    b = Func(a, dict(zip('abc', [0, 1, 2])))
     points = [{a: 'a'}, {a: 'b'}, {a: 'c'}]
     c = -b
     nose.tools.assert_sequence_equal(
@@ -202,7 +202,7 @@ def test_func_neg():
 
 def test_func_eq():
     a = Var('abcde')
-    b = Func(a, [0, 1, 2, 2, 1])
+    b = Func(a, dict(zip('abcde', [0, 1, 2, 2, 1])))
     points = [{a: 'a'}, {a: 'b'}, {a: 'c'}, {a: 'd'}, {a: 'e'}]
     c = b.eq_(1)
     nose.tools.assert_sequence_equal(
@@ -210,7 +210,7 @@ def test_func_eq():
 
 def test_func_ne():
     a = Var('abcde')
-    b = Func(a, [0, 1, 2, 2, 1])
+    b = Func(a, dict(zip('abcde', [0, 1, 2, 2, 1])))
     points = [{a: 'a'}, {a: 'b'}, {a: 'c'}, {a: 'd'}, {a: 'e'}]
     c = b.ne_(2)
     nose.tools.assert_sequence_equal(
@@ -218,12 +218,12 @@ def test_func_ne():
 
 def test_func_min_max():
     a = Var('abcde')
-    b = Func(a, [5, 2, 3, 8, 4])
+    b = Func(a, dict(zip('abcde', [5, 2, 3, 8, 4])))
     nose.tools.assert_equal(b.minimum(), 2)
     nose.tools.assert_equal(b.maximum(), 8)
 
 def test_func_get_level_set_1():
     a = Var('abcde')
-    b = Func(a, [0, 1, 2, 2, 1])
+    b = Func(a, dict(zip('abcde', [0, 1, 2, 2, 1])))
     nose.tools.assert_equal(
         b.get_level_set(2), Set([{a: 'c'}, {a: 'd'}]))
