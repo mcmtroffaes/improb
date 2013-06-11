@@ -26,7 +26,7 @@ import itertools
 import operator
 
 from improb._compat import OrderedDict
-from improb import Domain, MutableDomain, Func, Set, ABCVar, Var
+from improb import Domain, Func, Set, ABCVar, Var
 
 class SetFunction(collections.MutableMapping):
     """A real-valued set function defined on the power set of a
@@ -43,7 +43,7 @@ class SetFunction(collections.MutableMapping):
         :type data: :class:`~collections.Mapping`
         """
         self._data = {}
-        self._domain = MutableDomain()
+        self._domain = Domain()
         if data is not None:
             for event, value in data.iteritems():
                 self[event] = value
@@ -62,8 +62,9 @@ class SetFunction(collections.MutableMapping):
 
     def __setitem__(self, event, value):
         event = Set._make(event)
+        if self._domain != event.domain:
+            raise ValueError("domain mismatch")
         self._data[event] = value
-        self._domain |= event.domain
 
     def __delitem__(self, event):
         del self._data[Set._make(event)]

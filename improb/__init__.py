@@ -31,8 +31,6 @@ import itertools
 import numbers
 import operator
 
-from improb._compat import OrderedDict, OrderedSet
-
 def _str_keys_values(keys, values):
     """Turn dictionary with *keys* and *values* into a string.
     Warning: *keys* must be a list.
@@ -94,7 +92,7 @@ class Point(collections.Hashable, collections.Mapping, _Make):
             return (
                 " & ".join(
                     "%s=%s" % (var.name, value)
-                    for var, value in self._data.iteritems())
+                    for var, value in sorted(self._data.iteritems()))
                 )
         else:
             return "Ω"
@@ -268,7 +266,7 @@ class Domain(collections.Set):
         :param vars_: The components of the domain.
         :type vars_: Each component is a :class:`Var`.
         """
-        self._vars = OrderedSet(vars_)
+        self._vars = frozenset(vars_)
         if any(not isinstance(var, Var) for var in self._vars):
             raise TypeError("expected Var (%s)" % self._vars)
 
@@ -309,7 +307,7 @@ class Domain(collections.Set):
         return (
             " × ".join(
                 "{" + ", ".join(str(val) for val in var) + "}"
-                for var in self)
+                for var in sorted(self))
             )
 
     def subsets(self, event=None, empty=True, full=True,
@@ -354,27 +352,6 @@ class Domain(collections.Set):
         for subset_size in size_range:
             for subset in itertools.combinations(extra_points, subset_size):
                 yield Set(subset) | contains
-
-class MutableDomain(Domain, collections.MutableSet):
-
-    __hash__ = None
-
-    def add(self, var):
-        if not isinstance(var, Var):
-            raise TypeError("expected Var but got %s" % var.__class__.__name__)
-        self._vars.add(var)
-
-    def discard(self, var):
-        self._vars.discard(var)
-
-    # XXX Python bug? should investigate
-    def __ge__(self, other):
-        if not isinstance(other, collections.Set):
-            return NotImplemented
-        # other <= self, which is what _abcoll.py has,
-        # is here _not_ the same
-        # and apparently leads to self.__ge__(other) being called again???
-        return other.__le__(self)
 
 class ABCVar(collections.Hashable, collections.Mapping):
     """Abstract base class for variables."""
@@ -423,7 +400,7 @@ class ABCVar(collections.Hashable, collections.Mapping):
 
     def __str__(self):
         return _str_keys_values(
-            [point.values() for point in self.domain.points()],
+            [point for point in self.domain.points()],
             [self.get_value(point) for point in self.domain.points()]
             )
 
@@ -563,7 +540,7 @@ class Var(ABCVar):
            Var([2, 5, 3, 9, 1], name='c')
         """
         self._name = str(name) if name is not None else self._make_name()
-        self._values = OrderedSet(values)
+        self._values = frozenset(values)
         self._domain = Domain(self)
 
     def __repr__(self):
@@ -581,7 +558,7 @@ class Var(ABCVar):
             )
 
     def __hash__(self):
-        return hash((self._name, self._values._hash()))
+        return hash((self._name, hash(self._values)))
 
     def __eq__(self, other):
         return self._name == other._name and self._values == other._values
