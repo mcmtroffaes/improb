@@ -382,8 +382,7 @@ class ABCVar(collections.Hashable, collections.Mapping):
 
     @abstractmethod
     def get_value(self, point):
-        """Return value of this variable on *point*, relative to the
-        given *domain*.
+        """Return value of this variable on *point*.
 
         :param point: An point.
         :type point: :class:`dict` from :class:`Var` to any value in :class:`Var`
